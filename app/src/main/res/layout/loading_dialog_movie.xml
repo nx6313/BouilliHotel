@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/loadingMain"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp"
+    android:gravity="center">
+
+        <com.bouilli.nxx.bouillihotel.customview.GifViewByMovie
+            android:id="@+id/loadingGif"
+            android:layout_width="91dp"
+            android:layout_height="91dp" />
+
+        <TextView
+            android:id="@+id/loadingTip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:textSize="14sp"
+            android:text="努力加载中，请稍后"/>
+</LinearLayout>

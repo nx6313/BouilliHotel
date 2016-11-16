@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_select_menu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.bouilli.nxx.bouillihotel.SelectMenuActivity"
+    android:orientation="vertical"
+    android:background="@drawable/main_bg"
+    tools:showIn="@layout/activity_select_menu">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#844a5a"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+
+    <EditText
+        android:id="@+id/selectMenuSearchEt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        android:padding="8dp"
+        android:singleLine="true"
+        android:textSize="16sp"
+        android:background="@drawable/bg_round_circle"
+        android:drawableRight="@drawable/ic_restaurant_menu_black_24dp"
+        android:hint="菜品搜索 - 按菜品名或菜品首字母查找"
+        android:inputType="textCapCharacters|textCapWords"/>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/orderSelectLayoutMain"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/wrapper_ntb_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_scrollFlags="scroll|enterAlways">
+
+                <com.bouilli.nxx.bouillihotel.customview.NavigationTabBar
+                    android:id="@+id/selectMenuTabBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    app:ntb_badge_gravity="bottom"
+                    app:ntb_icon_size_fraction="0"
+                    app:ntb_bg_color="#844a5a"
+                    app:ntb_badge_use_typeface="true"
+                    app:ntb_badged="true"
+                    app:ntb_title_mode="all"
+                    app:ntb_titled="true"
+                    app:ntb_title_size="14sp"/>
+            </FrameLayout>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/selectMenuViewPager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/orderSearchLayoutMain"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="true"
+            android:background="#30cc8c8c"
+            android:gravity="center|top"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/searchLoadingLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingBottom="70dp"
+                android:orientation="vertical">
+
+                <com.bouilli.nxx.bouillihotel.customview.GifViewByMovie
+                    android:id="@+id/searchLoadingGif"
+                    android:layout_width="91dp"
+                    android:layout_height="91dp"
+                    android:layout_marginTop="60dp"
+                    app:gif="@drawable/loading6"/>
+
+                <TextView
+                    android:id="@+id/searchLoadingTip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:textColor="#2b2727"
+                    android:layout_marginTop="4dp"
+                    android:textSize="14sp"
+                    android:text="努力查找中，请稍后"/>
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:background="#844a5a">
+
+        <Button
+            android:id="@+id/btnClearAllOrder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/edit_order_btn_style_1"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:textSize="20sp"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:text="清除所选"/>
+
+        <Button
+            android:id="@+id/btnCancleOrder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/edit_order_btn_style_1"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:textSize="20sp"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:text="取消"/>
+
+        <Button
+            android:id="@+id/btnSureOrder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/edit_order_btn_style_1"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:textSize="20sp"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:text="确定"/>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_edit_order"
+    android:layout_gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="10dp"
+    android:paddingLeft="15dp"
+    android:paddingRight="15dp"
+    android:paddingTop="13dp"
+    android:background="#c7bfbf"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.bouilli.nxx.bouillihotel.EditOrderActivity">
+
+    <TextView
+        android:id="@+id/orderPage_tableNum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:textColor="#313131"
+        android:textStyle="bold"
+        android:layout_marginBottom="2dp"
+        android:text="餐桌号（ ## ）"/>
+
+    <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@color/colorScroll"
+        android:overScrollMode="never"
+        android:scrollbarSize="2dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/orderPage_mainLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="left|center"
+                android:background="@drawable/order_menu_new1">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="7"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textColor="#ffffff"
+                        android:textStyle="bold"
+                        android:singleLine="true"
+                        android:text="水煮肉片" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:textColor="#e5c1ec"
+                        android:singleLine="true"
+                        android:text="少放点肉" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:textSize="16sp"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    android:text="1 份" />
+
+                <Button
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/edit_order_btn_style_1"
+                    android:textColor="#e1dfdf"
+                    android:textStyle="bold"
+                    android:text="去掉"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="left|center"
+                android:background="@drawable/order_menu_new1">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="7"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textColor="#ffffff"
+                        android:textStyle="bold"
+                        android:singleLine="true"
+                        android:text="麻辣豆腐" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:textColor="#e5c1ec"
+                        android:singleLine="true"
+                        android:text="少放点肉"
+                        android:visibility="gone"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:textSize="16sp"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    android:text="1 份" />
+
+                <Button
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/edit_order_btn_style_1"
+                    android:textColor="#e1dfdf"
+                    android:textStyle="bold"
+                    android:text="去掉"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/line_2"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="left|center"
+                android:background="@drawable/order_menu_old1">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="7"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textColor="#ffffff"
+                        android:textStyle="bold"
+                        android:singleLine="true"
+                        android:text="尖椒土豆丝盖饭" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:textColor="#e5c1ec"
+                        android:singleLine="true"
+                        android:text="少放点肉"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:textSize="16sp"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    android:text="1 份" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+
+    <TextView
+        android:id="@+id/orderPage_currentTotalMoney"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right|center"
+        android:textSize="14sp"
+        android:layout_marginTop="5dp"
+        android:textColor="#000000"
+        android:textStyle="normal"
+        android:text="当前总金额：##.## 元"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnOrderPageEndMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/edit_order_btn_style_1"
+            android:layout_marginTop="5dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:textSize="20sp"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:text="结账"/>
+
+        <Button
+            android:id="@+id/btnOrderPageUpMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/edit_order_btn_style_1"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:textSize="20sp"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:text="传菜"/>
+
+        <Button
+            android:id="@+id/btnOrderPageAddNewMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/edit_order_btn_style_1"
+            android:layout_marginTop="5dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:textSize="20sp"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:text="加菜"/>
+
+    </LinearLayout>
+
+</LinearLayout>

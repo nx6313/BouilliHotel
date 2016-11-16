@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#b69b9b"
+    android:paddingBottom="10dp"
+    android:gravity="center|top"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/etTableGroupName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:gravity="center"
+        android:textSize="13sp"
+        android:hint="输入组名称（创建一个新的组来管理桌号）"/>
+
+    <EditText
+        android:id="@+id/etTableGroupNo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:gravity="center"
+        android:textSize="13sp"
+        android:layout_marginTop="-6dp"
+        android:hint="输入组代号（和桌号用.连接一起显示，例如：Z.1）"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center|top"
+        android:layout_marginTop="-6dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:text="该组桌号从"/>
+
+        <EditText
+            android:id="@+id/etTableNumStart"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:singleLine="true"
+            android:hint=""/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:text="到"/>
+
+        <EditText
+            android:id="@+id/etTableNumEnd"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:singleLine="true"
+            android:hint=""/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:text="（数字）；"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center|top"
+        android:layout_marginTop="-6dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:text="或"/>
+
+        <EditText
+            android:id="@+id/etTableNums"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number|text"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:singleLine="true"
+            android:hint="当桌号顺序比较乱时，填写这里，用“-”分割桌号"/>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_save_table_group"
+        android:background="@drawable/edit_table_btn_style"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:text="保存"
+        android:textStyle="bold" />
+
+</LinearLayout>

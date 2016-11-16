@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#b69b9b"
+    android:paddingBottom="10dp"
+    android:gravity="center|top"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/etMenuInfoName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:gravity="center"
+        android:textSize="13sp"
+        android:hint="输入菜品名称"/>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:paddingRight="14dp"
+        android:paddingLeft="14dp"
+        android:scrollbarSize="0dp">
+        <RadioGroup
+            android:id="@+id/rgMenuInfoGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <EditText
+        android:id="@+id/etMenuInfoDes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:gravity="center"
+        android:textSize="13sp"
+        android:hint="输入菜品简单说明（可以不填）"/>
+
+    <EditText
+        android:id="@+id/etMenuInfoPrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:gravity="center"
+        android:textSize="13sp"
+        android:inputType="numberDecimal"
+        android:hint="输入菜品单价（元）"/>
+
+    <Button
+        android:id="@+id/btn_save_menu_info"
+        android:background="@drawable/edit_table_btn_style"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:text="保存"
+        android:textStyle="bold" />
+
+</LinearLayout>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ca4256</color>
+    <color name="colorPrimaryDark">#ca4256</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorScroll">#a6d79fb2</color>
+
+    <color name="editTableSaveBtnPressed">#ac6969</color>
+    <color name="editTableSaveBtnPressed2">#6e4040</color>
+    <color name="editTableSaveBtnFocus">#832f2f</color>
+    <color name="editTableSaveBtnNormal">#c75b5b</color>
+
+    <color name="black_overlay">#66000000</color>
+
+    <color name="transparent">#06ffffff</color>
+    <color name="menu_item_normal">#debcbbbc</color>
+    <color name="menu_item_pressed">#deb39faa</color>
+</resources>
