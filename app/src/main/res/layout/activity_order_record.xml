@@ -1,0 +1,42 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/orderRecordMainPage"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#9b5353"
+    android:orientation="vertical"
+    tools:context="com.bouilli.nxx.bouillihotel.OrderRecordActivity">
+
+    <TextView
+        android:id="@+id/topTotalRecordTv"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#a8e4c0"
+        android:background="#9b5353"
+        android:text="当前(今日)共有订单数：- 个"/>
+
+    <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
+        android:id="@+id/orderRecordData"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@color/colorScroll"
+        android:overScrollMode="never"
+        android:scrollbarSize="2dp"
+        android:gravity="center|top">
+
+        <LinearLayout
+            android:id="@+id/orderRecordMainLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusableInTouchMode="true"
+            android:orientation="vertical">
+        </LinearLayout>
+
+    </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+
+</LinearLayout>

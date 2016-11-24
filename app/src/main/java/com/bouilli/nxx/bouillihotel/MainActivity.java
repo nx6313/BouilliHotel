@@ -56,9 +56,6 @@ public class MainActivity extends AppCompatActivity
     private GoogleApiClient client;
     private long exitTime;
 
-    private View mani_activity_content_main;// 点菜主页布局内容
-    private View mani_activity_content_statistics;// 数据统计布局内容
-
     private Menu topRightMenu = null;// 页面右上角的菜单对象
 
     private ViewPager viewPager;
@@ -115,6 +112,9 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.inflateMenu(R.menu.activity_main_drawer_manager);
+        //navigationView.inflateMenu(R.menu.activity_main_drawer);
+        //navigationView.inflateMenu(R.menu.activity_main_drawer_transfer);
         // 设置默认选中项
         navigationView.getMenu().getItem(0).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
@@ -170,78 +170,7 @@ public class MainActivity extends AppCompatActivity
 
     // 初始化基本控件
     public void initBaseWeight(){
-        mani_activity_content_main = findViewById(R.id.mani_activity_content_main);// 点菜主页布局内容
-        mani_activity_content_statistics = findViewById(R.id.mani_activity_content_statistics);// 数据统计布局内容
         BouilliBroadcastReceiver.mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        btConnectionToBluePrint = (Button) findViewById(R.id.btConnectionToBluePrint);
-        btConnectionToBluePrint.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(btConnectionToBluePrint.getText().equals("打票机连接中（点击断开连接）")){
-                    try {
-                        BouilliBroadcastReceiver.mOutputStream.close();
-                        BouilliBroadcastReceiver.mBluetoothSocket.close();
-                        BouilliBroadcastReceiver.beginPrintServiceFlag = false;
-                        btConnectionToBluePrint.setText("连接打票机（当前状态已断开）");
-                        ComFun.showToast(MainActivity.this, "打票机服务已关闭", Toast.LENGTH_SHORT);
-                    } catch (Exception e) {
-                        // TODO: handle exception
-                    }
-                }else{
-                    if(BouilliBroadcastReceiver.mBluetoothAdapter != null && BouilliBroadcastReceiver.mBluetoothAdapter.isEnabled()){
-                        BouilliBroadcastReceiver.pairedDevices = BouilliBroadcastReceiver.mBluetoothAdapter.getBondedDevices();
-                        if(BouilliBroadcastReceiver.pairedDevices.size() > 0){
-                            BouilliBroadcastReceiver.mpairedDeviceList.clear();
-                            for (BluetoothDevice device : BouilliBroadcastReceiver.pairedDevices) {
-                                // Add the name and address to an array adapter to show in a ListView
-                                String getName = device.getName() + "#" + device.getAddress();
-                                BouilliBroadcastReceiver.mpairedDeviceList.add(getName);
-                            }
-                            // 配对的设备列表中肯定有，默认为已选择第一项
-                            selectedBlueBaseName = BouilliBroadcastReceiver.mpairedDeviceList.get(0);
-                            // 弹出选择蓝牙设备单选弹框
-                            AlertDialog.Builder builder=new android.app.AlertDialog.Builder(MainActivity.this);
-                            //设置对话框的图标
-                            builder.setIcon(R.drawable.mode);
-                            //设置对话框的标题
-                            builder.setTitle("选择打印订单小票的打印机");
-                            builder.setSingleChoiceItems(BouilliBroadcastReceiver.mpairedDeviceList.toArray(new String[BouilliBroadcastReceiver.mpairedDeviceList.size()]), 0, new DialogInterface.OnClickListener(){
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    selectedBlueBaseName = BouilliBroadcastReceiver.mpairedDeviceList.get(which);
-                                }
-                            });
-
-                            //添加一个确定按钮
-                            builder.setPositiveButton(" 确 定 ", new DialogInterface.OnClickListener(){
-                                public void onClick(DialogInterface dialog, int which) {
-                                    String temString = selectedBlueBaseName.substring(selectedBlueBaseName.length()-17);
-                                    try {
-                                        BouilliBroadcastReceiver.mBluetoothDevice = BouilliBroadcastReceiver.mBluetoothAdapter.getRemoteDevice(temString);
-                                        BouilliBroadcastReceiver.mBluetoothSocket = BouilliBroadcastReceiver.mBluetoothDevice.createRfcommSocketToServiceRecord(BouilliBroadcastReceiver.SPP_UUID);
-                                        BouilliBroadcastReceiver.mBluetoothSocket.connect();
-                                        BouilliBroadcastReceiver.beginPrintServiceFlag = true;
-                                        btConnectionToBluePrint.setText("打票机连接中（点击断开连接）");
-                                        ComFun.showToast(MainActivity.this, "打票机服务已启用", Toast.LENGTH_SHORT);
-                                    } catch (Exception e) {
-                                        // TODO: handle exception
-                                        btConnectionToBluePrint.setText("连接打票机（当前状态已断开）");
-                                        ComFun.showToast(MainActivity.this, "您选择的设备不支持打印服务，请重新选择", Toast.LENGTH_SHORT);
-                                    }
-                                }
-                            });
-                            //添加一个取消按钮
-                            builder.setNegativeButton(" 取 消 ", null);
-                            //创建一个单选框对话框
-                            Dialog dialog = builder.create();
-                            dialog.show();
-                        }else{
-                            ComFun.showToast(MainActivity.this, "没有与任何设备配对连接，请先与设备配对", Toast.LENGTH_SHORT);
-                        }
-                    }
-                }
-            }
-        });
         orderRecordData = (ScrollView) findViewById(R.id.orderRecordData);
     }
 
@@ -284,45 +213,101 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(final MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.nav_main) {
             // 显示点菜主页
-            toolbar.setTitle("红烧肉点餐");
-            mani_activity_content_main.setVisibility(View.VISIBLE);
-            mani_activity_content_statistics.setVisibility(View.GONE);
-            if(topRightMenu != null){
-                topRightMenu.setGroupVisible(0, true);
-            }
-            new_order.setVisibility(View.VISIBLE);
-            message_info.setVisibility(View.VISIBLE);
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(GravityCompat.START);
         } else if (id == R.id.nav_data) {
             // 显示数据统计
-            toolbar.setTitle("订单流水信息");
-            mani_activity_content_statistics.setVisibility(View.VISIBLE);
-            mani_activity_content_main.setVisibility(View.GONE);
-            if(topRightMenu != null){
-                topRightMenu.setGroupVisible(0, false);
-            }
-            new_order.setVisibility(View.GONE);
-            message_info.setVisibility(View.GONE);
-            if (skMessageInfo != null && skMessageInfo.isShown()) {
-                skMessageInfo.dismiss();
+            Intent editTableIntent = new Intent(MainActivity.this, OrderRecordActivity.class);
+            startActivity(editTableIntent);
+
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(GravityCompat.START);
+        } else if (id == R.id.nav_print_set) {
+            // 打印机设置连接开启或关闭
+            if(item.getTitle().equals("打票机开关(当前已启用)")){
+                try {
+                    BouilliBroadcastReceiver.mOutputStream.close();
+                    BouilliBroadcastReceiver.mBluetoothSocket.close();
+                    BouilliBroadcastReceiver.beginPrintServiceFlag = false;
+                    item.setTitle("打票机开关(当前已断开)");
+                    ComFun.showToast(MainActivity.this, "打票机服务已关闭", Toast.LENGTH_SHORT);
+                } catch (Exception e) {
+                    // TODO: handle exception
+                }
+            }else{
+                if(BouilliBroadcastReceiver.mBluetoothAdapter != null && BouilliBroadcastReceiver.mBluetoothAdapter.isEnabled()){
+                    BouilliBroadcastReceiver.pairedDevices = BouilliBroadcastReceiver.mBluetoothAdapter.getBondedDevices();
+                    if(BouilliBroadcastReceiver.pairedDevices.size() > 0){
+                        BouilliBroadcastReceiver.mpairedDeviceList.clear();
+                        for (BluetoothDevice device : BouilliBroadcastReceiver.pairedDevices) {
+                            // Add the name and address to an array adapter to show in a ListView
+                            String getName = device.getName() + "#" + device.getAddress();
+                            BouilliBroadcastReceiver.mpairedDeviceList.add(getName);
+                        }
+                        // 配对的设备列表中肯定有，默认为已选择第一项
+                        selectedBlueBaseName = BouilliBroadcastReceiver.mpairedDeviceList.get(0);
+                        // 弹出选择蓝牙设备单选弹框
+                        AlertDialog.Builder builder=new android.app.AlertDialog.Builder(MainActivity.this);
+                        //设置对话框的图标
+                        builder.setIcon(R.drawable.mode);
+                        //设置对话框的标题
+                        builder.setTitle("选择打印订单小票的打印机");
+                        builder.setSingleChoiceItems(BouilliBroadcastReceiver.mpairedDeviceList.toArray(new String[BouilliBroadcastReceiver.mpairedDeviceList.size()]), 0, new DialogInterface.OnClickListener(){
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                selectedBlueBaseName = BouilliBroadcastReceiver.mpairedDeviceList.get(which);
+                            }
+                        });
+
+                        //添加一个确定按钮
+                        builder.setPositiveButton(" 确 定 ", new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface dialog, int which) {
+                                String temString = selectedBlueBaseName.substring(selectedBlueBaseName.length()-17);
+                                try {
+                                    BouilliBroadcastReceiver.mBluetoothDevice = BouilliBroadcastReceiver.mBluetoothAdapter.getRemoteDevice(temString);
+                                    BouilliBroadcastReceiver.mBluetoothSocket = BouilliBroadcastReceiver.mBluetoothDevice.createRfcommSocketToServiceRecord(BouilliBroadcastReceiver.SPP_UUID);
+                                    BouilliBroadcastReceiver.mBluetoothSocket.connect();
+                                    BouilliBroadcastReceiver.beginPrintServiceFlag = true;
+                                    item.setTitle("打票机开关(当前已启用)");
+                                    ComFun.showToast(MainActivity.this, "打票机服务已启用", Toast.LENGTH_SHORT);
+                                } catch (Exception e) {
+                                    // TODO: handle exception
+                                    item.setTitle("打票机开关(当前已断开)");
+                                    ComFun.showToast(MainActivity.this, "您选择的设备不支持打印服务，请重新选择", Toast.LENGTH_SHORT);
+                                }
+                            }
+                        });
+                        //添加一个取消按钮
+                        builder.setNegativeButton(" 取 消 ", null);
+                        //创建一个单选框对话框
+                        Dialog dialog = builder.create();
+                        dialog.show();
+                    }else{
+                        ComFun.showToast(MainActivity.this, "没有与任何设备配对连接，请先与设备配对", Toast.LENGTH_SHORT);
+                    }
+                }
             }
         } else if (id == R.id.nav_desk) {
             // 跳转到编辑餐桌页面
             Intent editTableIntent = new Intent(MainActivity.this, TableEditActivity.class);
             startActivity(editTableIntent);
+
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(GravityCompat.START);
         } else if (id == R.id.nav_menu) {
             // 跳转到编辑菜单页面
             Intent menuEditActivity = new Intent(MainActivity.this, MenuEditActivity.class);
             startActivity(menuEditActivity);
-        }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(GravityCompat.START);
+        }
         return true;
     }
 

@@ -56,12 +56,17 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
         }
         if(intent.getAction().equals("com.nxx.bouilli.broadcastReceiver.broadcast")){
             // 打印请求
+            String printAboutTable = intent.getStringExtra("printAboutTable");
             String printMsg = intent.getStringExtra("printContent");
             if(beginPrintServiceFlag && mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()){
                 if(mBluetoothSocket != null && ComFun.strNull(printMsg)){
                     try {
                         mOutputStream = mBluetoothSocket.getOutputStream();
-                        mOutputStream.write(("*****************************\n").getBytes("GBK"));
+                        if(ComFun.strNull(printAboutTable)){
+                            mOutputStream.write(("**********  "+ printAboutTable +"  **********\n").getBytes("GBK"));
+                        }else{
+                            mOutputStream.write(("**********  ###  **********\n").getBytes("GBK"));
+                        }
                         mOutputStream.write((printMsg+"\n").getBytes("GBK"));
                         mOutputStream.write(("*****************************\n").getBytes("GBK"));
                         mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});

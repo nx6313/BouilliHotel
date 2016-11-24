@@ -2,14 +2,21 @@ package com.bouilli.nxx.bouillihotel.asyncTask;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
 
+import com.bouilli.nxx.bouillihotel.MyApplication;
+import com.bouilli.nxx.bouillihotel.OrderRecordActivity;
 import com.bouilli.nxx.bouillihotel.WelcomeActivity;
 import com.bouilli.nxx.bouillihotel.action.DataAction;
+import com.bouilli.nxx.bouillihotel.db.DBHelper;
 import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
+import com.bouilli.nxx.bouillihotel.service.PrintService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.Constants;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
@@ -18,6 +25,9 @@ import com.bouilli.nxx.bouillihotel.util.URIUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by 18230 on 2016/10/30.
@@ -74,9 +84,9 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                             tableNumSb = new StringBuilder("");
                             for (int j = 0; j < tableInfoMap.getJSONArray(groupName).length(); j++) {
                                 String thisGroupTableNum = (String) tableInfoMap.getJSONArray(groupName).get(j);
-                                tableNumSimpleSb.append(thisGroupTableNum.split("\\|")[0] + ",");
-                                tableNumSb.append(thisGroupTableNum + ",");
-                                tableFullNumSb.append(thisGroupTableNum + ",");
+                                tableNumSimpleSb.append(thisGroupTableNum.split("\\|")[0] + ",");// 记录餐桌 组代号.餐桌号
+                                tableNumSb.append(thisGroupTableNum + ",");// 记录每个餐桌组内的餐桌信息（组代号.餐桌号|餐桌状态|餐桌当前就餐信息id）
+                                tableFullNumSb.append(thisGroupTableNum + ",");// 记录所有餐桌组内的餐桌信息（组代号.餐桌号|餐桌状态|餐桌当前就餐信息id）
                             }
                             if(ComFun.strNull(tableNumSb.toString())){
                                 SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableInfoSimple" + groupName, tableNumSimpleSb.toString().substring(0, tableNumSimpleSb.toString().length() - 1));
@@ -156,11 +166,41 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                     msg.setData(data);
                     WelcomeActivity.mHandler.sendMessage(msg);
                 }else{
-                    // 先发送全局广播
-                    Intent broadcast=new Intent();
-                    broadcast.setAction("com.nxx.bouilli.broadcastReceiver.broadcast");
-                    broadcast.putExtra("printContent", "鱼香肉丝盖饭\t1份\t(辣椒少点)\n茄子肉丁面\t1份\n水煮肉片\t1份\t(多放生菜)");
-                    context.sendBroadcast(broadcast);
+                    if(jsob.has("orderRecordList")){
+                        JSONArray orderRecordList = jsob.getJSONArray("orderRecordList");
+                        StringBuilder orderRecordFullSb = new StringBuilder("");
+                        for (int i = 0; i < orderRecordList.length(); i++) {
+                            String orderRecord = (String) orderRecordList.get(i);// 订单流水信息
+                            orderRecordFullSb.append(orderRecord);
+                            orderRecordFullSb.append(",");
+
+                            SQLiteOpenHelper selectSqlite = new DBHelper(context);
+                            SQLiteDatabase selectDb = selectSqlite.getReadableDatabase();
+                            Cursor cursor = selectDb.query("printinfo", new String[]{"record_id"}, "record_id = '"+ orderRecord.split("#&#")[0] +"'", null, null, null, null, null);
+                            int recordIdIndex = cursor.getColumnIndex("record_id");
+                            List<String> resultList = new ArrayList<>();
+                            for (cursor.moveToFirst(); !(cursor.isAfterLast()); cursor.moveToNext()) {
+                                resultList.add(cursor.getString(recordIdIndex));
+                            }
+                            cursor.close();
+                            selectDb.close();
+
+                            if(resultList.size() == 0){
+                                SQLiteOpenHelper sqlite = new DBHelper(context);
+                                SQLiteDatabase db = sqlite.getWritableDatabase();
+                                db.execSQL("insert into printinfo(record_id, table_id, table_no, print_context, current_state, create_date, print_date, print_count) " +
+                                        "values('"+ orderRecord.split("#&#")[0] +"', '"+ orderRecord.split("#&#")[1] +"', '"+ orderRecord.split("#&#")[2] +"', '"+ orderRecord.split("#&#")[3] +"', "+ Integer.valueOf(orderRecord.split("#&#")[4]) +", '"+ orderRecord.split("#&#")[5] +"', '"+ orderRecord.split("#&#")[6] +"', "+ Integer.valueOf(orderRecord.split("#&#")[7]) +")");
+                                db.close();
+                            }
+                        }
+                        // 发送流水信息页面更新广播
+                        if(ComFun.strNull(orderRecordFullSb.toString())){
+                            Intent intentRecord = new Intent();
+                            intentRecord.putExtra("orderRecordFull", orderRecordFullSb.toString().substring(0, orderRecordFullSb.toString().length() - 1));
+                            intentRecord.setAction(OrderRecordActivity.MSG_REFDATA);
+                            context.sendBroadcast(intentRecord);
+                        }
+                    }
                     // 发送主页面更新广播
                     Intent intent = new Intent();
                     intent.putExtra("newData", true);

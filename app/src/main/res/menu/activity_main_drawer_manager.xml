@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_main"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="点餐主页" />
+    </group>
+
+    <item android:title="数据统计选项">
+        <menu>
+            <item
+                android:id="@+id/nav_data"
+                android:icon="@drawable/ic_menu_gallery"
+                android:title="订单流水数据" />
+        </menu>
+    </item>
+
+    <item android:title="设置选项">
+        <menu>
+            <item
+                android:id="@+id/nav_print_set"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="打票机开关（当前已断开）" />
+            <item
+                android:id="@+id/nav_ofen_remark_set"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="常用备注设置" />
+        </menu>
+    </item>
+
+    <item android:title="管理员选项">
+        <menu>
+            <item
+                android:id="@+id/nav_desk"
+                android:icon="@drawable/ic_menu_send"
+                android:title="编辑餐桌" />
+            <item
+                android:id="@+id/nav_menu"
+                android:icon="@drawable/ic_menu_send"
+                android:title="编辑菜单" />
+            <item
+                android:id="@+id/nav_permission_set"
+                android:icon="@drawable/ic_menu_send"
+                android:title="员工账号权限管理" />
+        </menu>
+    </item>
+
+</menu>

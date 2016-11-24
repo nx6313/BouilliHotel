@@ -97,6 +97,7 @@ public class MainFragment extends Fragment {
                 aa1.setFillAfter(true);
                 tableImg.startAnimation(aa1);
             }else{// 占用
+                tableImg.setTag(R.id.tag_table_order_id, thisGroupTableInfoArr[i].split("\\|")[2]);
                 tableImg.setImageResource(R.drawable.dining_table_2);
             }
             tableObject.addView(tableImg);
@@ -126,9 +127,11 @@ public class MainFragment extends Fragment {
                             intentKongXian.putExtra("tableNum", tableDesInfo);
                             startActivity(intentKongXian);
                         }else{// 占用
+                            String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
                             Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
                             intentKongXian.putExtra("showType", 3);
                             intentKongXian.putExtra("tableNum", tableDesInfo);
+                            intentKongXian.putExtra("tableOrderId", tag_table_order_id);
                             startActivity(intentKongXian);
                         }
                     }
@@ -174,6 +177,7 @@ public class MainFragment extends Fragment {
                                         tableImg.startAnimation(aa1);
                                     }else{// 占用
                                         tableImg.setTag(R.id.tag_table_state, 3);
+                                        tableImg.setTag(R.id.tag_table_order_id, tableInfo.split("\\|")[2]);
                                         tableImg.setImageResource(R.drawable.dining_table_2);
                                     }
                                 }

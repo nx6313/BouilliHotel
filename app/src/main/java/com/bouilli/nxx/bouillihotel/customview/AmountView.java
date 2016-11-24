@@ -67,6 +67,14 @@ public class AmountView extends LinearLayout implements View.OnClickListener, Te
         }
     }
 
+    public void setEtAmount(CharSequence sequence){
+        etAmount.setText(sequence);
+    }
+
+    public int getEtAmount(){
+        return Integer.parseInt(etAmount.getText().toString().trim());
+    }
+
     public void setOnAmountChangeListener(OnAmountChangeListener onAmountChangeListener) {
         this.mListener = onAmountChangeListener;
     }
@@ -78,13 +86,16 @@ public class AmountView extends LinearLayout implements View.OnClickListener, Te
     @Override
     public void onClick(View v) {
         int i = v.getId();
+        int clickType = 0;
         if (i == R.id.btnDecrease) {
             if (amount > 0) {
+                clickType = -1;
                 amount--;
                 etAmount.setText(amount + "");
             }
         } else if (i == R.id.btnIncrease) {
             if (amount < goods_storage) {
+                clickType = 1;
                 amount++;
                 etAmount.setText(amount + "");
             }
@@ -93,13 +104,18 @@ public class AmountView extends LinearLayout implements View.OnClickListener, Te
         etAmount.clearFocus();
 
         if (mListener != null) {
-            mListener.onAmountChange(this, amount);
+            mListener.onAmountChange(this, amount, clickType);
         }
     }
 
+    private int oldValue = 0;
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+        if(etAmount.getText().toString().equals("")){
+            oldValue = 0;
+        }else{
+            oldValue = Integer.valueOf(etAmount.getText().toString());
+        }
     }
 
     @Override
@@ -107,24 +123,34 @@ public class AmountView extends LinearLayout implements View.OnClickListener, Te
 
     }
 
+    int clickTypeAfterTextChanged = 0;
     @Override
     public void afterTextChanged(Editable s) {
         if (s.toString().isEmpty())
             return;
-        amount = Integer.valueOf(s.toString());
+        if(s.toString().equals("")){
+            amount = 0;
+        }else{
+            amount = Integer.valueOf(s.toString());
+        }
         if (amount > goods_storage) {
+            if(amount > oldValue){
+                clickTypeAfterTextChanged = 2;
+            }else if(amount < oldValue){
+                clickTypeAfterTextChanged = -2;
+            }
             etAmount.setText(goods_storage + "");
             return;
         }
 
         if (mListener != null) {
-            mListener.onAmountChange(this, amount);
+            mListener.onAmountChange(this, amount, clickTypeAfterTextChanged);
         }
     }
 
 
     public interface OnAmountChangeListener {
-        void onAmountChange(View view, int amount);
+        void onAmountChange(View view, int amount, int clickType);
     }
 
 }

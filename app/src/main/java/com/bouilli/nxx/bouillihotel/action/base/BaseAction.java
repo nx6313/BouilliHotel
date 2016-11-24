@@ -45,11 +45,7 @@ public class BaseAction {
     protected static String getHttpData(Context context, String url, Map<String, String> params) {
         IP_CONFIG = PropertiesUtil.getPropertiesURL("bouilli.prop", context, "ipconfig");
         TOMCAT_PORT = PropertiesUtil.getPropertiesURL("bouilli.prop", context, "port");
-        if(TOMCAT_PORT.equals("8080")){
-            URI_PER = "http://"+ IP_CONFIG +":"+ TOMCAT_PORT +"/"+ PROJECT_NAME +"/";
-        }else{
-            URI_PER = "http://"+ IP_CONFIG +":"+ TOMCAT_PORT +"/bouilli/";
-        }
+        URI_PER = "http://"+ IP_CONFIG +":"+ TOMCAT_PORT +"/"+ PROJECT_NAME +"/";
         URL httpUrl;
         HttpURLConnection conn = null;
         StringBuffer sb = new StringBuffer("");
@@ -181,11 +177,7 @@ public class BaseAction {
     public static Bitmap getHttpImg(Context context, String imageUrl) {
         IP_CONFIG = PropertiesUtil.getPropertiesURL("bouilli.prop", context, "ipconfig");
         TOMCAT_PORT = PropertiesUtil.getPropertiesURL("bouilli.prop", context, "port");
-        if(TOMCAT_PORT.equals("8080")){
-            URI_PER = "http://"+ IP_CONFIG +":"+ TOMCAT_PORT +"/"+ PROJECT_NAME +"/";
-        }else{
-            URI_PER = "http://"+ IP_CONFIG +":"+ TOMCAT_PORT +"/bouilli/";
-        }
+        URI_PER = "http://"+ IP_CONFIG +":"+ TOMCAT_PORT +"/"+ PROJECT_NAME +"/";
         InputStream in = null;
         Bitmap bitmap = null;
         try {

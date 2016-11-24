@@ -23,8 +23,6 @@
 
     <include android:id="@+id/mani_activity_content_main" layout="@layout/content_main" />
 
-    <include android:id="@+id/mani_activity_content_statistics" layout="@layout/content_statistics" android:visibility="gone" />
-
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/new_order"
         android:layout_width="wrap_content"

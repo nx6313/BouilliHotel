@@ -1,4 +1,4 @@
-#ipconfig=192.168.1.5
-#port=8080
-ipconfig=139.224.25.220
-port=8081
+ipconfig=192.168.1.4
+port=8080
+#ipconfig=139.224.25.220
+#port=8081

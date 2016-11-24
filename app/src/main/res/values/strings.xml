@@ -28,6 +28,9 @@
     <item name="tag_table_no" type="id"></item>
     <item name="tag_table_state" type="id"></item>
     <item name="tag_table_txt_no" type="id"></item>
+    <item name="tag_table_order_id" type="id"></item>
     <string name="title_activity_edit_order">处理订单</string>
     <string name="title_activity_select_menu">选择订单要使用的菜</string>
+
+    <string name="title_activity_order_record">订单流水数据</string>
 </resources>

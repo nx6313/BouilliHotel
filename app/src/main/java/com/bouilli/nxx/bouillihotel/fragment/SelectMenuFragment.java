@@ -1,11 +1,9 @@
 package com.bouilli.nxx.bouillihotel.fragment;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextPaint;
@@ -15,10 +13,14 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.R;
 import com.bouilli.nxx.bouillihotel.SelectMenuActivity;
@@ -33,9 +35,13 @@ import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 
 public class SelectMenuFragment extends Fragment {
     int mNum;// 页号
-    private EditMenuBroadCastReceive selectMenuBroadCastReceive;
 
-    private LinearLayout selectMenuMainLayout;
+    private static LinearLayout selectMenuMainLayout;
+
+    private int screenHeight;
+
+    private ViewGroup anim_mask_layout;
+    private ImageView imgIcon;
 
     public static SelectMenuFragment newInstance(int num){
         SelectMenuFragment fragment = new SelectMenuFragment();
@@ -48,12 +54,12 @@ public class SelectMenuFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 注册广播接收器
-        selectMenuBroadCastReceive = new EditMenuBroadCastReceive();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("requestNewDataBouilliHotel");
-        getActivity().registerReceiver(selectMenuBroadCastReceive, filter);
         mNum = getArguments() != null ? getArguments().getInt("num") : 1;
+
+        anim_mask_layout = createAnimLayout();
+
+        WindowManager wm = getActivity().getWindowManager();
+        screenHeight = wm.getDefaultDisplay().getHeight();
     }
 
     @Nullable
@@ -135,6 +141,7 @@ public class SelectMenuFragment extends Fragment {
                 menuChildItemlayout.addView(menuChildItemDeslayout);
                 // 子项每一项单价
                 LinearLayout menuChildItemPricelayout = new LinearLayout(getActivity());
+                menuChildItemPricelayout.setTag("menuId_" + thisGroupMenuInfo.split("#&#")[0]);
                 menuChildItemPricelayout.setGravity(Gravity.CENTER|Gravity.LEFT);
                 menuChildItemPricelayout.setOrientation(LinearLayout.VERTICAL);
                 LinearLayout.LayoutParams menuChildItemPriceLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT);
@@ -145,6 +152,10 @@ public class SelectMenuFragment extends Fragment {
                 amountView.setTag("amountView_order");
                 LinearLayout.LayoutParams amountViewLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 amountView.setLayoutParams(amountViewLp);
+                if(SelectMenuActivity.hasOrderThisTableMap.containsKey(thisGroupMenuInfo.split("#&#")[0])){
+                    amountView.setEtAmount(SelectMenuActivity.hasOrderThisTableMap.get(thisGroupMenuInfo.split("#&#")[0])[1].toString());
+                }
+                SelectMenuActivity.selectMenuAmountViewPoor.put("menuId_" + mNum + "_" + thisGroupMenuInfo.split("#&#")[0], amountView);
                 menuChildItemPricelayout.addView(amountView);
                 menuChildItemlayout.addView(menuChildItemPricelayout);
 
@@ -153,19 +164,32 @@ public class SelectMenuFragment extends Fragment {
                 // 绑定每样菜的数字选择事件监听
                 amountView.setOnAmountChangeListener(new AmountView.OnAmountChangeListener() {
                     @Override
-                    public void onAmountChange(View view, int amount) {
+                    public void onAmountChange(View view, int amount, int clickType) {
+                        // 这个菜增加数量，执行购物车动画
+                        if(clickType == 1){
+                            // 增加操作
+                            setAnim(view);
+                        }
                         String thisMenuId = ((LinearLayout) view.getParent().getParent()).getChildAt(0).getTag().toString().split("#&#")[0];
                         String thisMenuName = ((LinearLayout) view.getParent().getParent()).getChildAt(0).getTag().toString().split("#&#")[2];
                         String thisMenuInfo = ((LinearLayout) view.getParent().getParent()).getChildAt(0).getTag().toString();
-                        ComFun.showToast(getActivity(), thisMenuName+"，已选："+amount+"个", Toast.LENGTH_SHORT);
+                        //ComFun.showToast(getActivity(), thisMenuName+"，已选："+amount+"个", Toast.LENGTH_SHORT);
                         if(amount > 0){
-                            Object[] newOrderInfo = new Object[]{ thisMenuInfo, amount };
+                            Object[] newOrderInfo = new Object[]{ thisMenuInfo, amount, "-" };// 菜id, 选择数量, 备注信息
                             SelectMenuActivity.hasOrderThisTableMap.put(thisMenuId, newOrderInfo);
                         }else{
-                            if(SelectMenuActivity.hasOrderThisTableMap.containsKey(thisMenuId)){
+                            if(SelectMenuActivity.hasOrderThisTableMap.containsKey(thisMenuId) && clickType == -1){
                                 SelectMenuActivity.hasOrderThisTableMap.remove(thisMenuId);
                             }
                         }
+                        // 发送Handler通知页面更新UI
+                        Message msg = new Message();
+                        Bundle data = new Bundle();
+                        data.putString("thisMenuInfo", thisMenuInfo);
+                        data.putString("selectNum", amount+"");
+                        msg.what = SelectMenuActivity.MSG_SELECT_NEW_MENU;
+                        msg.setData(data);
+                        SelectMenuActivity.mHandler.sendMessage(msg);
                     }
                 });
 
@@ -177,15 +201,98 @@ public class SelectMenuFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // 取消注册广播
-        getActivity().unregisterReceiver(selectMenuBroadCastReceive);
     }
 
-    public class EditMenuBroadCastReceive extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-        }
+    /**
+     * @Description: 创建动画层
+     * @param
+     * @return void
+     * @throws
+     */
+    private ViewGroup createAnimLayout() {
+        ViewGroup rootView = (ViewGroup) getActivity().getWindow().getDecorView();
+        LinearLayout animLayout = new LinearLayout(getActivity());
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        animLayout.setLayoutParams(lp);
+        animLayout.setBackgroundResource(android.R.color.transparent);
+        rootView.addView(animLayout);
+        return animLayout;
     }
+
+    /**
+     * @Description: 添加视图到动画层
+     * @param @param vg
+     * @param @param view
+     * @param @param location
+     * @param @return
+     * @return View
+     * @throws
+     */
+    private View addViewToAnimLayout(final ViewGroup vg, final View view,
+                                     int[] location) {
+        int x = location[0];
+        int y = location[1];
+        vg.removeAllViews();
+        vg.addView(view);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.leftMargin = x;
+        lp.topMargin = y;
+        view.setLayoutParams(lp);
+        return view;
+    }
+
+    private void setAnim(View startView) {
+        anim_mask_layout.removeAllViews();
+        Animation mScaleAnimation = new ScaleAnimation(1.5f, 0.1f, 1.5f, 0.1f, Animation.RELATIVE_TO_SELF, 0.1f, Animation.RELATIVE_TO_SELF, 0.1f);
+        mScaleAnimation.setDuration(AnimationDuration);
+        mScaleAnimation.setFillAfter(true);
+
+        int[] start_location = new int[2];
+        startView.getLocationInWindow(start_location);
+        // 将组件添加到我们的动画层上
+        imgIcon = new ImageView(getActivity());
+        imgIcon.setImageResource(R.drawable.menu2);
+        View view = addViewToAnimLayout(anim_mask_layout, imgIcon, start_location);
+        int[] end_location = new int[2];
+        // 计算位移
+        int endX = end_location[0] - start_location[0] + DisplayUtil.dip2px(getActivity(), 25);
+        int endY = screenHeight - DisplayUtil.dip2px(getActivity(), 110) - start_location[1];
+
+        Animation mTranslateAnimation = new TranslateAnimation(0, endX, 0, endY);// 移动
+        mTranslateAnimation.setDuration(AnimationDuration);
+
+        AnimationSet mAnimationSet = new AnimationSet(false);
+        // 这块要注意，必须设为false,不然组件动画结束后，不会归位。
+        mAnimationSet.setFillAfter(false);
+        mAnimationSet.addAnimation(mScaleAnimation);
+        mAnimationSet.addAnimation(mTranslateAnimation);
+        view.startAnimation(mAnimationSet);
+
+        mTranslateAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                anim_mask_layout.removeAllViews();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                anim_mask_layout.removeAllViews();
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                anim_mask_layout.removeAllViews();
+            }
+        });
+    }
+
+    /**
+     * 动画播放时间
+     */
+    private int AnimationDuration = 600;
 
 }

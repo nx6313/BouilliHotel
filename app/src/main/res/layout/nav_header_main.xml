@@ -30,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingTop="@dimen/nav_header_vertical_spacing"
-                android:text="张三丰"
+                android:text="Admin"
                 android:textSize="16sp"
                 android:textColor="#000000"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
                 android:textColor="#c9c9c9"
-                android:text="员工" />
+                android:text="系统管理员" />
 
     </LinearLayout>
 

@@ -1,0 +1,39 @@
+package com.bouilli.nxx.bouillihotel.db;
+
+/**
+ * Created by 18230 on 2016/11/20.
+ */
+
+public class DBInfo {
+    public static final int STATE_DELETE = 0;
+    public static final int STATE_ADD = 1;
+    public static final int STATE_UPDATE = 2;
+
+    public static class DB {
+        /**
+         * 数据库名称
+         */
+        public static final String DB_NAME = "bouilli.db";
+        /**
+         * 数据库版本
+         */
+        public static final int VERSION = 1;
+    }
+
+    public static class Table {
+        /**
+         * 打印菜单信息记录表
+         */
+        public static final String PRINT_TABLE = "printinfo";
+    }
+
+    public static class CreateTable {
+        /**
+         * 打印菜单信息记录表SQL语句
+         */
+        public static final String CREATE_PRINT_TABLE = "create table if not exists "
+                + Table.PRINT_TABLE + " (id integer primary key autoincrement," +
+                "record_id varchar(100), table_id varchar(100), table_no varchar(80), print_context text, current_state integer, create_date varchar(100), print_date varchar(100), print_count integer); ";
+        public static final String DROP_PRINT_TABLE = "drop table if exists " + Table.PRINT_TABLE;
+    }
+}

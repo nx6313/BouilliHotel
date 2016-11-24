@@ -41,8 +41,6 @@ public class PollingService extends Service {
     /**
      * Polling thread
      * 模拟向Server轮询的异步线程
-     * @Author Ryan
-     * @Create 2013-7-13 上午10:18:34
      */
     int count = 0;
     class PollingThread extends Thread {

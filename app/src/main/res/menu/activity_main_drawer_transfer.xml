@@ -17,4 +17,13 @@
         </menu>
     </item>
 
+    <item android:title="设置选项">
+        <menu>
+            <item
+                android:id="@+id/nav_print_set"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="打票机开关（当前已断开）" />
+        </menu>
+    </item>
+
 </menu>
