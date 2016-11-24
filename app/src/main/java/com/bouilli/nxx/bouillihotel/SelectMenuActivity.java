@@ -509,6 +509,10 @@ public class SelectMenuActivity extends AppCompatActivity {
                                 double allTotalMoney = ComFun.add(totalHasMoney, new BigDecimal(totalMoney));
                                 shopping_cart_total_money.setText("总金额：￥" + ComFun.addZero(String.valueOf(allTotalMoney)) + " 元");
                             }
+                            if(shopping_cart_main.getVisibility() == View.GONE && shopping_has_cart_main.getVisibility() == View.GONE){
+                                skShoppingCart.dismiss();
+                                ObjectAnimator.ofFloat(current_order_menu_info, "alpha", (float)0.4).setDuration(200).start();
+                            }
                         }
                     }
                     break;
