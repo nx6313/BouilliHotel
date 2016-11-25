@@ -718,6 +718,15 @@ public class SelectMenuActivity extends AppCompatActivity {
                                 SelectMenuActivity.hasOrderThisTableMap.remove(thisMenuId);
                             }
                         }
+                        String menuGroupNames = SharedPreferencesTool.getFromShared(SelectMenuActivity.this, "BouilliMenuInfo", "menuGroupNames");
+                        // 常用选项卡
+                        menuGroupNames = "-1#&#常用," + menuGroupNames;
+                        for(int index=0; index<menuGroupNames.split(",").length; index++){
+                            AmountView amountView = selectMenuAmountViewPoor.get("menuId_" + index + "_" + thisMenuInfo.split("#&#")[0]);
+                            if(amountView != null){
+                                amountView.setEtAmount(amount+"");
+                            }
+                        }
                         // 发送Handler通知页面更新UI
                         Message msg = new Message();
                         Bundle data = new Bundle();
