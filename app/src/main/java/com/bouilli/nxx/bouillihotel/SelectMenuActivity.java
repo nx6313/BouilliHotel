@@ -230,7 +230,6 @@ public class SelectMenuActivity extends AppCompatActivity {
         @Override
         public void run() {
             searchLoadingLayout.setVisibility(View.GONE);
-            menuSearchScrollView.setVisibility(View.VISIBLE);
             // 从菜品缓存数据中查找符合的数据
             String menuAllItemChild = SharedPreferencesTool.getFromShared(SelectMenuActivity.this, "BouilliMenuInfo", "menuAllItemChild");
             if(ComFun.strNull(menuAllItemChild)) {
@@ -243,7 +242,13 @@ public class SelectMenuActivity extends AppCompatActivity {
                         searchResultMenuList.add(menuAllItem);
                     }
                 }
-                addMenuView(searchResultMenuList);
+                if(searchResultMenuList.size() > 0){
+                    menuSearchScrollView.setVisibility(View.VISIBLE);
+                    addMenuView(searchResultMenuList);
+                }else{
+                    menuSearchScrollView.setVisibility(View.GONE);
+                    ComFun.showToast(SelectMenuActivity.this, "没有找到相关的菜品", Toast.LENGTH_SHORT);
+                }
             }
         }
     }
