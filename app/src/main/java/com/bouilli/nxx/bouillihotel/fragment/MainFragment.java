@@ -83,12 +83,12 @@ public class MainFragment extends Fragment {
             ImageView tableImg = new ImageView(getContext());
             tableImg.setTag("tableImg"+thisGroupTableInfoArr[i].split("\\|")[0]);
             tableImg.setTag(R.id.tag_table_state, thisGroupTableInfoArr[i].split("\\|")[1]);
-            ViewGroup.LayoutParams tableImgLp = new ViewGroup.LayoutParams(DisplayUtil.dip2px(getContext(), 50), DisplayUtil.dip2px(getContext(), 50));
+            ViewGroup.LayoutParams tableImgLp = new ViewGroup.LayoutParams(DisplayUtil.dip2px(getContext(), 70), DisplayUtil.dip2px(getContext(), 70));
             tableImg.setLayoutParams(tableImgLp);
             if(Integer.parseInt(thisGroupTableInfoArr[i].split("\\|")[1]) == 1){// 空闲
-                tableImg.setImageResource(R.drawable.dining_table_0);
+                tableImg.setImageResource(R.drawable.desk_0);
             }else if(Integer.parseInt(thisGroupTableInfoArr[i].split("\\|")[1]) == 2){// 编辑
-                tableImg.setImageResource(R.drawable.dining_table_1);
+                tableImg.setImageResource(R.drawable.desk_2);
                 // 闪烁显示动画
                 AlphaAnimation aa1 = new AlphaAnimation(1.0f,0.4f);
                 aa1.setRepeatCount(-1);//设置重复次数
@@ -98,7 +98,7 @@ public class MainFragment extends Fragment {
                 tableImg.startAnimation(aa1);
             }else{// 占用
                 tableImg.setTag(R.id.tag_table_order_id, thisGroupTableInfoArr[i].split("\\|")[2]);
-                tableImg.setImageResource(R.drawable.dining_table_2);
+                tableImg.setImageResource(R.drawable.desk_1);
             }
             tableObject.addView(tableImg);
             // TextView
@@ -164,10 +164,10 @@ public class MainFragment extends Fragment {
                                     tableImg.clearAnimation();
                                     if(Integer.parseInt(tableInfo.split("\\|")[1]) == 1){// 空闲
                                         tableImg.setTag(R.id.tag_table_state, 1);
-                                        tableImg.setImageResource(R.drawable.dining_table_0);
+                                        tableImg.setImageResource(R.drawable.desk_0);
                                     }else if(Integer.parseInt(tableInfo.split("\\|")[1]) == 2){// 编辑
                                         tableImg.setTag(R.id.tag_table_state, 2);
-                                        tableImg.setImageResource(R.drawable.dining_table_1);
+                                        tableImg.setImageResource(R.drawable.desk_2);
                                         // 闪烁显示动画
                                         AlphaAnimation aa1 = new AlphaAnimation(1.0f,0.6f);
                                         aa1.setRepeatCount(-1);//设置重复次数
@@ -178,7 +178,7 @@ public class MainFragment extends Fragment {
                                     }else{// 占用
                                         tableImg.setTag(R.id.tag_table_state, 3);
                                         tableImg.setTag(R.id.tag_table_order_id, tableInfo.split("\\|")[2]);
-                                        tableImg.setImageResource(R.drawable.dining_table_2);
+                                        tableImg.setImageResource(R.drawable.desk_1);
                                     }
                                 }
                             }

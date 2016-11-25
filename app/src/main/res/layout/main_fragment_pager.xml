@@ -9,7 +9,7 @@
         android:id="@+id/mainFragmentScrollView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"
+        android:scrollbars="none"
         android:scrollbarThumbVertical="@color/colorScroll"
         android:overScrollMode="never"
         android:scrollbarSize="2dp"

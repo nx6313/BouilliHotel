@@ -13,6 +13,7 @@
     <color name="black_overlay">#66000000</color>
 
     <color name="transparent">#06ffffff</color>
+    <color name="transparent2">#00ffffff</color>
     <color name="menu_item_normal">#debcbbbc</color>
     <color name="menu_item_pressed">#deb39faa</color>
 </resources>

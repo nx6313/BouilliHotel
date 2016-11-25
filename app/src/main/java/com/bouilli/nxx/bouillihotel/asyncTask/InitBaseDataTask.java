@@ -117,6 +117,7 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                         JSONArray menuGroupNameList = jsob.getJSONArray("menuGroupNameList");
                         JSONObject menuInfoMap = jsob.getJSONObject("menuInfoMap");
                         StringBuilder menuGroupNamesFullSb = new StringBuilder("");
+                        StringBuilder menuAllGroupChildFullSb = new StringBuilder("");
                         StringBuilder menuGroupChildFullSb;
                         for (int i = 0; i < menuGroupNameList.length(); i++) {
                             String groupName = (String) menuGroupNameList.get(i);
@@ -126,6 +127,7 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                                 String thisGroupMenuInfo = (String) menuInfoMap.getJSONArray(groupName.split("#&#")[0]).get(j);
                                 // Id&GroupId&MenuName&MenuDes&Price&UseCount
                                 if(!thisGroupMenuInfo.equals("-")){
+                                    menuAllGroupChildFullSb.append(thisGroupMenuInfo + ",");
                                     menuGroupChildFullSb.append(thisGroupMenuInfo + ",");
                                     SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", thisGroupMenuInfo.split("#&#")[0], thisGroupMenuInfo);
                                 }
@@ -138,6 +140,11 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuGroupNames", menuGroupNamesFullSb.toString().substring(0, menuGroupNamesFullSb.toString().length() - 1));
                         }else{
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuGroupNames", "");
+                        }
+                        if(ComFun.strNull(menuAllGroupChildFullSb.toString())){
+                            SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuAllItemChild", menuAllGroupChildFullSb.toString().substring(0, menuAllGroupChildFullSb.toString().length() - 1));
+                        }else{
+                            SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuAllItemChild", "");
                         }
                     }else{
                         // 数据集为空

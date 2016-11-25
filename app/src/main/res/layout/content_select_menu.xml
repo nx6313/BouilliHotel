@@ -18,18 +18,32 @@
         android:focusable="true"
         android:focusableInTouchMode="true">
 
-    <EditText
-        android:id="@+id/selectMenuSearchEt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="6dp"
-        android:padding="8dp"
-        android:singleLine="true"
-        android:textSize="16sp"
-        android:background="@drawable/bg_round_circle"
-        android:drawableRight="@drawable/ic_restaurant_menu_black_24dp"
-        android:hint="菜品搜索 - 按菜品名或菜品首字母查找"
-        android:inputType="textCapCharacters|textCapWords"/>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <EditText
+            android:id="@+id/selectMenuSearchEt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:padding="8dp"
+            android:singleLine="true"
+            android:textSize="16sp"
+            android:background="@drawable/bg_round_circle"
+            android:drawableRight="@drawable/ic_restaurant_menu_black_24dp"
+            android:hint="菜品搜索 - 按菜品名或菜品首字母查找"
+            android:inputType="textCapCharacters|textCapWords"/>
+
+        <Button
+            android:id="@+id/selectMenuSearchClearBtn"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_alignRight="@+id/selectMenuSearchEt"
+            android:layout_alignEnd="@+id/selectMenuSearchEt"
+            android:layout_alignParentTop="true"
+            android:layout_alignBottom="@+id/selectMenuSearchEt"
+            android:background="@color/transparent2"/>
+    </RelativeLayout>
 
     </LinearLayout>
 
@@ -106,6 +120,24 @@
                     android:textSize="14sp"
                     android:text="努力查找中，请稍后"/>
             </LinearLayout>
+
+            <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
+                android:id="@+id/menuSearchScrollView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="none"
+                android:scrollbarThumbVertical="@color/colorScroll"
+                android:overScrollMode="never"
+                android:scrollbarSize="2dp"
+                android:gravity="center|top"
+                android:visibility="gone">
+                <LinearLayout
+                    android:id="@+id/menuSearchLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                </LinearLayout>
+            </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
         </LinearLayout>
     </RelativeLayout>
 
