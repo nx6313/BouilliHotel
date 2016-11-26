@@ -13,6 +13,11 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="AppTheme.NoApplicationActionBar">
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
     <style name="Theme.AppLauncher" parent="AppTheme">
         <!-- Customize your theme here. -->
         <item name="android:windowBackground">@drawable/welcome_bg_n</item>
@@ -52,6 +57,7 @@
     </style>
 
     <style name="MyDialogStyleBottom" parent="android:Theme.Dialog">
+        <item name="windowActionBar">false</item>
         <item name="android:windowAnimationStyle">@style/AnimBottom</item>
         <item name="android:windowFrame">@null</item>
         <!-- 边框 -->
@@ -67,6 +73,6 @@
         <!-- 模糊 -->
     </style>
 
-    <style name="Widget_GifViewByMovie"/>
+    <style name="Widget_GifViewByMovie" />
 
 </resources>

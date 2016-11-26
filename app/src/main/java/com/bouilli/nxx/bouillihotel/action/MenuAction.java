@@ -53,4 +53,40 @@ public class MenuAction extends BaseAction {
         return getHttpData(context, uri, paramMap);
     }
 
+    /**
+     * 传菜品
+     * @param uri
+     * @return
+     */
+    public static String sendMenu(Context context, String uri, String tableNum, int showType, Map<String, Object[]> tableHasNewOrderMap, String tableOrderId){
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("tableOrderId", tableOrderId);
+        paramMap.put("tableNum", tableNum);
+        paramMap.put("showType", showType+"");
+        StringBuilder orderMenuInfoSb = new StringBuilder("");
+        for(Map.Entry<String, Object[]> m : tableHasNewOrderMap.entrySet()){
+            String menuId = m.getKey();
+            String menuPrice = m.getValue()[0].toString().split("#&#")[4].toString();
+            String menuBuyCount = m.getValue()[1].toString();
+            String menuAboutRemark = m.getValue()[2].toString();
+            orderMenuInfoSb.append(menuId + "|" + menuPrice + "|" + menuBuyCount + "|" + menuAboutRemark);
+            orderMenuInfoSb.append(",");
+        }
+        if(ComFun.strNull(orderMenuInfoSb.toString())){
+            paramMap.put("orderMenuInfo", orderMenuInfoSb.toString().substring(0, orderMenuInfoSb.toString().length() - 1));
+        }
+        return getHttpData(context, uri, paramMap);
+    }
+
+    /**
+     * 根据餐桌号获取该餐桌就餐信息数据
+     * @param uri
+     * @return
+     */
+    public static String getMenuInThisTable(Context context, String uri, String tableOrderId){
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("tableOrderId", tableOrderId);
+        return getHttpData(context, uri, paramMap);
+    }
+
 }

@@ -16,6 +16,8 @@ import com.ant.liao.GifView;
 import com.bouilli.nxx.bouillihotel.R;
 import com.bouilli.nxx.bouillihotel.customview.GifViewByMovie;
 
+import java.math.BigDecimal;
+
 /**
  * Created by 18230 on 2016/10/30.
  */
@@ -143,5 +145,88 @@ public class ComFun {
             }
         }
         return false;
+    }
+
+    public static double add(double d1, BigDecimal d2) {
+        // 进行加法运算
+        BigDecimal b1 = new BigDecimal(d1);
+        return b1.add(d2).doubleValue();
+    }
+    public static double sub(double d1, double d2) {
+        // 进行减法运算
+        BigDecimal b1 = new BigDecimal(d1);
+        BigDecimal b2 = new BigDecimal(d2);
+        return b1.subtract(b2).doubleValue();
+    }
+    public static double mul(double d1, double d2) {
+        // 进行乘法运算
+        BigDecimal b1 = new BigDecimal(d1);
+        BigDecimal b2 = new BigDecimal(d2);
+        return b1.multiply(b2).doubleValue();
+    }
+    public static double div(double d1, double d2,int len) {
+        // 进行除法运算
+        BigDecimal b1 = new BigDecimal(d1);
+        BigDecimal b2 = new BigDecimal(d2);
+        return b1.divide(b2,len,BigDecimal. ROUND_HALF_UP).doubleValue();
+    }
+    public static double round(double d, int len) {
+        // 进行四舍五入操作
+        BigDecimal b1 = new BigDecimal(d);
+        BigDecimal b2 = new BigDecimal(1);
+        // 任何一个数字除以1都是原数字
+        // ROUND_HALF_UP是BigDecimal的一个常量，表示进行四舍五入的操作
+        return b1.divide(b2, len, BigDecimal.ROUND_HALF_UP).doubleValue();
+    }
+
+    /**
+     * 并0操作
+     * @return
+     */
+    public static String addZero(String val){
+        if(ComFun.strNull(val)){
+            if(val.contains(".")){
+                int pointNum = new BigDecimal(val).scale();
+                if(pointNum <= 2){
+                    for(int i=0; i<2-pointNum; i++){
+                        val += "0";
+                    }
+                    return val;
+                }else{
+                    return addZero(round(Double.parseDouble(val), 2) + "");
+                }
+            }else{
+                return val + ".00";
+            }
+        }
+        return "0.00";
+    }
+
+    /**
+     * 格式化流水订单详情数据(  去掉(-)、替换#N#为空格  )
+     * @param menuDetailInfo
+     * @return
+     */
+    public static String formatMenuDetailInfo(String menuDetailInfo){
+        if(ComFun.strNull(menuDetailInfo)){
+            menuDetailInfo = menuDetailInfo.replaceAll("\\(-\\)", "");
+            menuDetailInfo = menuDetailInfo.replaceAll("#N#", "       ");
+            return menuDetailInfo;
+        }
+        return "";
+    }
+
+    /**
+     * 格式化流水订单详情数据(  去掉(-)、替换#N#为空格  )
+     * @param menuDetailInfo
+     * @return
+     */
+    public static String formatMenuDetailInfo2(String menuDetailInfo){
+        if(ComFun.strNull(menuDetailInfo)){
+            menuDetailInfo = menuDetailInfo.replaceAll("\\(-\\)", "");
+            menuDetailInfo = menuDetailInfo.replaceAll("#N#", "\n");
+            return menuDetailInfo;
+        }
+        return "";
     }
 }

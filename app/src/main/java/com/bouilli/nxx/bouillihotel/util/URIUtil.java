@@ -30,4 +30,14 @@ public class URIUtil {
      * 删除菜品
      */
     public static final String DELETE_MENU_URI = "deleteMenu.action";
+
+    /**
+     * 提交点的菜品数据
+     */
+    public static final String SEND_MENU_URI = "sendMenu.action";
+
+    /**
+     * 根据餐桌号获取该餐桌就餐信息数据
+     */
+    public static final String GET_TABLE_ORDER_INFO_URI = "getTableOrderInfo.action";
 }

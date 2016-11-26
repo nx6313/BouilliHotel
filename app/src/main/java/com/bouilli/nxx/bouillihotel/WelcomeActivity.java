@@ -39,8 +39,8 @@ public class WelcomeActivity extends Activity {
         new Thread(){
             @Override
             public void run() {
-                super.run();
                 showTime++;
+                super.run();
             }
         }.start();
 
@@ -81,10 +81,12 @@ public class WelcomeActivity extends Activity {
             switch (msg.what) {
                 case MSG_INIT_BASE_DATA:
                     String addNewTableResult = b.getString("initBaseDataResult");
-                    if (addNewTableResult.equals("time_out")) {
+                    if (addNewTableResult.equals("true")) {
+                        ComFun.showToast(WelcomeActivity.this, "初始化数据成功", Toast.LENGTH_SHORT);
+                    }else{
                         ComFun.showToast(WelcomeActivity.this, "初始化数据失败", Toast.LENGTH_SHORT);
                     }
-                    if(showTime < 2000){
+                    if(showTime < 1800){
                         Thread thread = new Thread(new Runnable() {
                             @Override
                             public void run() {
@@ -97,7 +99,7 @@ public class WelcomeActivity extends Activity {
                                         mHandler.sendMessage(msg);
                                     }
                                 };
-                                timer.schedule(task, 2000 - showTime);
+                                timer.schedule(task, 1800 - showTime);
                             }
                         });
                         thread.start();
