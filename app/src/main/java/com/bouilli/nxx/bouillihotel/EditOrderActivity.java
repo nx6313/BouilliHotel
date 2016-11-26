@@ -5,10 +5,10 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
 import android.text.TextPaint;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -18,13 +18,22 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bouilli.nxx.bouillihotel.asyncTask.GetMenuInThisTableTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.SendMenuTask;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 public class EditOrderActivity extends Activity {
+    public static Handler mHandler = null;
+    public static final int MSG_SEND_MENU = 1;
+    public static final int MSG_GET_TABLE_ORDER_INFO = 2;
     public static final int RESULT_FOR_SELECT_MENU = 1;
     private LinearLayout editOrderLayout;
     private LinearLayout orderPage_mainLayout;
@@ -35,11 +44,15 @@ public class EditOrderActivity extends Activity {
     private Button btnOrderPageEndMenu;
     private Button btnOrderPageUpMenu;
     private Button btnOrderPageAddNewMenu;
+    private TextView orderPage_currentTotalMoney;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_order);
+
+        mHandler = new EditOrderActivity.mHandler();
+
         tableReadyOrderMap = new HashMap<>();// 保存该餐桌正在制作中的菜品信息
         tableHasNewOrderMap = new HashMap<>();// 保存该餐桌新选择的菜品信息
 
@@ -52,8 +65,8 @@ public class EditOrderActivity extends Activity {
         int screenHeight = outMetrics.heightPixels;
 
         // 初始化布局宽度和高度
-        editOrderLayout.getLayoutParams().width = screenWidth * 7 / 8;
-        editOrderLayout.getLayoutParams().height = screenHeight * 3 / 4;
+        //editOrderLayout.getLayoutParams().width = screenWidth * 7 / 8;
+        //editOrderLayout.getLayoutParams().height = screenHeight * 3 / 4;
         // 初始化点击按钮
         initBtnEvent();
         // 初始化布局背景色
@@ -64,21 +77,16 @@ public class EditOrderActivity extends Activity {
         initThisTableOrderedView();
         int showType = toThisIntent.getExtras().getInt("showType");
         if(showType == 1){// 空闲
-            editOrderLayout.setBackgroundColor(Color.parseColor("#EAF8EF"));
+            editOrderLayout.setBackgroundColor(Color.parseColor("#C9F1DD"));
             // 直接跳转选菜页面
-            new Thread(){
-                @Override
-                public void run() {
-                    try { Thread.sleep(100); }catch (Exception e){}
-                    String tableNum = toThisIntent.getExtras().getString("tableNum");
-                    Intent toSelectMenuIntent = new Intent(EditOrderActivity.this, SelectMenuActivity.class);
-                    toSelectMenuIntent.putExtra("tableNum", tableNum);
-                    startActivityForResult(toSelectMenuIntent, RESULT_FOR_SELECT_MENU);
-                }
-            }.start();
+            Intent toSelectMenuIntent = new Intent(EditOrderActivity.this, SelectMenuActivity.class);
+            toSelectMenuIntent.putExtra("tableNum", tableNum);
+            startActivityForResult(toSelectMenuIntent, RESULT_FOR_SELECT_MENU);
         }else{// 占用
+            String tableOrderId = toThisIntent.getExtras().getString("tableOrderId");
             editOrderLayout.setBackgroundColor(Color.parseColor("#F8EDEA"));
             // 调用任务根据餐桌号获取该餐桌就餐信息数据
+            new GetMenuInThisTableTask(EditOrderActivity.this, tableOrderId).executeOnExecutor(Executors.newCachedThreadPool());
         }
     }
 
@@ -91,16 +99,11 @@ public class EditOrderActivity extends Activity {
             public void onClick(View v) {
                 // 先走任务上传菜到服务器，成功后，执行以下
                 if(tableHasNewOrderMap.size() > 0){
-                    for(Map.Entry<String, Object[]> map : tableHasNewOrderMap.entrySet()){
-                        if(tableReadyOrderMap.containsKey(map.getKey())){
-                            Object[] objArr = tableReadyOrderMap.get(map.getKey());
-                            tableReadyOrderMap.put(map.getKey(), new Object[]{ objArr[0], Integer.parseInt(objArr[1].toString()) + Integer.parseInt(map.getValue()[1].toString()) });
-                        }else{
-                            tableReadyOrderMap.put(map.getKey(), map.getValue());
-                        }
-                    }
-                    tableHasNewOrderMap.clear();
-                    initThisTableOrderedView();
+                    ComFun.showLoading(EditOrderActivity.this, "数据提交中，请稍后...", false);
+                    String tableNum = toThisIntent.getExtras().getString("tableNum");
+                    int showType = toThisIntent.getExtras().getInt("showType");
+                    String tableOrderId = toThisIntent.getExtras().getString("tableOrderId");
+                    new SendMenuTask(EditOrderActivity.this, tableNum, showType, tableHasNewOrderMap, tableOrderId).executeOnExecutor(Executors.newCachedThreadPool());
                 }else{
                     ComFun.showToast(EditOrderActivity.this, "该餐桌还没有点新菜哦", Toast.LENGTH_SHORT);
                 }
@@ -114,6 +117,22 @@ public class EditOrderActivity extends Activity {
                 String tableNum = toThisIntent.getExtras().getString("tableNum");
                 Intent toSelectMenuIntent = new Intent(EditOrderActivity.this, SelectMenuActivity.class);
                 toSelectMenuIntent.putExtra("tableNum", tableNum);
+                StringBuilder hasOrderSb = new StringBuilder("");
+                for(Map.Entry<String, Object[]> map : tableReadyOrderMap.entrySet()){
+                    hasOrderSb.append(map.getKey() + "|" + map.getValue()[0] + "|" + map.getValue()[1] + "|" + map.getValue()[2]);
+                    hasOrderSb.append(",");
+                }
+                if(ComFun.strNull(hasOrderSb.toString())){
+                    toSelectMenuIntent.putExtra("tableHasOrders", hasOrderSb.toString().substring(0, hasOrderSb.toString().length() - 1));
+                }
+                StringBuilder hasNewOrderSb = new StringBuilder("");
+                for(Map.Entry<String, Object[]> map : tableHasNewOrderMap.entrySet()){
+                    hasNewOrderSb.append(map.getKey() + "|" + map.getValue()[0] + "|" + map.getValue()[1] + "|" + map.getValue()[2]);
+                    hasNewOrderSb.append(",");
+                }
+                if(ComFun.strNull(hasNewOrderSb.toString())){
+                    toSelectMenuIntent.putExtra("tableHasNewOrders", hasNewOrderSb.toString().substring(0, hasNewOrderSb.toString().length() - 1));
+                }
                 startActivityForResult(toSelectMenuIntent, RESULT_FOR_SELECT_MENU);
             }
         });
@@ -128,18 +147,28 @@ public class EditOrderActivity extends Activity {
                     String newOrderMenus = data.getStringExtra("newOrderMenus");
                     if(!newOrderMenus.equals("-")){
                         // 更新餐桌详情信息页面已选菜的数据
+                        List<String> backMenuIdList = new ArrayList<>();
                         for(String selectInfo : newOrderMenus.split(",")){
                             if(ComFun.strNull(selectInfo)){
-                                tableHasNewOrderMap.put(selectInfo.split("#&#")[0], new Object[]{ selectInfo.split("%")[0], selectInfo.split("%")[1] });
+                                backMenuIdList.add(selectInfo.split("#&#")[0]);
+                                tableHasNewOrderMap.put(selectInfo.split("#&#")[0], new Object[]{ selectInfo.split("%")[0], selectInfo.split("%")[1], selectInfo.split("%")[2] });
                             }
                         }
-                        // 更新订单菜品布局信息
-                        initThisTableOrderedView();
-
+                        List<String> needDeleteMenuIdList = new ArrayList<>();
+                        for(Map.Entry<String, Object[]> map : tableHasNewOrderMap.entrySet()){
+                            if(!backMenuIdList.contains(map.getKey())){
+                                needDeleteMenuIdList.add(map.getKey());
+                            }
+                        }
+                        for(String needDeleteMenuId : needDeleteMenuIdList){
+                            tableHasNewOrderMap.remove(needDeleteMenuId);
+                        }
                     }else{
                         // 选餐页面将选择的菜清空了
                         tableHasNewOrderMap.clear();
                     }
+                    // 更新订单菜品布局信息
+                    initThisTableOrderedView();
                 }else if(resultCode == SelectMenuActivity.RESULT_CANCLE){
                     // 点击了取消或按返回键，如果该餐桌未选择任何菜，直接关闭该页面
                     int showType = toThisIntent.getExtras().getInt("showType");
@@ -183,12 +212,12 @@ public class EditOrderActivity extends Activity {
                 caiMingTxt.setLayoutParams(caiMingTxtLp);
                 caiMingBeiZhuLayout.addView(caiMingTxt);
                 // 备注文字
-                if(!map.getValue()[0].toString().split("#&#")[3].equals("-")){
+                if(!map.getValue()[2].equals("-")){
                     TextView beiZhuTxt = new TextView(EditOrderActivity.this);
                     beiZhuTxt.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
                     beiZhuTxt.setTextColor(Color.parseColor("#e5c1ec"));
                     beiZhuTxt.setSingleLine(true);
-                    beiZhuTxt.setText(map.getValue()[0].toString().split("#&#")[3]);
+                    beiZhuTxt.setText(String.valueOf(map.getValue()[2]));
                     LinearLayout.LayoutParams beiZhuTxtLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                     beiZhuTxt.setLayoutParams(beiZhuTxtLp);
                     caiMingBeiZhuLayout.addView(beiZhuTxt);
@@ -209,10 +238,8 @@ public class EditOrderActivity extends Activity {
                 Button orderRemoveBtn = new Button(EditOrderActivity.this);
                 orderRemoveBtn.setTag(map.getKey());
                 orderRemoveBtn.setTextColor(Color.parseColor("#e1dfdf"));
-                TextPaint orderRemoveBtnTp = orderRemoveBtn.getPaint();
-                orderRemoveBtnTp.setFakeBoldText(true);
                 orderRemoveBtn.setBackgroundResource(R.drawable.edit_order_btn_style_1);
-                orderRemoveBtn.setText("去掉");
+                orderRemoveBtn.setText("————");
                 orderRemoveBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
                 LinearLayout.LayoutParams orderRemoveBtnLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(EditOrderActivity.this, 50), DisplayUtil.dip2px(EditOrderActivity.this, 30));
                 orderRemoveBtn.setLayoutParams(orderRemoveBtnLp);
@@ -264,12 +291,12 @@ public class EditOrderActivity extends Activity {
                 caiMingTxt.setLayoutParams(caiMingTxtLp);
                 caiMingBeiZhuLayout.addView(caiMingTxt);
                 // 备注文字
-                if(!map.getValue()[0].toString().split("#&#")[3].equals("-")){
+                if(!map.getValue()[2].equals("-")){
                     TextView beiZhuTxt = new TextView(EditOrderActivity.this);
                     beiZhuTxt.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
                     beiZhuTxt.setTextColor(Color.parseColor("#e5c1ec"));
                     beiZhuTxt.setSingleLine(true);
-                    beiZhuTxt.setText(map.getValue()[0].toString().split("#&#")[3]);
+                    beiZhuTxt.setText(map.getValue()[2].toString());
                     LinearLayout.LayoutParams beiZhuTxtLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                     beiZhuTxt.setLayoutParams(beiZhuTxtLp);
                     caiMingBeiZhuLayout.addView(beiZhuTxt);
@@ -289,6 +316,85 @@ public class EditOrderActivity extends Activity {
 
                 orderPage_mainLayout.addView(orderPageItemLayout);
             }
+        }
+        orderPage_currentTotalMoney = (TextView) findViewById(R.id.orderPage_currentTotalMoney);
+        if(tableHasNewOrderMap.size() > 0 || tableReadyOrderMap.size() > 0){
+            // 计算当前总金额
+            double totalMoney = 0.0;
+            for(Map.Entry<String, Object[]> map : tableHasNewOrderMap.entrySet()){
+                BigDecimal price = new BigDecimal(map.getValue()[0].toString().split("#&#")[4]);
+                int buyNum = Integer.parseInt(map.getValue()[1].toString());
+                BigDecimal thisTotalPrice = price.multiply(new BigDecimal(buyNum));
+                totalMoney = ComFun.add(totalMoney, thisTotalPrice);
+            }
+            for(Map.Entry<String, Object[]> map : tableReadyOrderMap.entrySet()){
+                BigDecimal price = new BigDecimal(map.getValue()[0].toString().split("#&#")[4]);
+                int buyNum = Integer.parseInt(map.getValue()[1].toString());
+                BigDecimal thisTotalPrice = price.multiply(new BigDecimal(buyNum));
+                totalMoney = ComFun.add(totalMoney, thisTotalPrice);
+            }
+            orderPage_currentTotalMoney.setText("当前总金额：￥"+ ComFun.addZero(String.valueOf(totalMoney)) +" 元");
+        }else{
+            orderPage_currentTotalMoney.setText("当前总金额：0.00 元");
+        }
+    }
+
+    class mHandler extends Handler {
+        public mHandler() {
+        }
+
+        public mHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            Bundle b = msg.getData();
+            switch (msg.what) {
+                case MSG_SEND_MENU:
+                    // 隐藏加载动画
+                    ComFun.hideLoading(EditOrderActivity.this);
+                    String sendMenuResult = b.getString("sendMenuResult");
+                    if (sendMenuResult.equals("true")) {
+                        ComFun.showToast(EditOrderActivity.this, "提交数据成功", Toast.LENGTH_SHORT);
+                        for(Map.Entry<String, Object[]> map : tableHasNewOrderMap.entrySet()){
+                            if(tableReadyOrderMap.containsKey(map.getKey())){
+                                Object[] objArr = tableReadyOrderMap.get(map.getKey());
+                                tableReadyOrderMap.put(map.getKey(), new Object[]{ objArr[0], Integer.parseInt(objArr[1].toString()) + Integer.parseInt(map.getValue()[1].toString()), objArr[2] });
+                            }else{
+                                tableReadyOrderMap.put(map.getKey(), map.getValue());
+                            }
+                        }
+                        tableHasNewOrderMap.clear();
+                        editOrderLayout.setBackgroundColor(Color.parseColor("#F8EDEA"));
+                        initThisTableOrderedView();
+                    }else if (sendMenuResult.equals("false")) {
+                        ComFun.showToast(EditOrderActivity.this, "提交数据失败，请联系管理员", Toast.LENGTH_SHORT);
+                    }else if (sendMenuResult.equals("time_out")) {
+                        ComFun.showToast(EditOrderActivity.this, "提交数据超时，请稍后重试", Toast.LENGTH_SHORT);
+                    }
+                    break;
+                case MSG_GET_TABLE_ORDER_INFO:
+                    String getTableOrderInfoResult = b.getString("getTableOrderInfoResult");
+                    if (getTableOrderInfoResult.equals("true")) {
+                        // 初始化 tableReadyOrderMap 该餐桌正在制作中的菜品信息
+                        if(b.containsKey("orderInfoDetails")){
+                            String orderInfoDetails = b.getString("orderInfoDetails");
+                            for(String orderInfo : orderInfoDetails.split(",")){
+                                tableReadyOrderMap.put(orderInfo.split("\\|")[0].split("#&#")[0], new Object[]{
+                                        orderInfo.split("\\|")[0], orderInfo.split("\\|")[1], orderInfo.split("\\|")[2]
+                                });// 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
+                            }
+                            initThisTableOrderedView();
+                        }
+                    }else if (getTableOrderInfoResult.equals("false")) {
+                        ComFun.showToast(EditOrderActivity.this, "初始化餐桌数据失败，请联系管理员", Toast.LENGTH_SHORT);
+                    }else if (getTableOrderInfoResult.equals("time_out")) {
+                        ComFun.showToast(EditOrderActivity.this, "初始化餐桌数据超时，请稍后重试", Toast.LENGTH_SHORT);
+                    }
+                    break;
+            }
+            super.handleMessage(msg);
         }
     }
 }
