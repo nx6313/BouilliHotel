@@ -11,7 +11,34 @@
     tools:context="com.bouilli.nxx.bouillihotel.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <android.support.v4.view.ViewPager
+    <LinearLayout
+        android:id="@+id/mainTopTipLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#844a5a"
+        android:gravity="center"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:orientation="vertical">
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#c9c9c9"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:singleLine="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:ellipsize="marquee"
+            android:scrollHorizontally="true"
+            android:focusableInTouchMode="true"
+            android:focusable="true"
+            android:text="首页顶部通知信息"/>
+    </LinearLayout>
+
+    <com.bouilli.nxx.bouillihotel.customview.NoSlideViewPager
         android:id="@+id/mainViewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -21,6 +48,7 @@
         android:id="@+id/wrapper_ntb_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/mainTopTipLayout"
         app:layout_scrollFlags="scroll|enterAlways">
 
         <com.bouilli.nxx.bouillihotel.customview.NavigationTabBar

@@ -8,7 +8,11 @@
     <color name="editTableSaveBtnPressed">#ac6969</color>
     <color name="editTableSaveBtnPressed2">#6e4040</color>
     <color name="editTableSaveBtnFocus">#832f2f</color>
-    <color name="editTableSaveBtnNormal">#c75b5b</color>
+    <color name="editTableSaveBtnNormal">#a74a4a</color>
+
+    <color name="editTableSaveBtnPressed_">#ac6969</color>
+    <color name="editTableSaveBtnFocus_">#745050</color>
+    <color name="editTableSaveBtnNormal_">#8b5757</color>
 
     <color name="black_overlay">#66000000</color>
 
@@ -16,4 +20,14 @@
     <color name="transparent2">#00ffffff</color>
     <color name="menu_item_normal">#debcbbbc</color>
     <color name="menu_item_pressed">#deb39faa</color>
+
+    <color name="itemPressed">#ac6969</color>
+    <color name="itemPressed2">#6e4040</color>
+    <color name="itemFocus">#832f2f</color>
+    <color name="itemNormal">#15000000</color>
+
+    <color name="selectMenuItemFocus1">#a37756</color>
+    <color name="selectMenuItemNormal1">#935d6c</color>
+    <color name="selectMenuItemFocus2">#846248</color>
+    <color name="selectMenuItemNormal2">#5f94a3</color>
 </resources>

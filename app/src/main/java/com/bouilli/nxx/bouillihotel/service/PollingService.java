@@ -8,6 +8,9 @@ import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.WelcomeActivity;
 import com.bouilli.nxx.bouillihotel.asyncTask.InitBaseDataTask;
+import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
+import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
+import com.bouilli.nxx.bouillihotel.util.ComFun;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -48,15 +51,24 @@ public class PollingService extends Service {
         public void run() {
             while(true){
                 try {
-                    sleep(1000);
+                    sleep(2000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 count ++;
                 //当计数能被2整除时弹出通知
                 if (count % 2 == 0) {
-                    // 每2秒执行一次数据请求
-                    new InitBaseDataTask(PollingService.this, true).executeOnExecutor(Executors.newCachedThreadPool());
+                    // 检测网络连接是否可用
+                    boolean isNetworkAvailable = ComFun.isNetworkAvailable(PollingService.this);
+                    if(isNetworkAvailable){
+                        // 每2秒执行一次数据请求
+                        new InitBaseDataTask(PollingService.this, true).executeOnExecutor(Executors.newCachedThreadPool());
+                    }else{
+                        // 发送全局广播，说明网络异常
+                        Intent intent = new Intent();
+                        intent.setAction(BouilliBroadcastReceiver.ACTION_NOT_NET);
+                        PollingService.this.sendBroadcast(intent);
+                    }
                     // 数据请求成功并发送广播后，再2秒后执行下一次循环
                     try {
                         sleep(2000);
@@ -71,6 +83,7 @@ public class PollingService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d("BOUILLI", ">>>polling服务停止");
     }
 
 }

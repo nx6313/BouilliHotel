@@ -1,14 +1,22 @@
 package com.bouilli.nxx.bouillihotel.util;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,7 +24,9 @@ import com.ant.liao.GifView;
 import com.bouilli.nxx.bouillihotel.R;
 import com.bouilli.nxx.bouillihotel.customview.GifViewByMovie;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Created by 18230 on 2016/10/30.
@@ -39,6 +49,17 @@ public class ComFun {
             mToast.setDuration(duration);
         }
         mToast.show();
+    }
+
+    /**
+     * 显示Toast提示信息(单例模式)
+     * @param context
+     * @param text
+     * @param duration
+     */
+    public static void showToastSingle(Context context, String text, int duration) {
+        Toast mToastSingle = Toast.makeText(context, text, duration);
+        mToastSingle.show();
     }
 
     /**
@@ -74,6 +95,36 @@ public class ComFun {
             if (inputMethodManager.isActive()) {
                 inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(),
                         InputMethodManager.HIDE_NOT_ALWAYS);
+            }
+        }
+    }
+
+    /**
+     * 显示网络异常提示层
+     * @param activity
+     * @param loadingTipValue
+     */
+    public static Toast netErrorToast = null;
+    private static int netErrorCount = 0;
+    public static void showNetErrorTip(Context context, String loadingTipValue){
+        if(netErrorToast == null){
+            netErrorCount = 0;
+            View netErrorTipView = LayoutInflater.from(context).inflate(R.layout.net_error_tip, null);
+            TextView loadingTip = (TextView) netErrorTipView.findViewById(R.id.loadingTip);
+            if(loadingTip != null){
+                if(strNull(loadingTipValue)){
+                    loadingTip.setText(loadingTipValue);
+                }
+            }
+            netErrorToast = new Toast(context);
+            netErrorToast.setGravity(Gravity.BOTTOM, 0, DisplayUtil.dip2px(context, 90));
+            netErrorToast.setDuration(Toast.LENGTH_LONG);
+            netErrorToast.setView(netErrorTipView);
+            netErrorToast.show();
+        }else{
+            netErrorCount++;
+            if(netErrorCount > 20){
+                netErrorToast = null;
             }
         }
     }
@@ -115,6 +166,30 @@ public class ComFun {
         win.setContentView(loadingView);
         GifViewByMovie loadingGif = (GifViewByMovie) loadingView.findViewById(R.id.loadingGif);
         loadingGif.setMovieResource(R.drawable.loading10);
+        TextView loadingTip = (TextView) loadingView.findViewById(R.id.loadingTip);
+        if(loadingTip != null){
+            if(strNull(loadingTipValue)){
+                loadingTip.setVisibility(View.VISIBLE);
+                loadingTip.setText(loadingTipValue);
+            }else{
+                loadingTip.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    /**
+     * 显示加载框
+     * @param activity
+     * @param loadingTipValue
+     */
+    public static void showLoading2(Activity activity, String loadingTipValue, boolean cancelable){
+        loadingDialog = new AlertDialog.Builder(activity).setCancelable(cancelable).create();
+        loadingDialog.show();
+        Window win = loadingDialog.getWindow();
+        View loadingView = activity.getLayoutInflater().inflate(R.layout.loading_dialog_movie, null);
+        win.setContentView(loadingView);
+        GifViewByMovie loadingGif = (GifViewByMovie) loadingView.findViewById(R.id.loadingGif);
+        loadingGif.setMovieResource(R.drawable.loading1);
         TextView loadingTip = (TextView) loadingView.findViewById(R.id.loadingTip);
         if(loadingTip != null){
             if(strNull(loadingTipValue)){
@@ -228,5 +303,80 @@ public class ComFun {
             return menuDetailInfo;
         }
         return "";
+    }
+
+    /**
+     * 检测当前网络状态
+     * @param context
+     * @return
+     */
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager connectivity = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivity != null) {
+            NetworkInfo info = connectivity.getActiveNetworkInfo();
+            if (info != null && info.isConnected()) {
+                // 当前网络是连接的
+                if (info.getState() == NetworkInfo.State.CONNECTED) {
+                    // 当前所连接的网络可用
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断服务是否运行
+     * @param mContext
+     * @param className
+     * @return
+     */
+    public static boolean isServiceRunning(Context mContext, String className) {
+        boolean isRunning = false;
+        ActivityManager activityManager = (ActivityManager)
+                mContext.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> serviceList
+                = activityManager.getRunningServices(50);
+        if (serviceList.size()>0) {
+            for (int i=0; i<serviceList.size(); i++) {
+                if (serviceList.get(i).service.getClassName().equals(className) == true) {
+                    Log.d("发现服务启动中", ">>>"+className+"服务正在启动中");
+                    isRunning = true;
+                    break;
+                }
+            }
+        }else{
+            return false;
+        }
+        return isRunning;
+    }
+
+    /**
+     * 获取程序版本号
+     * @param mContext
+     * @return
+     * @throws Exception
+     */
+    public static String getVersionName(Context mContext) throws Exception{
+        //获取packagemanager的实例
+        PackageManager packageManager = mContext.getPackageManager();
+        //getPackageName()是你当前类的包名，0代表是获取版本信息
+        PackageInfo packInfo = packageManager.getPackageInfo(mContext.getPackageName(), 0);
+        return packInfo.versionName;
+    }
+
+    /**
+     * 安装apk
+     * @param mContext
+     * @param file
+     */
+    public static void installApk(Context mContext, File file) {
+        Intent intent = new Intent();
+        //执行动作
+        intent.setAction(Intent.ACTION_VIEW);
+        //执行的数据类型
+        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+        mContext.startActivity(intent);
     }
 }

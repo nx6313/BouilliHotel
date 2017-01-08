@@ -22,12 +22,15 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(DBInfo.CreateTable.CREATE_PRINT_TABLE);
+        db.execSQL(DBInfo.CreateTable.CREATE_BILL_TABLE);
         Log.d("DBHelper--->onCreate", "创建了表："+ DBInfo.Table.PRINT_TABLE);
+        Log.d("DBHelper--->onCreate", "创建了表："+ DBInfo.Table.BILL_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d("DBHelper--->onCreate", "版本变更，更新SQLLite数据库："+DBInfo.DB.DB_NAME+"，当前版本："+DBInfo.DB.VERSION);
         db.execSQL(DBInfo.CreateTable.DROP_PRINT_TABLE);//实际开发时，先进行数据的备份
+        db.execSQL(DBInfo.CreateTable.DROP_BILL_TABLE);//实际开发时，先进行数据的备份
     }
 }

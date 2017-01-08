@@ -22,15 +22,32 @@
     </string>
     <string name="title_activity_table_edit">编辑餐桌</string>
     <string name="title_activity_menu_edit">编辑菜单</string>
+    <string name="title_activity_user_permission_edit">员工管理</string>
 
     <string name="dummy_content">红烧肉刀削面\n点菜系统</string>
 
+    <item name="tag_table_id" type="id"></item>
     <item name="tag_table_no" type="id"></item>
     <item name="tag_table_state" type="id"></item>
+    <item name="tag_table_has_order" type="id"></item>
     <item name="tag_table_txt_no" type="id"></item>
     <item name="tag_table_order_id" type="id"></item>
     <string name="title_activity_edit_order">处理订单</string>
     <string name="title_activity_select_menu">选择订单要使用的菜</string>
 
     <string name="title_activity_order_record">订单流水数据</string>
+    <string name="title_activity_set_print">打票机相关设置</string>
+    <string name="title_activity_business">营业额统计分析</string>
+    <string name="title_activity_performance">员工个人业绩考核</string>
+    <string name="title_activity_about">关于</string>
+    <string name="title_activity_print_error_pool">打票机未打印成功的回收站</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">设置打票机是否启用并设置打票音效</string>
+    <string name="pref_header_print_area_set">打票机区域设置</string>
+
+    <string name="pref_title_new_message_notifications">启用打票机</string>
+
+    <string name="pref_title_ringtone">选择打印提示音</string>
+    <string name="pref_ringtone_silent">无</string>
 </resources>

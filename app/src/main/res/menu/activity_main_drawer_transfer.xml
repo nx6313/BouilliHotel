@@ -4,15 +4,23 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_main"
-            android:icon="@drawable/ic_menu_camera"
+            android:icon="@drawable/ic_account_balance"
             android:title="点餐主页" />
     </group>
 
     <item android:title="数据统计选项">
         <menu>
             <item
+                android:id="@+id/nav_business_report"
+                android:icon="@drawable/ic_insert_chart"
+                android:title="营业信息报表" />
+            <item
+                android:id="@+id/nav_performance_assess"
+                android:icon="@drawable/ic_insert_chart_1"
+                android:title="员工个人业绩考核" />
+            <item
                 android:id="@+id/nav_data"
-                android:icon="@drawable/ic_menu_gallery"
+                android:icon="@drawable/ic_insert_chart_2"
                 android:title="订单流水数据" />
         </menu>
     </item>
@@ -21,8 +29,30 @@
         <menu>
             <item
                 android:id="@+id/nav_print_set"
-                android:icon="@drawable/ic_menu_manage"
-                android:title="打票机开关（当前已断开）" />
+                android:icon="@drawable/ic_settings"
+                android:title="打票机设置" />
+        </menu>
+    </item>
+
+    <item android:title="">
+        <menu>
+            <item
+                android:id="@+id/nav_about"
+                android:icon="@drawable/ic_about"
+                android:title="关于" />
+        </menu>
+    </item>
+
+    <item android:title="">
+        <menu>
+            <item
+                android:id="@+id/nav_update"
+                android:icon="@drawable/ic_new_version"
+                android:title="检查更新" />
+            <item
+                android:id="@+id/nav_exit"
+                android:icon="@drawable/ic_exit"
+                android:title="退出登录" />
         </menu>
     </item>
 

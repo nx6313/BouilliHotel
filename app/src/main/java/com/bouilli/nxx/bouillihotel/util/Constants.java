@@ -6,12 +6,17 @@ package com.bouilli.nxx.bouillihotel.util;
 
 public class Constants {
     public static final String OVERALL_TAG = "BouilliHotel";
-    public static final int REQUEST_TIMEOUT = 5000;
+    public static final int REQUEST_TIMEOUT = 6000;
 
     /**
      * 返回数据成功
      */
     public static final String HTTP_REQUEST_SUCCESS_CODE = "HTTP_REQUEST_SUCCESS_CODE";
+
+    /**
+     * 返回用户登录失败（用户名或密码错误）
+     */
+    public static final String HTTP_REQUEST_LOGIN_ERROR_CODE = "HTTP_REQUEST_LOGIN_ERROR_CODE";
 
     /**
      * 返回数据失败

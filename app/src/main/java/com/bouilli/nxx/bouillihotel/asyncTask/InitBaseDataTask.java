@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
 
+import com.bouilli.nxx.bouillihotel.MainActivity;
 import com.bouilli.nxx.bouillihotel.MyApplication;
 import com.bouilli.nxx.bouillihotel.OrderRecordActivity;
 import com.bouilli.nxx.bouillihotel.WelcomeActivity;
@@ -36,6 +37,7 @@ import java.util.List;
 public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
     private Context context;
     private boolean forPollingServiceFlag = false;
+    private boolean forPrintServiceFlag = false;
 
     public InitBaseDataTask(Context context){
         this.context = context;
@@ -46,28 +48,39 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
     }
 
     @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        // 检测用户权限等信息，如果是传菜员权限登录，则额外传传菜员Id参数值
+        String userPermission = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userPermission");
+        String hasExitLast = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "hasExitLast");
+        if(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 3 && ComFun.strNull(hasExitLast) && hasExitLast.equals("false")){
+            forPrintServiceFlag = true;
+        }else{
+            forPrintServiceFlag = false;
+        }
+    }
+
+    @Override
     protected String doInBackground(Void... params) {
-        return DataAction.initBaseData(context, URIUtil.INIT_BASE_DATA_URI);
+        return DataAction.initBaseData(context, URIUtil.INIT_BASE_DATA_URI, forPrintServiceFlag);
     }
 
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
+        // 发送Handler通知页面更新UI
+        Message msg = new Message();
+        Bundle data = new Bundle();
         if(ComFun.strNull(result)){
             try {
                 JSONObject jsob = new JSONObject(result);
                 String responseCode = jsob.getString("responseCode");
-                // 发送Handler通知页面更新UI
-                Message msg = new Message();
-                Bundle data = new Bundle();
                 if(responseCode.equals(Constants.HTTP_REQUEST_SUCCESS_CODE)){
                     if(!forPollingServiceFlag){
-                        // 当是启动程序时，并且成功获取到程序基本数据时，清除收集中已经保存的所有的SharedPreferences文件
-                        SharedPreferencesTool.clearShared(context, new String[]{ "BouilliProInfo", "BouilliTableInfo", "BouilliMenuInfo" });
+                        // 当是启动程序时，并且成功获取到程序基本数据时，清除已经保存的所有的SharedPreferences文件
+                        SharedPreferencesTool.clearShared(context, new String[]{ "BouilliTableInfo", "BouilliMenuInfo" });
                     }
                     data.putString("initBaseDataResult", "true");
-                    // 保存用户基本信息到数据缓存文件
-                    SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userId", "admin");
                     // 保存基本数据至本地
                     // 餐桌数据
                     StringBuilder tableGroupNameSb = new StringBuilder("");
@@ -162,17 +175,20 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "oftenUseMenus", oftenUseMenuSb.toString().substring(0, oftenUseMenuSb.toString().length() - 1));
                         }
                     }
-                    // 当前登录用户权限数据
+                    // 当前程序版本数据(在程序欢迎页面初始化数据时更改该相关数据)
+                    if(!forPollingServiceFlag) {
+                        if (jsob.has("lastVersionName") && jsob.has("lastVersionContent")) {
+                            // 将更新内容存入配置文件BouilliProInfo
+                            SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionName", jsob.getString("lastVersionName").substring(2));
+                            SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionContent", jsob.getString("lastVersionContent"));
+                        }
+                    }
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_FAIL_CODE)) {
                     data.putString("initBaseDataResult", "false");
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_OUT_TIME_CODE)) {
                     data.putString("initBaseDataResult", "time_out");
                 }
-                if(!forPollingServiceFlag){
-                    msg.what = WelcomeActivity.MSG_INIT_BASE_DATA;
-                    msg.setData(data);
-                    WelcomeActivity.mHandler.sendMessage(msg);
-                }else{
+                if(forPollingServiceFlag){
                     if(jsob.has("orderRecordList")){
                         JSONArray orderRecordList = jsob.getJSONArray("orderRecordList");
                         StringBuilder orderRecordFullSb = new StringBuilder("");
@@ -180,30 +196,16 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                             String orderRecord = (String) orderRecordList.get(i);// 订单流水信息
                             orderRecordFullSb.append(orderRecord);
                             orderRecordFullSb.append(",");
-
-                            SQLiteOpenHelper selectSqlite = new DBHelper(context);
-                            SQLiteDatabase selectDb = selectSqlite.getReadableDatabase();
-                            Cursor cursor = selectDb.query("printinfo", new String[]{"record_id"}, "record_id = '"+ orderRecord.split("#&#")[0] +"'", null, null, null, null, null);
-                            int recordIdIndex = cursor.getColumnIndex("record_id");
-                            List<String> resultList = new ArrayList<>();
-                            for (cursor.moveToFirst(); !(cursor.isAfterLast()); cursor.moveToNext()) {
-                                resultList.add(cursor.getString(recordIdIndex));
-                            }
-                            cursor.close();
-                            selectDb.close();
-
-                            if(resultList.size() == 0){
-                                SQLiteOpenHelper sqlite = new DBHelper(context);
-                                SQLiteDatabase db = sqlite.getWritableDatabase();
-                                db.execSQL("insert into printinfo(record_id, table_id, table_no, print_context, current_state, create_date, print_date, print_count) " +
-                                        "values('"+ orderRecord.split("#&#")[0] +"', '"+ orderRecord.split("#&#")[1] +"', '"+ orderRecord.split("#&#")[2] +"', '"+ orderRecord.split("#&#")[3] +"', "+ Integer.valueOf(orderRecord.split("#&#")[4]) +", '"+ orderRecord.split("#&#")[5] +"', '"+ orderRecord.split("#&#")[6] +"', "+ Integer.valueOf(orderRecord.split("#&#")[7]) +")");
-                                db.close();
-                            }
                         }
                         // 发送流水信息页面更新广播
                         if(ComFun.strNull(orderRecordFullSb.toString())){
                             Intent intentRecord = new Intent();
                             intentRecord.putExtra("orderRecordFull", orderRecordFullSb.toString().substring(0, orderRecordFullSb.toString().length() - 1));
+                            intentRecord.setAction(OrderRecordActivity.MSG_REFDATA);
+                            context.sendBroadcast(intentRecord);
+                        }else{// 发送空数据广播
+                            Intent intentRecord = new Intent();
+                            intentRecord.putExtra("orderRecordFull", "");
                             intentRecord.setAction(OrderRecordActivity.MSG_REFDATA);
                             context.sendBroadcast(intentRecord);
                         }
@@ -213,10 +215,57 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                     intent.putExtra("newData", true);
                     intent.setAction(MainFragment.MSG_REFDATA);
                     context.sendBroadcast(intent);
+                    // 获取打票机数据（根据登录用户及其设置的相关打印菜品类型）
+                    if(forPrintServiceFlag){
+                        if(jsob.has("orderPrintList")){
+                            JSONArray orderPrintList = jsob.getJSONArray("orderPrintList");
+                            for (int i = 0; i < orderPrintList.length(); i++) {
+                                String orderPrint = (String) orderPrintList.get(i);// 订单流水信息
+
+                                //SQLiteOpenHelper selectSqlite = new DBHelper(context);
+                                //SQLiteDatabase selectDb = selectSqlite.getReadableDatabase();
+                                //Cursor cursor = selectDb.query("printinfo", new String[]{"record_id"}, "record_id = '"+ orderPrint.split("#&#")[0] +"'", null, null, null, null, null);
+                                //int recordIdIndex = cursor.getColumnIndex("record_id");
+                                //List<String> resultList = new ArrayList<>();
+                                //for (cursor.moveToFirst(); !(cursor.isAfterLast()); cursor.moveToNext()) {
+                                //    resultList.add(cursor.getString(recordIdIndex));
+                                //}
+                                //cursor.close();
+                                //selectDb.close();
+
+                                //if(resultList.size() == 0){
+                                    SQLiteOpenHelper sqlite = new DBHelper(context);
+                                    SQLiteDatabase db = sqlite.getWritableDatabase();
+                                    db.execSQL("insert into printinfo(record_id, table_id, table_no, print_context, current_state, create_date, print_date, print_count, tip_count) " +
+                                            "values('"+ orderPrint.split("#&#")[0] +"', '"+ orderPrint.split("#&#")[1] +"', '"+ orderPrint.split("#&#")[2] +"', '"+ orderPrint.split("#&#")[3] +"', "+ Integer.valueOf(orderPrint.split("#&#")[4]) +", '"+ orderPrint.split("#&#")[5] +"', '"+ orderPrint.split("#&#")[6] +"', "+ Integer.valueOf(orderPrint.split("#&#")[7]) +", 0)");
+                                    db.close();
+                                //}
+                            }
+                        }
+                        if(jsob.has("accountBillList")){
+                            JSONArray accountBillList = jsob.getJSONArray("accountBillList");
+                            for (int i = 0; i < accountBillList.length(); i++) {
+                                String accountBillPrint = (String) accountBillList.get(i);// 小票信息
+
+                                SQLiteOpenHelper sqlite = new DBHelper(context);
+                                SQLiteDatabase db = sqlite.getWritableDatabase();
+                                db.execSQL("insert into billinfo(bill_id, table_no, print_context, current_state, tip_count) " +
+                                        "values('"+ accountBillPrint.split("#&#")[0] +"', '"+ accountBillPrint.split("#&#")[1] +"', '"+ accountBillPrint.split("#&#")[2] +"', 0, 0)");
+                                db.close();
+                            }
+                        }
+                    }
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                data.putString("initBaseDataResult", "false");
             }
+        }else{
+            data.putString("initBaseDataResult", "false");
+        }
+        if(!forPollingServiceFlag){
+            msg.what = WelcomeActivity.MSG_INIT_BASE_DATA;
+            msg.setData(data);
+            WelcomeActivity.mHandler.sendMessage(msg);
         }
     }
 }

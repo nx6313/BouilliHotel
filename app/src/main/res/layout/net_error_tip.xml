@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/loadingMain"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_round_rect"
+    android:orientation="vertical"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp"
+    android:gravity="center">
+
+        <TextView
+            android:id="@+id/loadingTip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#f2f2f2"
+            android:textSize="16sp"
+            android:text="网络异常，请检查网络连接"/>
+</LinearLayout>

@@ -89,4 +89,35 @@ public class MenuAction extends BaseAction {
         return getHttpData(context, uri, paramMap);
     }
 
+    /**
+     * 餐桌结账
+     * @param uri
+     * @return
+     */
+    public static String settleAccount(Context context, String uri, String tableOrderId, String printAccountBillId, String tableNo, String printContext){
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("tableOrderId", tableOrderId);
+        if(ComFun.strNull(printAccountBillId) && ComFun.strNull(tableNo) && ComFun.strNull(printContext)){
+            paramMap.put("printAccountBillId", printAccountBillId);
+            paramMap.put("tableNo", tableNo);
+            paramMap.put("printContext", printContext);
+        }
+        return getHttpData(context, uri, paramMap);
+    }
+
+    /**
+     * 添加人员
+     * @param uri
+     * @return
+     */
+    public static String addNewUser(Context context, String uri, String userInfoName, String userInfoGroupId, String userInfoSexId, String userInfoAge, String userInfoBirthday, String userInfoPhone) {
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("userInfoName", userInfoName);
+        paramMap.put("userInfoGroupId", userInfoGroupId);
+        paramMap.put("userInfoSexId", userInfoSexId);
+        paramMap.put("userInfoAge", userInfoAge);
+        paramMap.put("userInfoBirthday", userInfoBirthday);
+        paramMap.put("userInfoPhone", userInfoPhone);
+        return getHttpData(context, uri, paramMap);
+    }
 }

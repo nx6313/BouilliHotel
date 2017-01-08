@@ -29,6 +29,15 @@ public class SharedPreferencesTool {
         editor.commit();
     }
 
+    public static Boolean getBooleanFromShared(Context context, String sharedName,
+                                       String key) {
+        SharedPreferences mySharedPreferences = context.getSharedPreferences(
+                sharedName, Activity.MODE_PRIVATE);
+        boolean defaultVal = false;
+        Boolean getVal = mySharedPreferences.getBoolean(key, defaultVal);
+        return getVal;
+    }
+
     public static String getFromShared(Context context, String sharedName,
                                        String key, String... defValue) {
         SharedPreferences mySharedPreferences = context.getSharedPreferences(

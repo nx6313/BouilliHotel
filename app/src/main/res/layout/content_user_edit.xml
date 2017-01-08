@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_user_edit"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center|top"
+    android:background="@drawable/main_bg"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.bouilli.nxx.bouillihotel.UserPermissionEditActivity"
+    tools:showIn="@layout/activity_user_edit">
+
+    <TextView
+        android:id="@+id/tv_add_user_tip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:layout_marginTop="30dp"
+        android:textColor="#787878"
+        android:text="点击右下角的加号图标新增人员\n默认登录密码为123456\n长按人员删除\n\n添加传菜员用户时，请务必填写手机号，该号码将作为划价单上的联系方式使用\n\n管理员用户管理系统主要信息，无点餐权限\n员工用户可以进行点餐操作\n传菜员主要为传递打票机数据，无点餐权限\n后厨管理员只能看当前的点餐流水信息"/>
+
+    <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
+        android:id="@+id/mainUserScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@color/colorScroll"
+        android:overScrollMode="never"
+        android:scrollbarSize="2dp"
+        android:gravity="center|top">
+
+        <LinearLayout
+            android:id="@+id/userMainLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="100dp">
+        </LinearLayout>
+    </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+</RelativeLayout>

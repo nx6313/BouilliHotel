@@ -7,6 +7,11 @@ package com.bouilli.nxx.bouillihotel.util;
 public class URIUtil {
 
     /**
+     * 用户登录任务
+     */
+    public static final String USER_LOGIN_URI = "toBackLogin.action";
+
+    /**
      * 初始化程序基本数据
      */
     public static final String INIT_BASE_DATA_URI = "initBaseData.action";
@@ -40,4 +45,64 @@ public class URIUtil {
      * 根据餐桌号获取该餐桌就餐信息数据
      */
     public static final String GET_TABLE_ORDER_INFO_URI = "getTableOrderInfo.action";
+
+    /**
+     * 餐桌结账
+     */
+    public static final String SETTLE_ACCOUNT = "settleAccount.action";
+
+    /**
+     * 打印前任务，更新服务器打印状态
+     */
+    public static final String PRINT_START_URI = "updateOrderPrintState.action";
+
+    /**
+     * 添加人员任务
+     */
+    public static final String ADD_USER_URI = "addUser.action";
+
+    /**
+     * 获取管理人员任务
+     */
+    public static final String GET_USERS_URI = "getUserInfoData.action";
+
+    /**
+     * 删除人员任务
+     */
+    public static final String DELETE_USERS_URI = "deleteUser.action";
+
+    /**
+     * 获取打印机任务
+     */
+    public static final String GET_PRINTS_URI = "getPrintsInfo.action";
+
+    /**
+     * 添加打印机任务
+     */
+    public static final String ADD_PRINT_URI = "addNewPrint.action";
+
+    /**
+     * 删除打印机任务
+     */
+    public static final String DELETE_PRINT_URI = "deletePrint.action";
+
+    /**
+     * 保存用户打印机设置任务
+     */
+    public static final String SAVE_USER_PRINT_SET_URI = "setPrintForUser.action";
+
+    /**
+     * 初始化月营业统计数据任务
+     */
+    public static final String GET_MONTH_TURNOVER_URI = "getMonthTurnover.action";
+
+    /**
+     * 初始化月营业统计数据任务
+     */
+    public static final String GET_USER_TURNOVER_URI = "getTurnoverForUser.action";
+
+    /**
+     * 检查更新任务
+     */
+    public static final String CHECK_VERSION_URI = "checkVersion.action";
 }

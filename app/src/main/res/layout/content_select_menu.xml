@@ -30,7 +30,7 @@
             android:singleLine="true"
             android:textSize="16sp"
             android:background="@drawable/bg_round_circle"
-            android:drawableRight="@drawable/ic_restaurant_menu_black_24dp"
+            android:drawableRight="@drawable/ic_restaurant_menu"
             android:hint="菜品搜索 - 按菜品名或菜品首字母查找"
             android:inputType="textCapCharacters|textCapWords"/>
 
@@ -58,31 +58,48 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <FrameLayout
-                android:id="@+id/wrapper_ntb_horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_scrollFlags="scroll|enterAlways">
+            <LinearLayout
+                android:id="@+id/selectMenuLayout"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:background="#844a5a"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:clickable="true"
+                android:gravity="center">
 
-                <com.bouilli.nxx.bouillihotel.customview.NavigationTabBar
-                    android:id="@+id/selectMenuTabBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    app:ntb_badge_gravity="bottom"
-                    app:ntb_icon_size_fraction="0"
-                    app:ntb_bg_color="#844a5a"
-                    app:ntb_badge_use_typeface="true"
-                    app:ntb_badged="true"
-                    app:ntb_title_mode="all"
-                    app:ntb_titled="true"
-                    app:ntb_title_size="14sp"/>
-            </FrameLayout>
+                <TextView
+                    android:id="@+id/selectMenuTitleTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#cccccc"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="常 用"/>
 
-            <android.support.v4.view.ViewPager
-                android:id="@+id/selectMenuViewPager"
+                <ImageView
+                    android:layout_width="10dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:src="@drawable/ic_arrow_drop_down"/>
+            </LinearLayout>
+
+            <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"/>
+                android:scrollbars="vertical"
+                android:scrollbarThumbVertical="@color/colorScroll"
+                android:overScrollMode="never"
+                android:scrollbarSize="2dp"
+                android:gravity="center|top">
+
+                <LinearLayout
+                    android:id="@+id/selectMenuMainLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                </LinearLayout>
+            </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
         </LinearLayout>
 
         <LinearLayout
@@ -105,8 +122,8 @@
 
                 <com.bouilli.nxx.bouillihotel.customview.GifViewByMovie
                     android:id="@+id/searchLoadingGif"
-                    android:layout_width="91dp"
-                    android:layout_height="91dp"
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
                     android:layout_marginTop="60dp"
                     app:gif="@drawable/loading6"/>
 

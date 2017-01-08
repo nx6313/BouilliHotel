@@ -1,10 +1,159 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/welcome_bg_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/welcome_bg_n"
-    android:gravity="bottom|center"
     tools:context="com.bouilli.nxx.bouillihotel.WelcomeActivity">
 
+    <RelativeLayout
+        android:id="@+id/login_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/login_bg_round_rect"
+        android:layout_marginTop="60dp"
+        android:paddingTop="25dp"
+        android:paddingBottom="40dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:orientation="vertical">
 
+        <ImageView
+            android:id="@+id/login_logo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/login_logo"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/login_logo"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:orientation="vertical">
+
+            <com.bouilli.nxx.bouillihotel.customview.ClearEditText
+                android:id="@+id/tvLoginName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:textSize="14sp"
+                android:singleLine="true"
+                android:textColor="#2d2d2d"
+                android:textColorHint="#6e6e6e"
+                android:drawableLeft="@drawable/user_name"
+                android:drawablePadding="10dp"
+                android:background="@drawable/bg_edittext_selector"
+                android:hint="输入登录名或者手机号" />
+
+            <com.bouilli.nxx.bouillihotel.customview.ClearEditText
+                android:id="@+id/tvLoginPwd"
+                android:inputType="textPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:layout_marginTop="8dp"
+                android:textSize="14sp"
+                android:singleLine="true"
+                android:textColor="#2d2d2d"
+                android:textColorHint="#6e6e6e"
+                android:drawableLeft="@drawable/user_pwd"
+                android:drawablePadding="10dp"
+                android:background="@drawable/bg_edittext_selector"
+                android:hint="输入密码"/>
+
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="35dp"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#f2f2f2"
+                android:background="@drawable/edit_table_btn_style"
+                android:text="登   录"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/new_version_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/login_bg_round_rect_"
+        android:layout_marginTop="100dp"
+        android:paddingTop="25dp"
+        android:paddingBottom="40dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:orientation="vertical">
+
+            <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scrollbars="vertical"
+                android:scrollbarThumbVertical="@color/colorScroll"
+                android:overScrollMode="never"
+                android:scrollbarSize="2dp"
+                android:gravity="center|top">
+            
+                <TextView
+                    android:id="@+id/updateVersionContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="更新内容："/>
+
+            </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnCancelUpdateVersion"
+                    android:layout_width="0dp"
+                    android:layout_height="35dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="10dp"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#f2f2f2"
+                    android:background="@drawable/edit_table_btn_style_"
+                    android:text="取   消"/>
+
+                <Button
+                    android:id="@+id/btnUpdateVersion"
+                    android:layout_width="0dp"
+                    android:layout_height="35dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#f2f2f2"
+                    android:background="@drawable/edit_table_btn_style"
+                    android:text="下 载 更 新"/>
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
 </RelativeLayout>

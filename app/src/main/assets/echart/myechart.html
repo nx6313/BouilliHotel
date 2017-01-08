@@ -12,6 +12,7 @@
     <script src="./js/echarts.js"></script>
     
 <script type="text/javascript">
+    var xTitleData = ['一月份','二月份','三月份','四月份','五月份','六月份','七月份','八月份','九月份','十月份','十一月份','十二月份'];
     //初始化路径
     var myChart;  
      require.config({
@@ -22,14 +23,14 @@
     //  通用属性定义
     var options = {  
                 title : {  
-                    text : "Echart测试"  
+                    text : ""
                 },  
                 tooltip : {  
                     show : false  
                 },   
                 toolbox : {  
                     show : false
-                },  
+                },
             }; 
 
 
@@ -39,8 +40,8 @@
         xAxis : [
             {
                 type : 'category',
-                boundaryGap : false,
-                data : ['第一种','第二种','第三种']
+                boundaryGap : ['5%', '5%'],
+                data : xTitleData
             }
         ],
         yAxis : [
@@ -66,7 +67,7 @@
             xAxis : [
                 {
                     type : 'category',
-                    data : ['第一种','第二种','第三种']
+                    data : xTitleData
                 }
             ],
             yAxis : [
@@ -140,7 +141,7 @@
         }
 
  
-    //createChart('line',[89,78,77]);
+    createChart('line',[89,38,27,68,17,68,97,70,47,58,37,10]);
     //createChart('bar',[89,78,77]);
     //createChart('pie',[89,78,77]);
     </script>

@@ -52,6 +52,8 @@ public class SendMenuTask extends AsyncTask<Void, Void, String> {
                 Bundle data = new Bundle();
                 msg.what = EditOrderActivity.MSG_SEND_MENU;
                 if(responseCode.equals(Constants.HTTP_REQUEST_SUCCESS_CODE)){
+                    String tableOrderInfoPId = jsob.getString("tableOrderInfoPId");
+                    data.putString("tableOrderInfoPId", tableOrderInfoPId);
                     data.putString("sendMenuResult", "true");
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_FAIL_CODE)) {
                     data.putString("sendMenuResult", "false");

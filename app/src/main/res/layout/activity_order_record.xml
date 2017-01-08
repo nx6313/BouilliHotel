@@ -1,42 +1,69 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/orderRecordMainPage"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#9b5353"
-    android:orientation="vertical"
     tools:context="com.bouilli.nxx.bouillihotel.OrderRecordActivity">
 
-    <TextView
-        android:id="@+id/topTotalRecordTv"
-        android:layout_width="match_parent"
-        android:layout_height="25dp"
-        android:gravity="center"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="#a8e4c0"
-        android:background="#9b5353"
-        android:text="当前(今日)共有订单数：- 个"/>
-
-    <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
-        android:id="@+id/orderRecordData"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:scrollbarThumbVertical="@color/colorScroll"
-        android:overScrollMode="never"
-        android:scrollbarSize="2dp"
-        android:gravity="center|top">
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/orderRecordMainLayout"
+        <TextView
+            android:id="@+id/topTotalRecordTv"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            android:orientation="vertical">
-        </LinearLayout>
+            android:layout_height="25dp"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#a8e4c0"
+            android:background="#834545"
+            android:text="当前(今日)共有订单数：- 个"
+            android:clickable="true"/>
 
-    </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+        <View
+            android:id="@+id/orderMenuLine"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#539b8f"/>
 
-</LinearLayout>
+        <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
+            android:id="@+id/orderRecordData"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:scrollbarThumbVertical="@color/colorScroll"
+            android:overScrollMode="never"
+            android:scrollbarSize="2dp"
+            android:gravity="center|top">
+
+            <LinearLayout
+                android:id="@+id/orderRecordMainLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusableInTouchMode="true"
+                android:orientation="vertical">
+            </LinearLayout>
+
+        </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/order_menu_print_set"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginRight="@dimen/fab_margin"
+        android:layout_marginBottom="15dp"
+        app:backgroundTint="#50e6151f"
+        app:backgroundTintMode="src_over"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/print_set"
+        android:alpha="0.6"
+        android:visibility="gone" />
+
+</android.support.design.widget.CoordinatorLayout>

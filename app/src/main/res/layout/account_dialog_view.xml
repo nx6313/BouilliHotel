@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="14dp"
+    android:paddingRight="14dp"
+    android:paddingTop="20dp"
+    android:paddingBottom="25dp"
+    android:background="@drawable/account_bg"
+    android:gravity="center|top"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/amountMoney"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:text="应收金额：￥ ##.## 元"/>
+
+    <com.bouilli.nxx.bouillihotel.customview.ClearEditText
+        android:id="@+id/realMoney"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:gravity="center"
+        android:inputType="numberDecimal"
+        android:background="@drawable/bg_edittext_selector"
+        android:drawablePadding="10dp"
+        android:layout_marginTop="24dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:hint="输入实收金额（选填）"/>
+
+    <TextView
+        android:id="@+id/zeroMoney"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:text="找零金额：￥ 0.00 元"/>
+
+    <CheckBox
+        android:id="@+id/cbPrintSmailBill"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="10dp"
+        android:layout_gravity="right"
+        android:text="打印收据小票"/>
+
+    <HorizontalScrollView
+        android:id="@+id/printSmailBillScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:paddingRight="14dp"
+        android:paddingLeft="14dp"
+        android:scrollbarSize="0dp"
+        android:visibility="gone">
+        <RadioGroup
+            android:id="@+id/rgPrintGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/btnAccounts"
+        android:background="@drawable/edit_table_btn_style"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="14dp"
+        android:textSize="20sp"
+        android:textColor="#efefef"
+        android:textStyle="bold"
+        android:text="结       账" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#383838"
+            android:text="需要找零时，可输入实收金额，程序将自动为您计算找零金额（注：仅作为计算器使用）；如果无需找零，可直接点击结账按钮"/>
+    </LinearLayout>
+
+</LinearLayout>

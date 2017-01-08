@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="120dp"
+            android:layout_height="30dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textSize="13sp"
+                android:textColor="#1b1b1b"
+                android:visibility="gone"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textSize="13sp"
+                android:background="@null"
+                android:textColor="#1b1b1b"
+                android:textColorHint="#797979"
+                android:hint="填写打票机名称"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:background="#606060"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:clickable="true"
+            android:onClick="selectPrintDevice"
+            android:textColor="#1b1b1b"
+            android:textColorHint="#797979"
+            android:hint="点击选择打票机"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:background="#606060"/>
+
+        <LinearLayout
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <ImageButton
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@drawable/ic_create"
+                android:onClick="editPrintArea"
+                android:visibility="gone"/>
+            <ImageButton
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="savePrintArea"
+                android:src="@drawable/ic_sure"/>
+            <ImageButton
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="deletePrintArea"
+                android:src="@drawable/ic_delete"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="4dp"
+            android:textColor="#1b1b1b"
+            android:text="选择该区域打票机关联的主要打餐单类型："/>
+
+        <com.bouilli.nxx.bouillihotel.customview.FlowLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/bg_round_circle">
+        </com.bouilli.nxx.bouillihotel.customview.FlowLayout>
+    </LinearLayout>
+
+</LinearLayout>

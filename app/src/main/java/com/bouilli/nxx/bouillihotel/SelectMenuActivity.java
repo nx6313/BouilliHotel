@@ -1,23 +1,22 @@
 package com.bouilli.nxx.bouillihotel;
 
 import android.animation.ObjectAnimator;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -38,22 +37,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.callBack.MsgCallBack;
 import com.bouilli.nxx.bouillihotel.customview.AmountView;
 import com.bouilli.nxx.bouillihotel.customview.ElasticScrollView;
-import com.bouilli.nxx.bouillihotel.customview.GifViewByMovie;
-import com.bouilli.nxx.bouillihotel.customview.NavigationTabBar;
-import com.bouilli.nxx.bouillihotel.fragment.SelectMenuFragment;
-import com.bouilli.nxx.bouillihotel.fragment.adapter.SelectMenuFragmentPageAdapter;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 import com.bouilli.nxx.bouillihotel.util.SnackbarUtil;
 import com.bouilli.nxx.bouillihotel.util.StringUtil;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,18 +59,12 @@ import java.util.Map;
 
 public class SelectMenuActivity extends AppCompatActivity {
     public static Handler mHandler = null;
-    private RefSelectMenuDataBroadCastReceive refSelectMenuDataBroadCastReceive;// 刷新数据广播实例
-    public static final String MSG_REFDATA = "refSelectMenuData";
     public static final int MSG_SELECT_NEW_MENU = 3;
     public static final int RESULT_SUCCESS = 0;
     public static final int RESULT_FAILED = 1;
     public static final int RESULT_CANCLE = 2;
 
     private FloatingActionButton current_order_menu_info;
-
-    private FragmentManager fm;
-    private ViewPager viewPager;
-    private SelectMenuFragmentPageAdapter mAdapter;
 
     private EditText selectMenuSearchEt;
     private Button selectMenuSearchClearBtn;
@@ -89,8 +80,11 @@ public class SelectMenuActivity extends AppCompatActivity {
 
     private LinearLayout orderSelectLayoutMain;
     private LinearLayout orderSearchLayoutMain;
-    private GifViewByMovie searchLoadingGif;
     private LinearLayout searchLoadingLayout;
+
+    private LinearLayout selectMenuLayout;
+    private TextView selectMenuTitleTv;
+    private LinearLayout selectMenuMainLayout;
 
     private Button btnClearAllOrder;
     private Button btnCancleOrder;
@@ -113,6 +107,10 @@ public class SelectMenuActivity extends AppCompatActivity {
         toolbar.setTitle("餐桌【"+ tableNum +"】点菜");
         setSupportActionBar(toolbar);
 
+        selectMenuLayout = (LinearLayout) findViewById(R.id.selectMenuLayout);
+        selectMenuTitleTv = (TextView) findViewById(R.id.selectMenuTitleTv);
+        selectMenuMainLayout = (LinearLayout) findViewById(R.id.selectMenuMainLayout);
+
         tableReadyOrderMap = new HashMap<>();// 保存该餐桌已点至后厨的菜品信息
         hasOrderThisTableMap = new HashMap<>();// 保存该餐桌当前未传送至后厨的新选择的菜品信息
 
@@ -132,13 +130,6 @@ public class SelectMenuActivity extends AppCompatActivity {
         initOrderViewBtn();
 
         mHandler = new SelectMenuActivity.mHandler();
-
-
-        // 注册广播接收器
-        refSelectMenuDataBroadCastReceive = new RefSelectMenuDataBroadCastReceive();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(MSG_REFDATA);
-        SelectMenuActivity.this.registerReceiver(refSelectMenuDataBroadCastReceive, filter);
     }
 
     // 初始化该餐桌新选择且还没传至后厨的菜
@@ -169,14 +160,61 @@ public class SelectMenuActivity extends AppCompatActivity {
         mSearchHandler = new Handler();
         mSearchTesk = new SearchTask();
         selectMenuSearchEt = (EditText) findViewById(R.id.selectMenuSearchEt);
+        selectMenuSearchEt.setInputType(InputType.TYPE_NULL);
+        try {
+            Class<EditText> cls = EditText.class;
+            Method setShowSoftInputOnFocus = cls.getMethod("setShowSoftInputOnFocus", boolean.class);
+            setShowSoftInputOnFocus.setAccessible(true);
+            setShowSoftInputOnFocus.invoke(selectMenuSearchEt, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        final PopupWindow[] keyBoxesPopup = {null};
+        selectMenuSearchEt.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus){
+                    if(keyBoxesPopup[0] == null || (keyBoxesPopup[0] != null && !keyBoxesPopup[0].isShowing())){
+                        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if(inputMethodManager.isActive()){
+                            inputMethodManager.hideSoftInputFromWindow(SelectMenuActivity.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                        }
+                        // 显示自定义输入法弹框界面
+                        View keyBoxesView = SelectMenuActivity.this.getLayoutInflater().inflate(R.layout.key_boxes, null);
+                        keyBoxesView.requestFocus();
+                        keyBoxesPopup[0] = new PopupWindow(keyBoxesView, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT, true);
+                        keyBoxesPopup[0].setFocusable(false);
+                        keyBoxesPopup[0].setTouchable(true);
+                        keyBoxesPopup[0].setOutsideTouchable(true);
+                        keyBoxesPopup[0].setBackgroundDrawable(new BitmapDrawable(getResources(), (Bitmap) null));
+                        keyBoxesPopup[0].showAtLocation(SelectMenuActivity.this.getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
+                    }
+                }
+            }
+        });
+        selectMenuSearchEt.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                if(keyBoxesPopup[0] == null || (keyBoxesPopup[0] != null && !keyBoxesPopup[0].isShowing())){
+                    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if(inputMethodManager.isActive()){
+                        inputMethodManager.hideSoftInputFromWindow(SelectMenuActivity.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                    }
+                    // 显示自定义输入法弹框界面
+                    View keyBoxesView = SelectMenuActivity.this.getLayoutInflater().inflate(R.layout.key_boxes, null);
+                    keyBoxesView.requestFocus();
+                    keyBoxesPopup[0] = new PopupWindow(keyBoxesView, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT, true);
+                    keyBoxesPopup[0].setFocusable(false);
+                    keyBoxesPopup[0].setTouchable(true);
+                    keyBoxesPopup[0].setOutsideTouchable(true);
+                    keyBoxesPopup[0].setBackgroundDrawable(new BitmapDrawable(getResources(), (Bitmap) null));
+                    keyBoxesPopup[0].showAtLocation(SelectMenuActivity.this.getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
+                }
+            }
+        });
         selectMenuSearchClearBtn = (Button) findViewById(R.id.selectMenuSearchClearBtn);
         orderSelectLayoutMain = (LinearLayout) findViewById(R.id.orderSelectLayoutMain);
         orderSearchLayoutMain = (LinearLayout) findViewById(R.id.orderSearchLayoutMain);
-        searchLoadingGif = (GifViewByMovie) findViewById(R.id.searchLoadingGif);
-        //使用GifView太耗费内存，会导致OOM
-        //searchLoadingGif.setGifImage(R.drawable.loading6);
-        //searchLoadingGif.setShowDimension(240, 240);
-        //searchLoadingGif.setGifImageType(GifView.GifImageType.WAIT_FINISH);
         searchLoadingLayout = (LinearLayout) findViewById(R.id.searchLoadingLayout);
         selectMenuSearchEt.setText("");
         selectMenuSearchEt.addTextChangedListener(new TextWatcher() {
@@ -249,6 +287,8 @@ public class SelectMenuActivity extends AppCompatActivity {
                     menuSearchScrollView.setVisibility(View.GONE);
                     ComFun.showToast(SelectMenuActivity.this, "没有找到相关的菜品", Toast.LENGTH_SHORT);
                 }
+            }else{
+                ComFun.showToast(SelectMenuActivity.this, "没有找到相关的菜品", Toast.LENGTH_SHORT);
             }
         }
     }
@@ -256,52 +296,283 @@ public class SelectMenuActivity extends AppCompatActivity {
     // 初始化选项卡
     private void initTabBar(){
         String menuGroupNames = SharedPreferencesTool.getFromShared(SelectMenuActivity.this, "BouilliMenuInfo", "menuGroupNames");
-        // 添加常用选项卡
-        menuGroupNames = "-1#&#常用," + menuGroupNames;
-        viewPager = (ViewPager) findViewById(R.id.selectMenuViewPager);
-        fm = getSupportFragmentManager();
-        mAdapter = new SelectMenuFragmentPageAdapter(fm, menuGroupNames.split(",").length);
-        viewPager.setAdapter(mAdapter);
-        viewPager.setOffscreenPageLimit(menuGroupNames.split(",").length);
-
-        final String[] colors = getResources().getStringArray(R.array.default_preview);
-
-        final NavigationTabBar navigationTabBar = (NavigationTabBar) findViewById(R.id.selectMenuTabBar);
-        final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
         if(ComFun.strNull(menuGroupNames)){
-            for(int i=0; i<menuGroupNames.split(",").length; i++){
-                NavigationTabBar.Model itemModel = new NavigationTabBar.Model.Builder(getResources().getDrawable(R.drawable.none), Color.parseColor(colors[i]))
-                        .title(menuGroupNames.split(",")[i].split("#&#")[1]).build();
-                models.add(itemModel);
-            }
-        }else{
-            for(int i=0; i<menuGroupNames.split(",").length; i++){
-                NavigationTabBar.Model itemModel = new NavigationTabBar.Model.Builder(getResources().getDrawable(R.drawable.none), Color.parseColor(colors[0]))
-                        .title("暂无菜品").build();
-                models.add(itemModel);
-            }
-        }
-        navigationTabBar.setModels(models);
-        navigationTabBar.setViewPager(viewPager, 0);
-
-        navigationTabBar.setOnTabBarSelectedIndexListener(new NavigationTabBar.OnTabBarSelectedIndexListener() {
-            @Override
-            public void onStartTabSelected(final NavigationTabBar.Model model, final int index) {
-
-            }
-
-            @Override
-            public void onEndTabSelected(final NavigationTabBar.Model model, final int index) {
-                model.hideBadge();
-                // 滑动选菜页菜品选项卡，更新页面信息，保证常用选项卡下的菜品的选择数量也其他页面上同类菜品的选择数量保持一致
-                for(Map.Entry<String, Object[]> map : hasOrderThisTableMap.entrySet()) {
-                    AmountView amountView = selectMenuAmountViewPoor.get("menuId_" + index + "_" + map.getValue()[0].toString().split("#&#")[0]);
-                    if(amountView != null){
-                        amountView.setEtAmount(map.getValue()[1].toString());
+            selectMenuTitleTv.setText("常用（显示被点最多的二十项菜品）");
+            String oftenUseMenus = SharedPreferencesTool.getFromShared(SelectMenuActivity.this, "BouilliMenuInfo", "oftenUseMenus");
+            initOrderMenuDetail(oftenUseMenus.split(","));
+            // 添加常用选项卡
+            final String initMenuGroupNames = "-1#&#常用," + menuGroupNames;
+            selectMenuLayout.requestFocus();
+            selectMenuLayout.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if(hasFocus){
+                        // 创建下拉popupWindow
+                        View selectMenuPopupView = SelectMenuActivity.this.getLayoutInflater().inflate(R.layout.select_menu_group_pull, null);
+                        selectMenuPopupView.requestFocus();
+                        final PopupWindow selectMenuPopup = new PopupWindow(selectMenuPopupView, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT, true);
+                        selectMenuPopup.setFocusable(false);
+                        selectMenuPopup.setTouchable(true);
+                        selectMenuPopup.setOutsideTouchable(true);
+                        selectMenuPopup.setBackgroundDrawable(new BitmapDrawable(getResources(), (Bitmap) null));
+                        ((LinearLayout) selectMenuPopupView).removeAllViews();
+                        int selectMenuIndex = 0;
+                        for(String menuGroupObj : initMenuGroupNames.split(",")){
+                            selectMenuIndex++;
+                            TextView menuGroupSelectItemTv = new TextView(SelectMenuActivity.this);
+                            menuGroupSelectItemTv.setGravity(Gravity.CENTER);
+                            menuGroupSelectItemTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                            menuGroupSelectItemTv.setTextColor(Color.parseColor("#cccccc"));
+                            TextPaint menuGroupSelectItemTp = menuGroupSelectItemTv.getPaint();
+                            menuGroupSelectItemTp.setFakeBoldText(true);
+                            menuGroupSelectItemTv.setPadding(0, DisplayUtil.dip2px(SelectMenuActivity.this, 4), 0, DisplayUtil.dip2px(SelectMenuActivity.this, 4));
+                            if(menuGroupObj.split("#&#")[0].equals("-1")){
+                                menuGroupSelectItemTv.setText(menuGroupObj.split("#&#")[1] + "（显示被点最多的二十项菜品）");
+                            }else{
+                                menuGroupSelectItemTv.setText(menuGroupObj.split("#&#")[1]);
+                            }
+                            menuGroupSelectItemTv.setTag(menuGroupObj.split("#&#")[0]);
+                            menuGroupSelectItemTv.setBackgroundResource(R.drawable.select_menu_item_style_1);
+                            if(menuGroupObj.split("#&#")[0].equals("-1")){
+                                if(selectMenuTitleTv.getText().toString().equals(menuGroupObj.split("#&#")[1] + "（显示被点最多的二十项菜品）")){
+                                    menuGroupSelectItemTv.setBackgroundResource(R.color.selectMenuItemFocus1);
+                                }
+                            }else{
+                                if(selectMenuTitleTv.getText().toString().equals(menuGroupObj.split("#&#")[1])){
+                                    menuGroupSelectItemTv.setBackgroundResource(R.color.selectMenuItemFocus1);
+                                }
+                            }
+                            menuGroupSelectItemTv.setFocusable(true);
+                            menuGroupSelectItemTv.setFocusableInTouchMode(true);
+                            menuGroupSelectItemTv.setClickable(true);
+                            LinearLayout.LayoutParams menuGroupSelectItemTvLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, DisplayUtil.dip2px(SelectMenuActivity.this, 36));
+                            menuGroupSelectItemTv.setLayoutParams(menuGroupSelectItemTvLp);
+                            menuGroupSelectItemTv.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+                                @Override
+                                public void onFocusChange(View v, boolean hasFocus) {
+                                    if(hasFocus){
+                                        if(selectMenuPopup.isShowing()){
+                                            selectMenuTitleTv.setText(((TextView) v).getText().toString().trim());
+                                            selectMenuPopup.dismiss();
+                                            if(v.getTag().toString().equals("-1")){
+                                                String oftenUseMenus = SharedPreferencesTool.getFromShared(SelectMenuActivity.this, "BouilliMenuInfo", "oftenUseMenus");
+                                                initOrderMenuDetail(oftenUseMenus.split(","));
+                                            }else{
+                                                String thisGroupMenuInfo = SharedPreferencesTool.getFromShared(SelectMenuActivity.this, "BouilliMenuInfo", "menuItemChild" + v.getTag().toString());
+                                                initOrderMenuDetail(thisGroupMenuInfo.split(","));
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                            ((LinearLayout) selectMenuPopupView).addView(menuGroupSelectItemTv);
+                            // 添加分割线
+                            if(selectMenuIndex < initMenuGroupNames.split(",").length){
+                                View menuGroupSelectItemLine = new View(SelectMenuActivity.this);
+                                menuGroupSelectItemLine.setBackgroundColor(Color.parseColor("#B48E99"));
+                                LinearLayout.LayoutParams menuGroupSelectItemLineLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, DisplayUtil.dip2px(SelectMenuActivity.this, 1));
+                                menuGroupSelectItemLine.setLayoutParams(menuGroupSelectItemLineLp);
+                                ((LinearLayout) selectMenuPopupView).addView(menuGroupSelectItemLine);
+                            }
+                        }
+                        selectMenuPopup.showAsDropDown(selectMenuLayout);
                     }
                 }
+            });
+            selectMenuLayout.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    // 创建下拉popupWindow
+                    View selectMenuPopupView = SelectMenuActivity.this.getLayoutInflater().inflate(R.layout.select_menu_group_pull, null);
+                    selectMenuPopupView.requestFocus();
+                    final PopupWindow selectMenuPopup = new PopupWindow(selectMenuPopupView, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT, true);
+                    selectMenuPopup.setFocusable(false);
+                    selectMenuPopup.setTouchable(true);
+                    selectMenuPopup.setOutsideTouchable(true);
+                    selectMenuPopup.setBackgroundDrawable(new BitmapDrawable(getResources(), (Bitmap) null));
+                    ((LinearLayout) selectMenuPopupView).removeAllViews();
+                    int selectMenuIndex = 0;
+                    for(String menuGroupObj : initMenuGroupNames.split(",")){
+                        selectMenuIndex++;
+                        TextView menuGroupSelectItemTv = new TextView(SelectMenuActivity.this);
+                        menuGroupSelectItemTv.setGravity(Gravity.CENTER);
+                        menuGroupSelectItemTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                        menuGroupSelectItemTv.setTextColor(Color.parseColor("#cccccc"));
+                        TextPaint menuGroupSelectItemTp = menuGroupSelectItemTv.getPaint();
+                        menuGroupSelectItemTp.setFakeBoldText(true);
+                        menuGroupSelectItemTv.setPadding(0, DisplayUtil.dip2px(SelectMenuActivity.this, 4), 0, DisplayUtil.dip2px(SelectMenuActivity.this, 4));
+                        if(menuGroupObj.split("#&#")[0].equals("-1")){
+                            menuGroupSelectItemTv.setText(menuGroupObj.split("#&#")[1] + "（显示被点最多的二十项菜品）");
+                        }else{
+                            menuGroupSelectItemTv.setText(menuGroupObj.split("#&#")[1]);
+                        }
+                        menuGroupSelectItemTv.setTag(menuGroupObj.split("#&#")[0]);
+                        menuGroupSelectItemTv.setBackgroundResource(R.drawable.select_menu_item_style_1);
+                        if(menuGroupObj.split("#&#")[0].equals("-1")){
+                            if(selectMenuTitleTv.getText().toString().equals(menuGroupObj.split("#&#")[1] + "（显示被点最多的二十项菜品）")){
+                                menuGroupSelectItemTv.setBackgroundResource(R.color.selectMenuItemFocus1);
+                            }
+                        }else{
+                            if(selectMenuTitleTv.getText().toString().equals(menuGroupObj.split("#&#")[1])){
+                                menuGroupSelectItemTv.setBackgroundResource(R.color.selectMenuItemFocus1);
+                            }
+                        }
+                        menuGroupSelectItemTv.setFocusable(true);
+                        menuGroupSelectItemTv.setFocusableInTouchMode(true);
+                        menuGroupSelectItemTv.setClickable(true);
+                        LinearLayout.LayoutParams menuGroupSelectItemTvLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, DisplayUtil.dip2px(SelectMenuActivity.this, 36));
+                        menuGroupSelectItemTv.setLayoutParams(menuGroupSelectItemTvLp);
+                        menuGroupSelectItemTv.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+                            @Override
+                            public void onFocusChange(View v, boolean hasFocus) {
+                                if(hasFocus){
+                                    if(selectMenuPopup.isShowing()){
+                                        selectMenuTitleTv.setText(((TextView) v).getText().toString().trim());
+                                        selectMenuPopup.dismiss();
+                                        if(v.getTag().toString().equals("-1")){
+                                            String oftenUseMenus = SharedPreferencesTool.getFromShared(SelectMenuActivity.this, "BouilliMenuInfo", "oftenUseMenus");
+                                            initOrderMenuDetail(oftenUseMenus.split(","));
+                                        }else{
+                                            String thisGroupMenuInfo = SharedPreferencesTool.getFromShared(SelectMenuActivity.this, "BouilliMenuInfo", "menuItemChild" + v.getTag().toString());
+                                            initOrderMenuDetail(thisGroupMenuInfo.split(","));
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        ((LinearLayout) selectMenuPopupView).addView(menuGroupSelectItemTv);
+                        // 添加分割线
+                        if(selectMenuIndex < initMenuGroupNames.split(",").length){
+                            View menuGroupSelectItemLine = new View(SelectMenuActivity.this);
+                            menuGroupSelectItemLine.setBackgroundColor(Color.parseColor("#B48E99"));
+                            LinearLayout.LayoutParams menuGroupSelectItemLineLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, DisplayUtil.dip2px(SelectMenuActivity.this, 1));
+                            menuGroupSelectItemLine.setLayoutParams(menuGroupSelectItemLineLp);
+                            ((LinearLayout) selectMenuPopupView).addView(menuGroupSelectItemLine);
+                        }
+                    }
+                    selectMenuPopup.showAsDropDown(selectMenuLayout);
+                }
+            });
+        }else{
+            selectMenuTitleTv.setText("暂无菜品（请先添加菜品数据）");
+        }
+    }
+
+    // 添加菜品布局
+    private void initOrderMenuDetail(String[] thisGroupMenuInfoArr){
+        selectMenuMainLayout.removeAllViews();
+        int chileItemIndex = 0;
+        for(String thisGroupMenuInfo : thisGroupMenuInfoArr){
+            if(ComFun.strNull(thisGroupMenuInfo)){
+                LinearLayout menuChildItemlayout = new LinearLayout(SelectMenuActivity.this);
+                menuChildItemlayout.setTag("menuChildItemOrderLayout");
+                menuChildItemlayout.setPadding(DisplayUtil.dip2px(SelectMenuActivity.this, 20), 0, DisplayUtil.dip2px(SelectMenuActivity.this, 20), 0);
+                if(chileItemIndex % 2 == 0){
+                    menuChildItemlayout.setBackgroundColor(Color.parseColor("#aeb39f"));
+                }else{
+                    menuChildItemlayout.setBackgroundColor(Color.parseColor("#c1b0be"));
+                }
+                menuChildItemlayout.setOrientation(LinearLayout.HORIZONTAL);
+                LinearLayout.LayoutParams menuChildItemLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                menuChildItemlayout.setLayoutParams(menuChildItemLp);
+                // 子项每一项图标
+                ImageView menuChildItemImg = new ImageView(SelectMenuActivity.this);
+                menuChildItemImg.setTag(thisGroupMenuInfo);
+                menuChildItemImg.setImageResource(R.drawable.menu1);
+                LinearLayout.LayoutParams menuChildItemImgLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(SelectMenuActivity.this, 45), DisplayUtil.dip2px(SelectMenuActivity.this, 45));
+                menuChildItemImgLp.setMargins(DisplayUtil.dip2px(SelectMenuActivity.this, 2), DisplayUtil.dip2px(SelectMenuActivity.this, 2), DisplayUtil.dip2px(SelectMenuActivity.this, 2), DisplayUtil.dip2px(SelectMenuActivity.this, 2));
+                menuChildItemImg.setLayoutParams(menuChildItemImgLp);
+                menuChildItemlayout.addView(menuChildItemImg);
+                // 子项每一项主体（名称带简要说明）
+                LinearLayout menuChildItemDeslayout = new LinearLayout(SelectMenuActivity.this);
+                menuChildItemDeslayout.setGravity(Gravity.CENTER|Gravity.LEFT);
+                menuChildItemDeslayout.setOrientation(LinearLayout.VERTICAL);
+                LinearLayout.LayoutParams menuChildItemDesLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(SelectMenuActivity.this, 0), LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                menuChildItemDesLp.setMargins(DisplayUtil.dip2px(SelectMenuActivity.this, 8), 0, 0, 0);
+                menuChildItemDeslayout.setLayoutParams(menuChildItemDesLp);
+                // 主体-->菜名
+                TextView menuChildItemDesNameTxt = new TextView(SelectMenuActivity.this);
+                menuChildItemDesNameTxt.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                menuChildItemDesNameTxt.setText(thisGroupMenuInfo.split("#&#")[2]);
+                menuChildItemDesNameTxt.setTextColor(Color.parseColor("#000000"));
+                TextPaint menuChildItemDesNameTxtTp = menuChildItemDesNameTxt.getPaint();
+                menuChildItemDesNameTxtTp.setFakeBoldText(true);
+                LinearLayout.LayoutParams menuChildItemDesNameTxtLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                menuChildItemDesNameTxt.setLayoutParams(menuChildItemDesNameTxtLp);
+                menuChildItemDesNameTxt.setSingleLine(true);
+                menuChildItemDesNameTxt.setEllipsize(TextUtils.TruncateAt.END);
+                menuChildItemDeslayout.addView(menuChildItemDesNameTxt);
+                // 主体-->菜简介
+                TextView menuChildItemDesssTxt = new TextView(SelectMenuActivity.this);
+                menuChildItemDesssTxt.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+                if(!thisGroupMenuInfo.split("#&#")[3].equals("-")){
+                    menuChildItemDesssTxt.setText(thisGroupMenuInfo.split("#&#")[4] + " 元【" + thisGroupMenuInfo.split("#&#")[3] + "】");
+                }else{
+                    menuChildItemDesssTxt.setText(thisGroupMenuInfo.split("#&#")[4] + " 元");
+                }
+                TextPaint menuChildItemDesssTxtTp = menuChildItemDesssTxt.getPaint();
+                menuChildItemDesssTxtTp.setFakeBoldText(true);
+                LinearLayout.LayoutParams menuChildItemDesssTxtLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                menuChildItemDesssTxt.setLayoutParams(menuChildItemDesssTxtLp);
+                menuChildItemDeslayout.addView(menuChildItemDesssTxt);
+                menuChildItemlayout.addView(menuChildItemDeslayout);
+                // 子项每一项单价
+                LinearLayout menuChildItemPricelayout = new LinearLayout(SelectMenuActivity.this);
+                menuChildItemPricelayout.setTag("menuId_" + thisGroupMenuInfo.split("#&#")[0]);
+                menuChildItemPricelayout.setGravity(Gravity.CENTER|Gravity.LEFT);
+                menuChildItemPricelayout.setOrientation(LinearLayout.VERTICAL);
+                LinearLayout.LayoutParams menuChildItemPriceLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT);
+                menuChildItemPriceLp.setMargins(DisplayUtil.dip2px(SelectMenuActivity.this, 8), 0, 0, 0);
+                menuChildItemPricelayout.setLayoutParams(menuChildItemPriceLp);
+                // 编辑数量按钮
+                final AmountView amountView = new AmountView(SelectMenuActivity.this);
+                amountView.setTag("amountView_order");
+                LinearLayout.LayoutParams amountViewLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                amountView.setLayoutParams(amountViewLp);
+                if(SelectMenuActivity.hasOrderThisTableMap.containsKey(thisGroupMenuInfo.split("#&#")[0])){
+                    amountView.setEtAmount(SelectMenuActivity.hasOrderThisTableMap.get(thisGroupMenuInfo.split("#&#")[0])[1].toString());
+                }
+                SelectMenuActivity.selectMenuAmountViewPoor.put("menuId_" + thisGroupMenuInfo.split("#&#")[0], amountView);
+                menuChildItemPricelayout.addView(amountView);
+                menuChildItemlayout.addView(menuChildItemPricelayout);
+
+                selectMenuMainLayout.addView(menuChildItemlayout);
+
+                // 绑定每样菜的数字选择事件监听
+                amountView.setOnAmountChangeListener(new AmountView.OnAmountChangeListener() {
+                    @Override
+                    public void onAmountChange(View view, int amount, int clickType) {
+                        // 这个菜增加数量，执行购物车动画
+                        if(clickType == 1){
+                            // 增加操作
+                            setAnim(view);
+                        }
+                        String thisMenuId = ((LinearLayout) view.getParent().getParent()).getChildAt(0).getTag().toString().split("#&#")[0];
+                        String thisMenuName = ((LinearLayout) view.getParent().getParent()).getChildAt(0).getTag().toString().split("#&#")[2];
+                        String thisMenuInfo = ((LinearLayout) view.getParent().getParent()).getChildAt(0).getTag().toString();
+                        //ComFun.showToast(getActivity(), thisMenuName+"，已选："+amount+"个", Toast.LENGTH_SHORT);
+                        if(amount > 0){
+                            Object[] newOrderInfo = new Object[]{ thisMenuInfo, amount, "-" };// 菜id, 选择数量, 备注信息
+                            SelectMenuActivity.hasOrderThisTableMap.put(thisMenuId, newOrderInfo);
+                        }else{
+                            if(SelectMenuActivity.hasOrderThisTableMap.containsKey(thisMenuId) && clickType == -1){
+                                SelectMenuActivity.hasOrderThisTableMap.remove(thisMenuId);
+                            }
+                        }
+                        // 发送Handler通知页面更新UI
+                        Message msg = new Message();
+                        Bundle data = new Bundle();
+                        data.putString("thisMenuInfo", thisMenuInfo);
+                        data.putString("selectNum", amount+"");
+                        msg.what = SelectMenuActivity.MSG_SELECT_NEW_MENU;
+                        msg.setData(data);
+                        SelectMenuActivity.mHandler.sendMessage(msg);
+                    }
+                });
+
+                chileItemIndex++;
             }
-        });
+        }
     }
 
     // 初始化查看当前所选订单详情的悬浮按钮事件
@@ -608,14 +879,6 @@ public class SelectMenuActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // 取消注册广播
-        SelectMenuActivity.this.unregisterReceiver(refSelectMenuDataBroadCastReceive);
-    }
-
-    public class RefSelectMenuDataBroadCastReceive extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-        }
     }
 
     // 添加搜索菜品布局
@@ -722,7 +985,7 @@ public class SelectMenuActivity extends AppCompatActivity {
                         // 常用选项卡
                         menuGroupNames = "-1#&#常用," + menuGroupNames;
                         for(int index=0; index<menuGroupNames.split(",").length; index++){
-                            AmountView amountView = selectMenuAmountViewPoor.get("menuId_" + index + "_" + thisMenuInfo.split("#&#")[0]);
+                            AmountView amountView = selectMenuAmountViewPoor.get("menuId_" + thisMenuInfo.split("#&#")[0]);
                             if(amountView != null){
                                 amountView.setEtAmount(amount+"");
                             }
@@ -880,9 +1143,24 @@ public class SelectMenuActivity extends AppCompatActivity {
         if (keyCode == KeyEvent.KEYCODE_BACK
                 && event.getAction() == KeyEvent.ACTION_DOWN) {
             setResult(RESULT_CANCLE);
-            this.
-            finish();
+            this.finish();
         }
         return true;
+    }
+
+    /***************************************************************  输入法按键  ***************************************************************/
+    public void clickKeyBox(View v){
+        if(selectMenuSearchEt != null){
+            selectMenuSearchEt.setText(selectMenuSearchEt.getText().toString() + ((Button) v).getText().toString());
+            selectMenuSearchEt.setSelection(selectMenuSearchEt.getText().length());
+        }
+    }
+    public void clickDelKeyBox(View v){
+        if(selectMenuSearchEt != null){
+            if(ComFun.strNull(selectMenuSearchEt.getText().toString())){
+                selectMenuSearchEt.setText(selectMenuSearchEt.getText().toString().substring(0, selectMenuSearchEt.getText().toString().length() - 1));
+                selectMenuSearchEt.setSelection(selectMenuSearchEt.getText().length());
+            }
+        }
     }
 }

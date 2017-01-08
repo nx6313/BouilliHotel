@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <style>
+    html,body { height:100%; width:100%; margin:0; padding:0;align:left;valign:left;}
+    </style>
+</head>
+<body>
+<div id="main" style="height:260px;width:100%;border:0px;text-align:left;align:left;valign:left;overflow:hidden;"></div>
+<!-- ECharts单文件引入 -->
+<script src="./js/echarts.js"></script>
+
+<script type="text/javascript">
+    //初始化路径
+    var myChart;
+     require.config({
+            paths: {
+                echarts: './js'
+            }
+        });
+
+    function setData(option){
+        require(
+            ['echarts','echarts/theme/macarons','echarts/chart/line'],
+            function(ec, theme){
+                myChart = ec.init(document.getElementById('main'), theme);
+                myChart.showLoading();
+                myChart.setOption(option);
+                myChart.hideLoading();
+            }
+        );
+    }
+    </script>
+</body>

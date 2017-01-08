@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_business"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_bg"
+    android:orientation="vertical"
+    tools:context="com.bouilli.nxx.bouillihotel.BusinessActivity">
+
+    <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@color/colorScroll"
+        android:overScrollMode="never"
+        android:scrollbarSize="2dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginLeft="14dp"
+                android:layout_marginRight="14dp"
+                android:text="运营月金额折线图"/>
+
+            <WebView
+                android:id="@+id/wbMonthReport"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:scrollbarSize="0dp"
+                android:focusableInTouchMode="false"
+                android:focusable="false"
+                android:clickable="false"/>
+        </LinearLayout>
+
+    </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+</LinearLayout>

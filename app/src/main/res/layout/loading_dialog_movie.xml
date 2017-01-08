@@ -12,8 +12,8 @@
 
         <com.bouilli.nxx.bouillihotel.customview.GifViewByMovie
             android:id="@+id/loadingGif"
-            android:layout_width="91dp"
-            android:layout_height="91dp" />
+            android:layout_width="34dp"
+            android:layout_height="34dp" />
 
         <TextView
             android:id="@+id/loadingTip"

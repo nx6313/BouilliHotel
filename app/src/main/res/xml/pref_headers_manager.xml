@@ -1,0 +1,8 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <header
+        android:id="@+id/print_area_set_header"
+        android:icon="@drawable/print_set_menu"
+        android:title="@string/pref_header_print_area_set" />
+
+</preference-headers>
