@@ -28,6 +28,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.Window;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity
     private NoSlideViewPager viewPager;
     private FragmentPageAdapter mAdapter;
 
+    private ImageView userHeadImgView;
     private TextView login_user_name;
     private TextView login_user_permission;
 
@@ -156,6 +158,18 @@ public class MainActivity extends AppCompatActivity
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setItemIconTintList(null);
 
+        userHeadImgView = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.user_head_img_view);
+        // 设置用户头像--异步下载网络图片，并保存（默认显示之前缓存图片）
+
+        // 设置头像点击事件-->跳转至用户详情信息
+        userHeadImgView.setClickable(true);
+        userHeadImgView.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent userDetailIntent = new Intent(MainActivity.this, UserDetailActivity.class);
+                startActivity(userDetailIntent);
+            }
+        });
         login_user_name = (TextView) navigationView.getHeaderView(0).findViewById(R.id.login_user_name);
         login_user_permission = (TextView) navigationView.getHeaderView(0).findViewById(R.id.login_user_permission);
 

@@ -1,7 +1,9 @@
 package com.bouilli.nxx.bouillihotel;
 
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 
@@ -22,5 +24,25 @@ public class AboutActivity extends AppCompatActivity {
         user_help.setBackgroundColor(getResources().getColor(android.R.color.transparent));
 
         user_help.loadUrl("http://139.224.25.220/BouilliHotelServer/toUserHelp");
+
+        setupActionBar();
+    }
+
+    private void setupActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            // Show the Up button in the action bar.
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            AboutActivity.this.finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

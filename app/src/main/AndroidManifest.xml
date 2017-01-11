@@ -107,7 +107,11 @@
             android:label="@string/title_activity_about" />
         <activity
             android:name=".PrintErrorPoolActivity"
-            android:label="@string/title_activity_print_error_pool"/>
+            android:label="@string/title_activity_print_error_pool" />
+        <activity
+            android:name=".UserDetailActivity"
+            android:label="@string/title_activity_user_detail"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

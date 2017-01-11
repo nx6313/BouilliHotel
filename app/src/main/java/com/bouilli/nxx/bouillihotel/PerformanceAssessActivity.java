@@ -4,7 +4,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -54,6 +56,26 @@ public class PerformanceAssessActivity extends AppCompatActivity {
         wbPerformanceMonthReport.setWebViewClient(new MyWebViewClient());
 
         wbPerformanceMonthReport.loadUrl("file:///android_asset/echart/line.html");
+
+        setupActionBar();
+    }
+
+    private void setupActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            // Show the Up button in the action bar.
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            PerformanceAssessActivity.this.finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private class MyWebViewClient extends WebViewClient {
