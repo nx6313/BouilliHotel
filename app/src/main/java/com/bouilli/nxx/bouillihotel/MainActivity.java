@@ -494,11 +494,14 @@ public class MainActivity extends AppCompatActivity
                     String checkNewVersionResult = b.getString("checkNewVersionResult");
                     if (checkNewVersionResult.equals("true")) {
                         boolean hasNewVersionFlag = false;
+                        int lastVersionNo = b.getInt("lastVersionNo");
                         String lastVersionName = b.getString("lastVersionName");
+                        int currentVersionNo;
                         String currentVersionName = "";
                         try {
+                            currentVersionNo = ComFun.getVersionNo(MainActivity.this);
                             currentVersionName = ComFun.getVersionName(MainActivity.this);
-                            if(ComFun.strNull(lastVersionName) && ComFun.strNull(currentVersionName) && !lastVersionName.trim().equals(currentVersionName.trim())){
+                            if(lastVersionNo > currentVersionNo){
                                 // 有新版本
                                 hasNewVersionFlag = true;
                             }
@@ -507,7 +510,7 @@ public class MainActivity extends AppCompatActivity
                             String lastVersionContent = b.getString("lastVersionContent");
                             // 弹框显示新版本详细内容
                             new android.support.v7.app.AlertDialog.Builder(MainActivity.this).setTitle("发现新版本").setMessage(
-                                    "当前版本：" + currentVersionName + "   最新版本：" + lastVersionName + "\n\n更新内容：\n" + lastVersionContent +"\n\n确定下载更新吗？")
+                                    "当前版本：V." + currentVersionName + "   最新版本：" + lastVersionName + "\n\n更新内容：\n" + lastVersionContent +"\n\n确定下载更新吗？")
                                     .setPositiveButton("下载更新", new DialogInterface.OnClickListener(){
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {

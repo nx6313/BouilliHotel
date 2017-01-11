@@ -44,11 +44,13 @@ public class CheckVersionTask extends AsyncTask<Void, Void, String> {
                 msg.what = MainActivity.MSG_CHECK_NEW_VERSION;
                 if(responseCode.equals(Constants.HTTP_REQUEST_SUCCESS_CODE)){
                     data.putString("checkNewVersionResult", "true");
-                    if(jsob.has("lastVersionName") && jsob.has("lastVersionContent")){
-                        data.putString("lastVersionName", jsob.getString("lastVersionName").substring(2));
+                    if(jsob.has("lastVersionNo") && jsob.has("lastVersionName") && jsob.has("lastVersionContent")){
+                        data.putInt("lastVersionNo", jsob.getInt("lastVersionNo"));
+                        data.putString("lastVersionName", jsob.getString("lastVersionName"));
                         data.putString("lastVersionContent", jsob.getString("lastVersionContent"));
                         // 将更新内容存入配置文件BouilliProInfo
-                        SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionName", jsob.getString("lastVersionName").substring(2));
+                        SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionName", jsob.getInt("lastVersionNo"));
+                        SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionName", jsob.getString("lastVersionName"));
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionContent", jsob.getString("lastVersionContent"));
                     }
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_FAIL_CODE)) {

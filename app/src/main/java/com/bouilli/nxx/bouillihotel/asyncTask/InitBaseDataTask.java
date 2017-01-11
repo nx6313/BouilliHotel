@@ -177,9 +177,10 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                     }
                     // 当前程序版本数据(在程序欢迎页面初始化数据时更改该相关数据)
                     if(!forPollingServiceFlag) {
-                        if (jsob.has("lastVersionName") && jsob.has("lastVersionContent")) {
+                        if (jsob.has("lastVersionNo") && jsob.has("lastVersionName") && jsob.has("lastVersionContent")) {
                             // 将更新内容存入配置文件BouilliProInfo
-                            SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionName", jsob.getString("lastVersionName").substring(2));
+                            SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionNo", jsob.getInt("lastVersionNo"));
+                            SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionName", jsob.getString("lastVersionName"));
                             SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionContent", jsob.getString("lastVersionContent"));
                         }
                     }

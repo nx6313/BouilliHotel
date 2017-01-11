@@ -358,6 +358,20 @@ public class ComFun {
      * @return
      * @throws Exception
      */
+    public static int getVersionNo(Context mContext) throws Exception{
+        //获取packagemanager的实例
+        PackageManager packageManager = mContext.getPackageManager();
+        //getPackageName()是你当前类的包名，0代表是获取版本信息
+        PackageInfo packInfo = packageManager.getPackageInfo(mContext.getPackageName(), 0);
+        return packInfo.versionCode;
+    }
+
+    /**
+     * 获取程序版本号显示值
+     * @param mContext
+     * @return
+     * @throws Exception
+     */
     public static String getVersionName(Context mContext) throws Exception{
         //获取packagemanager的实例
         PackageManager packageManager = mContext.getPackageManager();

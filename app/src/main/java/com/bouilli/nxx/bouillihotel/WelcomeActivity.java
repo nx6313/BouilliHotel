@@ -376,12 +376,16 @@ public class WelcomeActivity extends Activity {
                     }
                     // 先判断是否有新版本
                     boolean hasNewVersionFlag = false;
+                    int newVersionNo;
                     String newVersionName = "";
+                    int currentVersionNo;
                     String currentVersionName = "";
                     try {
+                        newVersionNo = SharedPreferencesTool.getFromShared(WelcomeActivity.this, "BouilliProInfo", "newVersionNo", 1);
                         newVersionName = SharedPreferencesTool.getFromShared(WelcomeActivity.this, "BouilliProInfo", "newVersionName");
+                        currentVersionNo = ComFun.getVersionNo(WelcomeActivity.this);
                         currentVersionName = ComFun.getVersionName(WelcomeActivity.this);
-                        if(ComFun.strNull(newVersionName) && ComFun.strNull(currentVersionName) && !newVersionName.trim().equals(currentVersionName.trim())){
+                        if(newVersionNo > currentVersionNo){
                             // 有新版本
                             hasNewVersionFlag = true;
                         }
@@ -395,7 +399,7 @@ public class WelcomeActivity extends Activity {
                         new_version_layout.startAnimation(aa);
                         TextView updateVersionContent = (TextView) findViewById(R.id.updateVersionContent);
                         String newVersionContent = SharedPreferencesTool.getFromShared(WelcomeActivity.this, "BouilliProInfo", "newVersionContent");
-                        updateVersionContent.setText("发现新版本：\n当前版本：" + currentVersionName + "   最新版本：" + newVersionName + "\n\n更新内容：\n" + newVersionContent);
+                        updateVersionContent.setText("发现新版本：\n当前版本：V." + currentVersionName + "   最新版本：" + newVersionName + "\n\n更新内容：\n" + newVersionContent);
                     }else{
                         // 判断是否需要重新登录
                         String hasExitLast = SharedPreferencesTool.getFromShared(WelcomeActivity.this, "BouilliProInfo", "hasExitLast");

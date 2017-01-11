@@ -21,6 +21,15 @@ public class SharedPreferencesTool {
     }
 
     public static void addOrUpdate(Context context, String sharedName,
+                                   String key, Integer value) {
+        SharedPreferences mySharedPreferences = context.getSharedPreferences(
+                sharedName, Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = mySharedPreferences.edit();
+        editor.putInt(key, value);
+        editor.commit();
+    }
+
+    public static void addOrUpdate(Context context, String sharedName,
                                    String key, boolean value) {
         SharedPreferences mySharedPreferences = context.getSharedPreferences(
                 sharedName, Activity.MODE_PRIVATE);
@@ -35,6 +44,18 @@ public class SharedPreferencesTool {
                 sharedName, Activity.MODE_PRIVATE);
         boolean defaultVal = false;
         Boolean getVal = mySharedPreferences.getBoolean(key, defaultVal);
+        return getVal;
+    }
+
+    public static int getFromShared(Context context, String sharedName,
+                                       String key, Integer defValue) {
+        SharedPreferences mySharedPreferences = context.getSharedPreferences(
+                sharedName, Activity.MODE_PRIVATE);
+        int defaultVal = 0;
+        if (defValue != null) {
+            defaultVal = defValue;
+        }
+        int getVal = mySharedPreferences.getInt(key, defaultVal);
         return getVal;
     }
 
