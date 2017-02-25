@@ -580,7 +580,7 @@ public class SelectMenuActivity extends AppCompatActivity {
             int buyNum = Integer.parseInt(map.getValue()[1].toString());
             totalNewSelect += buyNum;
         }
-        final int allSelectMenuSize = totalHasSelect + totalNewSelect;
+        int allSelectMenuSize = totalHasSelect + totalNewSelect;
         btnToAllOrder.setText("已选("+ totalNewSelect +" / "+ totalHasSelect +" / "+ allSelectMenuSize +")");
 
         btnCancleOrder = (Button) findViewById(R.id.btnCancleOrder);
@@ -592,6 +592,17 @@ public class SelectMenuActivity extends AppCompatActivity {
                 // 清除当前所选后，仍然在选菜页面，更新选择的菜品信息及页面
                 Intent toThisIntent = SelectMenuActivity.this.getIntent();
                 String tableNum = toThisIntent.getExtras().getString("tableNum");
+                int totalHasSelect = 0;
+                for(Map.Entry<String, Object[]> map : tableReadyOrderMap.entrySet()){
+                    int buyNum = Integer.parseInt(map.getValue()[1].toString());
+                    totalHasSelect += buyNum;
+                }
+                int totalNewSelect = 0;
+                for(Map.Entry<String, Object[]> map : hasOrderThisTableMap.entrySet()){
+                    int buyNum = Integer.parseInt(map.getValue()[1].toString());
+                    totalNewSelect += buyNum;
+                }
+                int allSelectMenuSize = totalHasSelect + totalNewSelect;
                 if(allSelectMenuSize > 0){
                     // 跳转到购物车详情页面
                     Intent toBuyCarIntent = new Intent(SelectMenuActivity.this, BuyCarDetailActivity.class);
@@ -674,7 +685,6 @@ public class SelectMenuActivity extends AppCompatActivity {
                     if(b.containsKey("thisMenuInfo") && ComFun.strNull(b.getString("thisMenuInfo"))){
                         String selectMenuInfo = b.getString("thisMenuInfo");
                         String selectNum = b.getString("selectNum");
-                        ComFun.showToast(SelectMenuActivity.this, selectNum, Toast.LENGTH_SHORT);
                         if(!ComFun.strNull(selectNum)){
                             selectNum = "0";
                         }
