@@ -250,6 +250,11 @@ public class MainActivity extends AppCompatActivity
             login_user_permission.setText("测试账号");
             navigationView.inflateMenu(R.menu.activity_main_drawer);
         }
+        // 初始化显示版本号（在检查更新后面括弧显示）
+        try{
+            String currentVersionName = ComFun.getVersionName(MainActivity.this);
+            navigationView.getMenu().findItem(R.id.nav_update).setTitle(navigationView.getMenu().findItem(R.id.nav_update).getTitle() + "（当前版本："+ currentVersionName +"）");
+        }catch (Exception e){}
         // 设置默认选中项
         if(Integer.parseInt(userPermission) != 4){
             navigationView.getMenu().getItem(0).setChecked(true);
