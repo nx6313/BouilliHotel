@@ -22,6 +22,7 @@
         <activity
             android:name=".WelcomeActivity"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.AppLauncher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -62,34 +63,42 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".TableEditActivity"
             android:label="@string/title_activity_table_edit"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".MenuEditActivity"
             android:label="@string/title_activity_menu_edit"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".UserPermissionEditActivity"
             android:label="@string/title_activity_user_permission_edit"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".EditOrderActivity"
             android:label="@string/title_activity_edit_order"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoApplicationActionBar" />
         <activity
             android:name=".SelectMenuActivity"
             android:label="@string/title_activity_select_menu"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".OrderRecordActivity"
             android:label="@string/title_activity_order_record"
+            android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme" />
         <activity
             android:name=".SetPrintActivity"
             android:label="@string/title_activity_set_print"
+            android:screenOrientation="portrait"
             android:theme="@style/SetTheme" />
         <activity
             android:name=".BusinessActivity"
@@ -101,17 +110,26 @@
             android:screenOrientation="landscape" />
         <activity
             android:name=".PrintAreaActivity"
-            android:label="@string/pref_header_print_area_set" />
+            android:label="@string/pref_header_print_area_set"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".AboutActivity"
-            android:label="@string/title_activity_about" />
+            android:label="@string/title_activity_about"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".PrintErrorPoolActivity"
-            android:label="@string/title_activity_print_error_pool" />
+            android:label="@string/title_activity_print_error_pool"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".UserDetailActivity"
             android:label="@string/title_activity_user_detail"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".BuyCarDetailActivity"
+            android:label="@string/title_activity_buy_car_detail"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

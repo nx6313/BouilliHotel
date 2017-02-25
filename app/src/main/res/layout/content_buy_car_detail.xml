@@ -2,17 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/content_user_detail"
+    android:id="@+id/content_buy_car_detail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/main_bg"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.bouilli.nxx.bouillihotel.TableEditActivity"
-    tools:showIn="@layout/activity_user_detail"
-    android:gravity="center|top">
+    tools:context="com.bouilli.nxx.bouillihotel.BuyCarDetailActivity"
+    android:background="@drawable/main_bg"
+    tools:showIn="@layout/activity_buy_car_detail">
 
     <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
-        android:id="@+id/editTableScrollView"
+        android:id="@+id/buyCarScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
@@ -22,7 +21,7 @@
         android:gravity="center|top">
 
         <LinearLayout
-            android:id="@+id/editTableMainLayout"
+            android:id="@+id/buyCarMainLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center|top"
@@ -31,4 +30,5 @@
             android:paddingBottom="60dp">
         </LinearLayout>
     </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+
 </RelativeLayout>

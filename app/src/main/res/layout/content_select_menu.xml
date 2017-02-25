@@ -165,23 +165,23 @@
         android:background="#844a5a">
 
         <Button
-            android:id="@+id/btnClearAllOrder"
+            android:id="@+id/btnToAllOrder"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="5"
             android:background="@drawable/edit_order_btn_style_1"
             android:paddingTop="15dp"
             android:paddingBottom="15dp"
             android:textSize="20sp"
-            android:textColor="#ffffff"
+            android:textColor="#68E874"
             android:textStyle="bold"
-            android:text="清除所选"/>
+            android:text="已选(0 / 0 / 0)"/>
 
         <Button
             android:id="@+id/btnCancleOrder"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:background="@drawable/edit_order_btn_style_1"
             android:layout_marginRight="5dp"
             android:layout_marginLeft="5dp"
@@ -196,7 +196,7 @@
             android:id="@+id/btnSureOrder"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="3"
             android:background="@drawable/edit_order_btn_style_1"
             android:paddingTop="15dp"
             android:paddingBottom="15dp"
