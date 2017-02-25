@@ -40,7 +40,15 @@ public class BuyCarDetailActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         Intent toThisIntent = this.getIntent();
         String tableNum = toThisIntent.getExtras().getString("tableNum");
-        toolbar.setTitle("餐桌【"+ tableNum +"】点餐详情");
+        if(tableNum.equals("wmTable") || tableNum.equals("dbTable")){
+            if(tableNum.equals("wmTable")){
+                toolbar.setTitle("外卖点菜");
+            }else{
+                toolbar.setTitle("打包点菜");
+            }
+        }else{
+            toolbar.setTitle("餐桌【"+ tableNum +"】点菜");
+        }
         setSupportActionBar(toolbar);
 
         buyCarMainLayout = (LinearLayout) findViewById(R.id.buyCarMainLayout);

@@ -34,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +47,8 @@ import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SerializableMap;
+
+import org.w3c.dom.Text;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -63,6 +66,7 @@ public class EditOrderActivity extends Activity {
     public static final int RESULT_FOR_SELECT_MENU = 1;
     private LinearLayout editOrderLayout;
     private LinearLayout orderPage_mainLayout;
+
     public static Map<String, Object[]> tableReadyOrderMap = new HashMap<>();// 保存该餐桌正在制作中的菜品信息
     // 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
     public static Map<String, Object[]> tableHasNewOrderMap = new HashMap<>();// 保存该餐桌新选择的菜品信息
@@ -103,7 +107,25 @@ public class EditOrderActivity extends Activity {
         toThisIntent = this.getIntent();
         String tableNum = toThisIntent.getExtras().getString("tableNum");
         TextView orderPage_tableNum = (TextView) findViewById(R.id.orderPage_tableNum);
-        orderPage_tableNum.setText("餐桌号【 " + tableNum + " 】");
+        final Switch orderSwitch = (Switch) findViewById(R.id.orderSwitch);
+        final TextView orderSwitchType = (TextView) findViewById(R.id.orderSwitchType);
+        if(!tableNum.equals("-1")){
+            orderPage_tableNum.setText("餐桌号【 " + tableNum + " 】");
+        }else{
+            orderPage_tableNum.setVisibility(View.GONE);
+            LinearLayout orderSwitchLayout = (LinearLayout) findViewById(R.id.orderSwitchLayout);
+            orderSwitchLayout.setVisibility(View.VISIBLE);
+            orderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked){
+                        orderSwitchType.setText("打包餐");
+                    }else{
+                        orderSwitchType.setText("外卖餐");
+                    }
+                }
+            });
+        }
         initThisTableOrderedView();
         int showType = toThisIntent.getExtras().getInt("showType");
         if(showType == 1){// 空闲
@@ -125,6 +147,32 @@ public class EditOrderActivity extends Activity {
                         }
                     })
                     .setNegativeButton("取消", null).show();
+        }else if(showType == -10){// 打包/外卖
+            editOrderLayout.setBackgroundColor(Color.parseColor("#C9F1DD"));
+            // 弹框提问是哪种类型
+            new android.support.v7.app.AlertDialog.Builder(EditOrderActivity.this).setTitle("提示").setMessage("请选择打包还是外卖？")
+                    .setPositiveButton("外卖餐", new DialogInterface.OnClickListener(){
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            orderSwitch.setChecked(false);
+                            orderSwitchType.setText("外卖餐");
+                            // 跳转选菜页面
+                            Intent toSelectMenuIntent = new Intent(EditOrderActivity.this, SelectMenuActivity.class);
+                            toSelectMenuIntent.putExtra("tableNum", "wmTable");
+                            startActivityForResult(toSelectMenuIntent, RESULT_FOR_SELECT_MENU);
+                        }
+                    })
+                    .setNegativeButton("打包餐", new DialogInterface.OnClickListener(){
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            orderSwitch.setChecked(true);
+                            orderSwitchType.setText("打包餐");
+                            // 跳转选菜页面
+                            Intent toSelectMenuIntent = new Intent(EditOrderActivity.this, SelectMenuActivity.class);
+                            toSelectMenuIntent.putExtra("tableNum", "dbTable");
+                            startActivityForResult(toSelectMenuIntent, RESULT_FOR_SELECT_MENU);
+                        }
+                    }).show();
         }else{// 占用
             String tableOrderId = toThisIntent.getExtras().getString("tableOrderId");
             editOrderLayout.setBackgroundColor(Color.parseColor("#F8EDEA"));
@@ -279,6 +327,16 @@ public class EditOrderActivity extends Activity {
                 if(tableHasNewOrderMap.size() > 0){
                     ComFun.showLoading2(EditOrderActivity.this, "数据提交中，请稍后...", false);
                     String tableNum = toThisIntent.getExtras().getString("tableNum");
+                    // 判断是正常点餐还是外卖打包
+                    LinearLayout orderSwitchLayout = (LinearLayout) findViewById(R.id.orderSwitchLayout);
+                    if(orderSwitchLayout.getVisibility() == View.VISIBLE){
+                        Switch orderSwitch = (Switch) findViewById(R.id.orderSwitch);
+                        if(orderSwitch.isChecked()){
+                            tableNum = "dbTable";
+                        }else{
+                            tableNum = "wmTable";
+                        }
+                    }
                     int showType = toThisIntent.getExtras().getInt("showType");
                     String tableOrderId = toThisIntent.getExtras().getString("tableOrderId");
                     new SendMenuTask(EditOrderActivity.this, tableNum, showType, tableHasNewOrderMap, tableOrderId).executeOnExecutor(Executors.newCachedThreadPool());
@@ -294,7 +352,18 @@ public class EditOrderActivity extends Activity {
             public void onClick(View v) {
                 String tableNum = toThisIntent.getExtras().getString("tableNum");
                 Intent toSelectMenuIntent = new Intent(EditOrderActivity.this, SelectMenuActivity.class);
-                toSelectMenuIntent.putExtra("tableNum", tableNum);
+                // 判断是正常点餐还是外卖打包
+                LinearLayout orderSwitchLayout = (LinearLayout) findViewById(R.id.orderSwitchLayout);
+                if(orderSwitchLayout.getVisibility() == View.VISIBLE){
+                    Switch orderSwitch = (Switch) findViewById(R.id.orderSwitch);
+                    if(orderSwitch.isChecked()){
+                        toSelectMenuIntent.putExtra("tableNum", "dbTable");
+                    }else{
+                        toSelectMenuIntent.putExtra("tableNum", "wmTable");
+                    }
+                }else{
+                    toSelectMenuIntent.putExtra("tableNum", tableNum);
+                }
                 StringBuilder hasOrderSb = new StringBuilder("");
                 for(Map.Entry<String, Object[]> map : tableReadyOrderMap.entrySet()){
                     hasOrderSb.append(map.getKey() + "|" + map.getValue()[0] + "|" + map.getValue()[1] + "|" + map.getValue()[2]);
@@ -661,11 +730,16 @@ public class EditOrderActivity extends Activity {
                             }
                         }
                         String tableOrderInfoPId = b.getString("tableOrderInfoPId");
-                        toThisIntent.putExtra("tableOrderId", tableOrderInfoPId);
-                        toThisIntent.putExtra("showType", 2);
-                        tableHasNewOrderMap.clear();
-                        editOrderLayout.setBackgroundColor(Color.parseColor("#F8EDEA"));
-                        initThisTableOrderedView();
+                        String showType = b.getString("showType");
+                        if(showType.equals("-10")){
+                            EditOrderActivity.this.finish();
+                        }else{
+                            toThisIntent.putExtra("tableOrderId", tableOrderInfoPId);
+                            toThisIntent.putExtra("showType", 2);
+                            tableHasNewOrderMap.clear();
+                            editOrderLayout.setBackgroundColor(Color.parseColor("#F8EDEA"));
+                            initThisTableOrderedView();
+                        }
                     }else if (sendMenuResult.equals("false")) {
                         ComFun.showToast(EditOrderActivity.this, "提交数据失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if (sendMenuResult.equals("time_out")) {
@@ -733,21 +807,23 @@ public class EditOrderActivity extends Activity {
     protected void onDestroy() {
         // 首页将该餐桌设为带草稿的状态
         String tableNum = toThisIntent.getExtras().getString("tableNum");
-        if(tableReadyOrderMap.size() == 0 && tableHasNewOrderMap.size() > 0){
-            // 该餐桌有未传的菜没有执行传操作，并且是新点餐桌（保存为草稿）
-            ComFun.showToast(EditOrderActivity.this, tableNum + "号桌 点餐数据自动存为草稿", Toast.LENGTH_SHORT);
-            MainActivity.editBookMap.put(tableNum, tableHasNewOrderMap);
-        }else if(tableReadyOrderMap.size() == 0 && tableHasNewOrderMap.size() == 0 && MainActivity.editBookMap.containsKey(tableNum)){
-            // 该餐桌有未传的菜没有执行传操作，并且是新点餐桌（保存为草稿）
-            MainActivity.editBookMap.remove(tableNum);
-        }else{
-            MainActivity.editBookMap.remove(tableNum);
+        if(!tableNum.equals("-1")){
+            if(tableReadyOrderMap.size() == 0 && tableHasNewOrderMap.size() > 0){
+                // 该餐桌有未传的菜没有执行传操作，并且是新点餐桌（保存为草稿）
+                ComFun.showToast(EditOrderActivity.this, tableNum + "号桌 点餐数据自动存为草稿", Toast.LENGTH_SHORT);
+                MainActivity.editBookMap.put(tableNum, tableHasNewOrderMap);
+            }else if(tableReadyOrderMap.size() == 0 && tableHasNewOrderMap.size() == 0 && MainActivity.editBookMap.containsKey(tableNum)){
+                // 该餐桌有未传的菜没有执行传操作，并且是新点餐桌（保存为草稿）
+                MainActivity.editBookMap.remove(tableNum);
+            }else{
+                MainActivity.editBookMap.remove(tableNum);
+            }
+            // 发送主页面更新广播
+            Intent intent = new Intent();
+            intent.putExtra("newData", true);
+            intent.setAction(MainFragment.MSG_REFDATA);
+            EditOrderActivity.this.sendBroadcast(intent);
         }
-        // 发送主页面更新广播
-        Intent intent = new Intent();
-        intent.putExtra("newData", true);
-        intent.setAction(MainFragment.MSG_REFDATA);
-        EditOrderActivity.this.sendBroadcast(intent);
         super.onDestroy();
     }
 }

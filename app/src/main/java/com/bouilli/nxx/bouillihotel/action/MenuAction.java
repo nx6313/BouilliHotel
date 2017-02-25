@@ -59,6 +59,7 @@ public class MenuAction extends BaseAction {
      * @return
      */
     public static String sendMenu(Context context, String uri, String tableNum, int showType, Map<String, Object[]> tableHasNewOrderMap, String tableOrderId){
+        String orderType = "1";
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("tableOrderId", tableOrderId);
         paramMap.put("tableNum", tableNum);
@@ -73,8 +74,18 @@ public class MenuAction extends BaseAction {
             orderMenuInfoSb.append(",");
         }
         if(ComFun.strNull(orderMenuInfoSb.toString())){
-            paramMap.put("orderMenuInfo", orderMenuInfoSb.toString().substring(0, orderMenuInfoSb.toString().length() - 1));
+            if(showType == -10){
+                if(tableNum.equals("wmTable")){
+                    orderType = "2";
+                }else{
+                    orderType = "3";
+                }
+                paramMap.put("takeOutMenuInfo", orderMenuInfoSb.toString().substring(0, orderMenuInfoSb.toString().length() - 1));
+            }else{
+                paramMap.put("orderMenuInfo", orderMenuInfoSb.toString().substring(0, orderMenuInfoSb.toString().length() - 1));
+            }
         }
+        paramMap.put("orderType", orderType);
         return getHttpData(context, uri, paramMap);
     }
 

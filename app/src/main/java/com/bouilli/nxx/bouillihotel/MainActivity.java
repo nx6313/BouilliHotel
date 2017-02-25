@@ -18,6 +18,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
+import android.text.Html;
 import android.view.KeyEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -42,6 +43,7 @@ import com.bouilli.nxx.bouillihotel.fragment.adapter.FragmentPageAdapter;
 import com.bouilli.nxx.bouillihotel.service.PollingService;
 import com.bouilli.nxx.bouillihotel.service.PrintService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
+import com.bouilli.nxx.bouillihotel.util.MyTagHandler;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 import com.bouilli.nxx.bouillihotel.util.SnackbarUtil;
 import com.google.android.gms.appindexing.Action;
@@ -123,15 +125,27 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         new_order = (FloatingActionButton) findViewById(R.id.new_order);
+        message_info = (FloatingActionButton) findViewById(R.id.message_info);
+        // 获取登录人的权限值
+        String userPermission = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "userPermission");
+        if(!(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 2)){
+            new_order.setVisibility(View.GONE);
+            //message_info.setVisibility(View.GONE);
+        }
+
         new_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // 添加新单
-                ObjectAnimator.ofFloat(view, "alpha", 1).setDuration(200).start();
+                // ObjectAnimator.ofFloat(view, "alpha", 1).setDuration(200).start();
+                // 跳转到添加外卖或者打包饭页面
+                Intent intentKongXian = new Intent(MainActivity.this, EditOrderActivity.class);
+                intentKongXian.putExtra("showType", -10);
+                intentKongXian.putExtra("tableNum", "-1");
+                startActivity(intentKongXian);
             }
         });
 
-        message_info = (FloatingActionButton) findViewById(R.id.message_info);
         message_info.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -179,8 +193,6 @@ public class MainActivity extends AppCompatActivity
         }else{
             login_user_name.setText("蜜糖丶小妖");
         }
-        // 获取登录人的权限值
-        String userPermission = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "userPermission");
         if(ComFun.strNull(userPermission)){
             if(Integer.parseInt(userPermission) == 0){
                 login_user_permission.setText("系统管理员");
@@ -253,7 +265,7 @@ public class MainActivity extends AppCompatActivity
         // 初始化显示版本号（在检查更新后面括弧显示）
         try{
             String currentVersionName = ComFun.getVersionName(MainActivity.this);
-            navigationView.getMenu().findItem(R.id.nav_update).setTitle(navigationView.getMenu().findItem(R.id.nav_update).getTitle() + "（当前版本："+ currentVersionName +"）");
+            navigationView.getMenu().findItem(R.id.nav_update).setTitle(navigationView.getMenu().findItem(R.id.nav_update).getTitle() + "（当前版本：V"+ currentVersionName +"）");
         }catch (Exception e){}
         // 设置默认选中项
         if(Integer.parseInt(userPermission) != 4){
@@ -329,6 +341,13 @@ public class MainActivity extends AppCompatActivity
                 model.hideBadge();
             }
         });
+
+        // 初始化之前最后一次退出时的选项卡
+        int lastViewPagerIndex = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "lastMainPageIndex", 0);
+        if(models.size() > lastViewPagerIndex){
+            viewPager.setCurrentItem(lastViewPagerIndex);
+            //navigationTabBar.setModelIndex(lastViewPagerIndex + 1);
+        }
     }
 
     @Override
@@ -484,6 +503,11 @@ public class MainActivity extends AppCompatActivity
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawers();
             }else{
+                if(viewPager != null){
+                    // 记录当前点餐区域选项卡索引
+                    int currentViewPagerIndex = viewPager.getCurrentItem();
+                    SharedPreferencesTool.addOrUpdate(MainActivity.this, "BouilliProInfo", "lastMainPageIndex", currentViewPagerIndex);
+                }
                 if (System.currentTimeMillis() - exitTime > 2000) {
                     ComFun.showToast(this, "再按一次离开", 2000);
                     exitTime = System.currentTimeMillis();
@@ -529,7 +553,7 @@ public class MainActivity extends AppCompatActivity
                             String lastVersionContent = b.getString("lastVersionContent");
                             // 弹框显示新版本详细内容
                             new android.support.v7.app.AlertDialog.Builder(MainActivity.this).setTitle("发现新版本").setMessage(
-                                    "当前版本：V." + currentVersionName + "   最新版本：" + lastVersionName + "\n\n更新内容：\n" + lastVersionContent +"\n\n确定下载更新吗？")
+                                    "当前版本：V." + currentVersionName + "   最新版本：" + lastVersionName + "\n\n更新内容：\n" + Html.fromHtml(lastVersionContent, null, new MyTagHandler(MainActivity.this)) +"\n\n确定下载更新吗？")
                                     .setPositiveButton("下载更新", new DialogInterface.OnClickListener(){
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {

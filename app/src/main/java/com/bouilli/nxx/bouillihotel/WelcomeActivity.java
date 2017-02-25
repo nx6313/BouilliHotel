@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
+import android.text.Html;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,7 +29,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ant.liao.GifView;
 import com.bouilli.nxx.bouillihotel.asyncTask.InitBaseDataTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.UserLoginTask;
 import com.bouilli.nxx.bouillihotel.customview.ClearEditText;
@@ -36,6 +36,7 @@ import com.bouilli.nxx.bouillihotel.customview.HorizontalProgressbarWithProgress
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
 import com.bouilli.nxx.bouillihotel.db.DBInfo;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
+import com.bouilli.nxx.bouillihotel.util.MyTagHandler;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 
 import java.io.File;
@@ -399,7 +400,7 @@ public class WelcomeActivity extends Activity {
                         new_version_layout.startAnimation(aa);
                         TextView updateVersionContent = (TextView) findViewById(R.id.updateVersionContent);
                         String newVersionContent = SharedPreferencesTool.getFromShared(WelcomeActivity.this, "BouilliProInfo", "newVersionContent");
-                        updateVersionContent.setText("发现新版本：\n当前版本：V." + currentVersionName + "   最新版本：" + newVersionName + "\n\n更新内容：\n" + newVersionContent);
+                        updateVersionContent.setText("发现新版本：\n当前版本：V." + currentVersionName + "   最新版本：" + newVersionName + "\n\n更新内容：\n" + Html.fromHtml(newVersionContent, null, new MyTagHandler(WelcomeActivity.this)));
                     }else{
                         // 判断是否需要重新登录
                         String hasExitLast = SharedPreferencesTool.getFromShared(WelcomeActivity.this, "BouilliProInfo", "hasExitLast");

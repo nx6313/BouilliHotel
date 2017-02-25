@@ -22,8 +22,8 @@ import java.util.Map;
 
 public class SendMenuTask extends AsyncTask<Void, Void, String> {
     private Context context;
-    private String tableNum;
-    private int showType;
+    private String tableNum;// 打包外卖时为dbTable、wmTable
+    private int showType;// 打包外卖时为-10
     private Map<String, Object[]> tableHasNewOrderMap;
     private String tableOrderId;
 
@@ -53,6 +53,8 @@ public class SendMenuTask extends AsyncTask<Void, Void, String> {
                 msg.what = EditOrderActivity.MSG_SEND_MENU;
                 if(responseCode.equals(Constants.HTTP_REQUEST_SUCCESS_CODE)){
                     String tableOrderInfoPId = jsob.getString("tableOrderInfoPId");
+                    String showType = jsob.getString("showType");
+                    data.putString("showType", showType);
                     data.putString("tableOrderInfoPId", tableOrderInfoPId);
                     data.putString("sendMenuResult", "true");
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_FAIL_CODE)) {

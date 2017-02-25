@@ -319,33 +319,35 @@ public class OrderRecordActivity extends AppCompatActivity {
                                     orderTimeLayout.addView(orderTime2);
                                     recordItemLayout.addView(orderTimeLayout);
                                     // 桌号
-                                    LinearLayout orderTableNoLayout = new LinearLayout(OrderRecordActivity.this);
-                                    orderTableNoLayout.setOrientation(LinearLayout.HORIZONTAL);
-                                    LinearLayout.LayoutParams orderTableNoLayoutLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                                    orderTableNoLayout.setLayoutParams(orderTableNoLayoutLp);
-                                    TextView orderTableNo = new TextView(OrderRecordActivity.this);
-                                    if(index % 2 == 0){
-                                        orderTableNo.setTextColor(Color.parseColor("#ffffff"));
+                                    if(!(orderRecord.split("#&#")[2].equals("null") || orderRecord.split("#&#")[2] == null)){
+                                        LinearLayout orderTableNoLayout = new LinearLayout(OrderRecordActivity.this);
+                                        orderTableNoLayout.setOrientation(LinearLayout.HORIZONTAL);
+                                        LinearLayout.LayoutParams orderTableNoLayoutLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                        orderTableNoLayout.setLayoutParams(orderTableNoLayoutLp);
+                                        TextView orderTableNo = new TextView(OrderRecordActivity.this);
+                                        if(index % 2 == 0){
+                                            orderTableNo.setTextColor(Color.parseColor("#ffffff"));
+                                        }
+                                        orderTableNo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+                                        orderTableNo.setText("桌号：");
+                                        LinearLayout.LayoutParams orderTableNoLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(OrderRecordActivity.this, 120), ViewGroup.LayoutParams.WRAP_CONTENT);
+                                        orderTableNo.setLayoutParams(orderTableNoLp);
+                                        TextPaint orderTableNoTp = orderTableNo.getPaint();
+                                        orderTableNoTp.setFakeBoldText(true);
+                                        orderTableNoLayout.addView(orderTableNo);
+                                        TextView orderTableNo2 = new TextView(OrderRecordActivity.this);
+                                        if(index % 2 == 0){
+                                            orderTableNo2.setTextColor(Color.parseColor("#ffffff"));
+                                        }
+                                        orderTableNo2.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+                                        orderTableNo2.setText(orderRecord.split("#&#")[2]);
+                                        LinearLayout.LayoutParams orderTableNo2Lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+                                        orderTableNo2.setLayoutParams(orderTableNo2Lp);
+                                        TextPaint orderTableNo2Tp = orderTableNo2.getPaint();
+                                        orderTableNo2Tp.setFakeBoldText(true);
+                                        orderTableNoLayout.addView(orderTableNo2);
+                                        recordItemLayout.addView(orderTableNoLayout);
                                     }
-                                    orderTableNo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-                                    orderTableNo.setText("桌号：");
-                                    LinearLayout.LayoutParams orderTableNoLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(OrderRecordActivity.this, 120), ViewGroup.LayoutParams.WRAP_CONTENT);
-                                    orderTableNo.setLayoutParams(orderTableNoLp);
-                                    TextPaint orderTableNoTp = orderTableNo.getPaint();
-                                    orderTableNoTp.setFakeBoldText(true);
-                                    orderTableNoLayout.addView(orderTableNo);
-                                    TextView orderTableNo2 = new TextView(OrderRecordActivity.this);
-                                    if(index % 2 == 0){
-                                        orderTableNo2.setTextColor(Color.parseColor("#ffffff"));
-                                    }
-                                    orderTableNo2.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-                                    orderTableNo2.setText(orderRecord.split("#&#")[2]);
-                                    LinearLayout.LayoutParams orderTableNo2Lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-                                    orderTableNo2.setLayoutParams(orderTableNo2Lp);
-                                    TextPaint orderTableNo2Tp = orderTableNo2.getPaint();
-                                    orderTableNo2Tp.setFakeBoldText(true);
-                                    orderTableNoLayout.addView(orderTableNo2);
-                                    recordItemLayout.addView(orderTableNoLayout);
                                     // 订单详情
                                     TextView orderDes = new TextView(OrderRecordActivity.this);
                                     if(index % 2 == 0){

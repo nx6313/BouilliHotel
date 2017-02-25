@@ -29,10 +29,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="16dp"
-        android:layout_marginRight="80dp"
-        app:srcCompat="@android:drawable/ic_input_add"
-        android:alpha="0.4"
-        android:visibility="gone"/>
+        android:layout_marginRight="70dp"
+        app:backgroundTint="#e90f79e2"
+        app:backgroundTintMode="src_over"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/add"
+        android:alpha="0.4"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/message_info"
@@ -40,8 +42,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_info"
-        android:alpha="0.4"
-        android:visibility="gone"/>
+        app:backgroundTint="#dbec0a06"
+        app:backgroundTintMode="src_over"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/menu1"
+        android:alpha="0.4"/>
 
 </android.support.design.widget.CoordinatorLayout>

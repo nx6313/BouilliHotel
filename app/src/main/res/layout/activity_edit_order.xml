@@ -23,6 +23,33 @@
         android:layout_marginBottom="10dp"
         android:text="餐桌号（ ## ）"/>
 
+    <LinearLayout
+        android:id="@+id/orderSwitchLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <Switch
+            android:id="@+id/orderSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:checked="true"/>
+
+        <TextView
+            android:id="@+id/orderSwitchType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="#313131"
+            android:textStyle="bold"
+            android:layout_marginLeft="10dp"
+            android:text="打包餐"/>
+
+    </LinearLayout>
+
     <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
