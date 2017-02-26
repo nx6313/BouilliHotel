@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextPaint;
@@ -18,7 +17,6 @@ import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -48,8 +46,6 @@ import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SerializableMap;
 
-import org.w3c.dom.Text;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,6 +73,8 @@ public class EditOrderActivity extends Activity {
     private Button btnOrderPageAddNewMenu;
     private TextView orderPage_currentTotalMoney;
 
+    private TextView editOrderSendWay;
+
     private Map<String, String> printForAccountMap = new HashMap<>();
 
     @Override
@@ -87,10 +85,16 @@ public class EditOrderActivity extends Activity {
 
         mHandler = new EditOrderActivity.mHandler();
 
+        btnOrderPageEndMenu = (Button) findViewById(R.id.btnOrderPageEndMenu);
+        btnOrderPageUpMenu = (Button) findViewById(R.id.btnOrderPageUpMenu);
+        btnOrderPageAddNewMenu = (Button) findViewById(R.id.btnOrderPageAddNewMenu);
+
         tableReadyOrderMap = new HashMap<>();// 保存该餐桌正在制作中的菜品信息
         tableHasNewOrderMap = new HashMap<>();// 保存该餐桌新选择的菜品信息
 
         editOrderLayout = (LinearLayout) findViewById(R.id.content_edit_order);
+
+        editOrderSendWay = (TextView) findViewById(R.id.editOrderSendWay);
 
         WindowManager manager = this.getWindowManager();
         DisplayMetrics outMetrics = new DisplayMetrics();
@@ -106,12 +110,82 @@ public class EditOrderActivity extends Activity {
         // 初始化布局背景色
         toThisIntent = this.getIntent();
         String tableNum = toThisIntent.getExtras().getString("tableNum");
+        String outOrderAccount = toThisIntent.getExtras().getString("outOrderAccount");
         TextView orderPage_tableNum = (TextView) findViewById(R.id.orderPage_tableNum);
         final Switch orderSwitch = (Switch) findViewById(R.id.orderSwitch);
         final TextView orderSwitchType = (TextView) findViewById(R.id.orderSwitchType);
         if(!tableNum.equals("-1")){
             orderPage_tableNum.setText("餐桌号【 " + tableNum + " 】");
         }else{
+            if(ComFun.strNull(outOrderAccount) && outOrderAccount.equals("outAccount")){
+                // 隐藏传菜和加菜按钮
+                btnOrderPageUpMenu.setVisibility(View.GONE);
+                btnOrderPageAddNewMenu.setVisibility(View.GONE);
+                editOrderSendWay.setVisibility(View.VISIBLE);
+                editOrderSendWay.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                        String orderSendWayTag = v.getTag().toString();
+                        String defaultVal = "";
+                        if(!orderSendWayTag.equals("none")){
+                            defaultVal = ((TextView) v).getText().toString();
+                        }
+                        // 弹框输入送餐联系方式
+                        final AlertDialog accountDialog = new AlertDialog.Builder(EditOrderActivity.this).setCancelable(true).create();
+                        accountDialog.setView(new EditText(EditOrderActivity.this));
+                        accountDialog.show();
+                        Window win = accountDialog.getWindow();
+                        View sendWayView = EditOrderActivity.this.getLayoutInflater().inflate(R.layout.sendway_dialog_view, null);
+                        win.setContentView(sendWayView);
+                        final EditText userName = (EditText) sendWayView.findViewById(R.id.userName);
+                        userName.clearFocus();
+                        final EditText userPhoneNum = (EditText) sendWayView.findViewById(R.id.userPhoneNum);
+                        final EditText userAddress = (EditText) sendWayView.findViewById(R.id.userAddress);
+                        if(ComFun.strNull(defaultVal)){
+                            if(!defaultVal.split("、")[0].equals("匿名")){
+                                userName.setText(defaultVal.split("、")[0]);
+                            }
+                            userPhoneNum.setText(defaultVal.split("、")[1]);
+                            userAddress.setText(defaultVal.split("、")[2]);
+                        }
+                        final Button btnSendWayOk = (Button) sendWayView.findViewById(R.id.btnSendWayOk);
+                        btnSendWayOk.setOnClickListener(new View.OnClickListener(){
+                            @Override
+                            public void onClick(View v) {
+                                if(!ComFun.strNull(userName.getText().toString().trim()) &&
+                                        !ComFun.strNull(userPhoneNum.getText().toString().trim()) &&
+                                        !ComFun.strNull(userAddress.getText().toString().trim())){
+                                    // 执行保存(本地化操作)
+                                    editOrderSendWay.setTag("none");
+                                }else{
+                                    if(!ComFun.strNull(userPhoneNum.getText().toString().trim())){
+                                        ComFun.showToast(EditOrderActivity.this, "请输入联系电话", Toast.LENGTH_SHORT);
+                                        userPhoneNum.requestFocus();
+                                        return;
+                                    }else if(!ComFun.strNull(userAddress.getText().toString().trim())){
+                                        ComFun.showToast(EditOrderActivity.this, "请输入送餐地址", Toast.LENGTH_SHORT);
+                                        userAddress.requestFocus();
+                                        return;
+                                    }
+                                    // 执行保存(本地化操作)
+                                    String userNameStr = "匿名";
+                                    if(ComFun.strNull(userName.getText().toString().trim())){
+                                        userNameStr = userName.getText().toString().trim();
+                                    }
+                                    String userPhoneNumStr = userPhoneNum.getText().toString().trim();
+                                    String userAddressStr = userAddress.getText().toString().trim();
+                                    editOrderSendWay.setText(userNameStr + "、" + userPhoneNumStr + "、" + userAddressStr);
+                                    editOrderSendWay.setTag("has");
+                                }
+                                accountDialog.dismiss();
+                            }
+                        });
+                    }
+                });
+            }else{
+                // 隐藏结账按钮
+                btnOrderPageEndMenu.setVisibility(View.GONE);
+            }
             orderPage_tableNum.setVisibility(View.GONE);
             LinearLayout orderSwitchLayout = (LinearLayout) findViewById(R.id.orderSwitchLayout);
             orderSwitchLayout.setVisibility(View.VISIBLE);
@@ -186,12 +260,15 @@ public class EditOrderActivity extends Activity {
     // 初始化点击按钮
     public void initBtnEvent(){
         // 结账
-        btnOrderPageEndMenu = (Button) findViewById(R.id.btnOrderPageEndMenu);
         btnOrderPageEndMenu.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 // 只结算传过菜的价格
                 if(tableReadyOrderMap.size() > 0){
+                    if(editOrderSendWay.getVisibility() == View.VISIBLE && editOrderSendWay.getTag().toString().equals("none")){
+                        ComFun.showToast(EditOrderActivity.this, "请先设置用户送餐联系方式", Toast.LENGTH_SHORT);
+                        return;
+                    }
                     // 显示弹框，输入实收金额，计算找零
                     final AlertDialog accountDialog = new AlertDialog.Builder(EditOrderActivity.this).setCancelable(true).create();
                     accountDialog.setView(new EditText(EditOrderActivity.this));
@@ -242,6 +319,30 @@ public class EditOrderActivity extends Activity {
 
                         }
                     });
+                    final TextView userContactWay = (TextView) accountView.findViewById(R.id.userContactWay);
+                    // 判断是什么类型结账（餐桌结账/打包外卖结账）
+                    if(editOrderSendWay.getVisibility() == View.VISIBLE){
+                        userContactWay.setVisibility(View.VISIBLE);
+                        userContactWay.setText(editOrderSendWay.getText().toString().trim());
+                    }
+                    if(userContactWay.getVisibility() == View.VISIBLE){
+                        userContactWay.requestFocus();
+                        userContactWay.setOnClickListener(new View.OnClickListener(){
+                            @Override
+                            public void onClick(View v) {
+                                realMoney.clearFocus();
+                                v.requestFocus();
+                                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                                if (imm != null) {
+                                    imm.hideSoftInputFromWindow(realMoney.getWindowToken(), 0);
+                                }
+                                String userContactWayTxt = ((TextView) v).getText().toString();
+                                if(ComFun.strNull(userContactWayTxt)){
+                                    ComFun.showToast(EditOrderActivity.this, "用户送餐联系方式：\n\n" + userContactWayTxt, Toast.LENGTH_LONG);
+                                }
+                            }
+                        });
+                    }
                     final CheckBox cbPrintSmailBill = (CheckBox) accountView.findViewById(R.id.cbPrintSmailBill);
                     final HorizontalScrollView printSmailBillScrollView = (HorizontalScrollView) accountView.findViewById(R.id.printSmailBillScrollView);
                     final RadioGroup rgPrintGroup = (RadioGroup) accountView.findViewById(R.id.rgPrintGroup);
@@ -260,6 +361,12 @@ public class EditOrderActivity extends Activity {
                     cbPrintSmailBill.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            realMoney.clearFocus();
+                            userContactWay.requestFocus();
+                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            if (imm != null) {
+                                imm.hideSoftInputFromWindow(realMoney.getWindowToken(), 0);
+                            }
                             if(rgPrintGroup.getChildCount() > 0){
                                 if(isChecked){
                                     rgPrintGroup.clearCheck();
@@ -319,7 +426,6 @@ public class EditOrderActivity extends Activity {
             }
         });
         // 传菜
-        btnOrderPageUpMenu = (Button) findViewById(R.id.btnOrderPageUpMenu);
         btnOrderPageUpMenu.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -346,7 +452,6 @@ public class EditOrderActivity extends Activity {
             }
         });
         // 加菜
-        btnOrderPageAddNewMenu = (Button) findViewById(R.id.btnOrderPageAddNewMenu);
         btnOrderPageAddNewMenu.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {

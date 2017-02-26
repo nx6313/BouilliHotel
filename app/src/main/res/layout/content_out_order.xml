@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_out_order"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.bouilli.nxx.bouillihotel.OutOrderActivity"
+    android:background="@drawable/main_bg"
+    tools:showIn="@layout/activity_out_order">
+
+    <com.bouilli.nxx.bouillihotel.customview.NoSlideViewPager
+        android:id="@+id/outOrderViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/wrapper_ntb_horizontal"/>
+
+    <FrameLayout
+        android:id="@+id/out_wrapper_ntb_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/mainTopTipLayout"
+        app:layout_scrollFlags="scroll|enterAlways">
+
+        <com.bouilli.nxx.bouillihotel.customview.NavigationTabBar
+            android:id="@+id/outOrderTabBar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            app:ntb_badge_gravity="bottom"
+            app:ntb_icon_size_fraction="0"
+            app:ntb_bg_color="#844a5a"
+            app:ntb_badge_use_typeface="true"
+            app:ntb_badged="true"
+            app:ntb_title_mode="all"
+            app:ntb_titled="true"
+            app:ntb_title_size="14sp"/>
+
+    </FrameLayout>
+
+</RelativeLayout>

@@ -70,6 +70,28 @@
     </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
 
     <TextView
+        android:id="@+id/editOrderSendWay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:tag="none"
+        android:gravity="center"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:background="#74ace9"
+        android:textColor="#01151b"
+        android:singleLine="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:ellipsize="marquee"
+        android:scrollHorizontally="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:clickable="true"
+        android:text="点击这里设置用户送餐联系方式"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:visibility="gone"/>
+
+    <TextView
         android:id="@+id/orderPage_currentTotalMoney"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

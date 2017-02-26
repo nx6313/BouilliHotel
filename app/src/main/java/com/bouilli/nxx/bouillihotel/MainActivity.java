@@ -1,6 +1,5 @@
 package com.bouilli.nxx.bouillihotel;
 
-import android.animation.ObjectAnimator;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -15,7 +14,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.design.internal.NavigationMenuView;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
@@ -35,7 +33,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.asyncTask.CheckVersionTask;
-import com.bouilli.nxx.bouillihotel.callBack.MsgCallBack;
 import com.bouilli.nxx.bouillihotel.customview.HorizontalProgressbarWithProgress;
 import com.bouilli.nxx.bouillihotel.customview.NavigationTabBar;
 import com.bouilli.nxx.bouillihotel.customview.NoSlideViewPager;
@@ -45,7 +42,6 @@ import com.bouilli.nxx.bouillihotel.service.PrintService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.MyTagHandler;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
-import com.bouilli.nxx.bouillihotel.util.SnackbarUtil;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.Thing;
 
@@ -69,7 +65,6 @@ public class MainActivity extends AppCompatActivity
     private Toolbar toolbar;
     private FloatingActionButton new_order = null;// 添加新订单悬浮按钮
     private FloatingActionButton message_info = null;// 查看订单信息悬浮按钮
-    private Snackbar skMessageInfo = null;
 
     private long exitTime;
 
@@ -149,17 +144,8 @@ public class MainActivity extends AppCompatActivity
         message_info.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (skMessageInfo != null && skMessageInfo.isShown()) {
-                    skMessageInfo.dismiss();
-                    ObjectAnimator.ofFloat(view, "alpha", (float)0.4).setDuration(200).start();
-                } else {
-                    skMessageInfo = Snackbar.make(view, "订餐信息", Snackbar.LENGTH_INDEFINITE)
-                            .setAction("Action", null);
-                    SnackbarUtil.setSnackbarColor(skMessageInfo, 0xfff44336, 0xffdcc208);
-                    skMessageInfo.setCallback(new MsgCallBack(view));
-                    skMessageInfo.show();
-                    ObjectAnimator.ofFloat(view, "alpha", 1).setDuration(200).start();
-                }
+                Intent outOrderIntent = new Intent(MainActivity.this, OutOrderActivity.class);
+                startActivity(outOrderIntent);
             }
         });
 
@@ -234,7 +220,7 @@ public class MainActivity extends AppCompatActivity
                                     ComFun.showToast(MainActivity.this, "对不起，创建蓝牙连接失败，请检查您的设备是否支持蓝牙功能或者打票机是否正确配对", Toast.LENGTH_LONG);
                                 }
                             }
-                        }, 10);
+                        }, 20);
                     }else{
                         ComFun.showToast(MainActivity.this, "打票机区域未设置，请从菜单【打票机设置】处开启", Toast.LENGTH_SHORT);
                     }
@@ -265,7 +251,9 @@ public class MainActivity extends AppCompatActivity
         // 初始化显示版本号（在检查更新后面括弧显示）
         try{
             String currentVersionName = ComFun.getVersionName(MainActivity.this);
-            navigationView.getMenu().findItem(R.id.nav_update).setTitle(navigationView.getMenu().findItem(R.id.nav_update).getTitle() + "（当前版本：V"+ currentVersionName +"）");
+            if(ComFun.strNull(currentVersionName)){
+                navigationView.getMenu().findItem(R.id.nav_update).setTitle(navigationView.getMenu().findItem(R.id.nav_update).getTitle() + "（当前版本：V"+ currentVersionName +"）");
+            }
         }catch (Exception e){}
         // 设置默认选中项
         if(Integer.parseInt(userPermission) != 4){

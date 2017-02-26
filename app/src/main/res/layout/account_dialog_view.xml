@@ -48,11 +48,28 @@
         android:textStyle="bold"
         android:text="找零金额：￥ 0.00 元"/>
 
+    <TextView
+        android:id="@+id/userContactWay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:singleLine="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:ellipsize="marquee"
+        android:scrollHorizontally="true"
+        android:focusableInTouchMode="true"
+        android:focusable="true"
+        android:text=""
+        android:visibility="gone"/>
+
     <CheckBox
         android:id="@+id/cbPrintSmailBill"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
         android:layout_gravity="right"
         android:text="打印收据小票"/>

@@ -129,6 +129,11 @@
             android:name=".BuyCarDetailActivity"
             android:label="@string/title_activity_buy_car_detail"
             android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".OutOrderActivity"
+            android:label="@string/title_activity_out_order"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

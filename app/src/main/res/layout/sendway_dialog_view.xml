@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:paddingTop="20dp"
+    android:paddingBottom="25dp"
+    android:background="@drawable/account_bg"
+    android:gravity="center|top"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:layout_weight="3"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:text="客人姓名："/>
+
+        <com.bouilli.nxx.bouillihotel.customview.ClearEditText
+            android:id="@+id/userName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:singleLine="true"
+            android:gravity="left"
+            android:background="@drawable/bg_edittext_selector"
+            android:layout_marginLeft="5dp"
+            android:drawablePadding="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:hint="不填为【匿名】"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:layout_weight="3"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:text="客人联系电话："/>
+
+        <com.bouilli.nxx.bouillihotel.customview.ClearEditText
+            android:id="@+id/userPhoneNum"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:inputType="phone"
+            android:singleLine="true"
+            android:gravity="left"
+            android:background="@drawable/bg_edittext_selector"
+            android:layout_marginLeft="5dp"
+            android:drawablePadding="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:hint="与客人电话联系"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:layout_weight="3"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:text="送餐地址："/>
+
+        <com.bouilli.nxx.bouillihotel.customview.ClearEditText
+            android:id="@+id/userAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:lines="6"
+            android:gravity="left"
+            android:background="@drawable/bg_edittext_selector"
+            android:layout_marginLeft="5dp"
+            android:drawablePadding="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:hint="送餐地址"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnSendWayOk"
+        android:background="@drawable/edit_table_btn_style"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        android:layout_marginBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textSize="20sp"
+        android:textColor="#efefef"
+        android:textStyle="bold"
+        android:text="确            定" />
+
+</LinearLayout>

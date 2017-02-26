@@ -71,7 +71,11 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                     MyApplication.mOutputStream = MyApplication.mBluetoothSocket.getOutputStream();
                                     if(ComFun.strNull(printAboutTable)){
                                         if(printType.equals("1")){
-                                            MyApplication.mOutputStream.write(("**********  "+ printAboutTable +"  **********\n").getBytes("GBK"));
+                                            if(printAboutTable.contains(">>")){
+                                                MyApplication.mOutputStream.write(("*****  "+ printAboutTable +"  *****\n").getBytes("GBK"));
+                                            }else{
+                                                MyApplication.mOutputStream.write(("**********  "+ printAboutTable +"  **********\n").getBytes("GBK"));
+                                            }
                                         }else{
                                             MyApplication.mOutputStream.write(("        红烧肉刀削面\n").getBytes("GBK"));
                                             MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
@@ -86,7 +90,7 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                         MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
                                         MyApplication.mOutputStream.write(("谢谢您的惠顾！欢迎下次再来！\n").getBytes("GBK"));
                                         String userMobel = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userMobel");
-                                        if(ComFun.strNull(userMobel)){
+                                        if(ComFun.strNull(userMobel) && !userMobel.equals("-")){
                                             MyApplication.mOutputStream.write(("联系电话： "+ userMobel +"\n").getBytes("GBK"));
                                         }
                                     }
