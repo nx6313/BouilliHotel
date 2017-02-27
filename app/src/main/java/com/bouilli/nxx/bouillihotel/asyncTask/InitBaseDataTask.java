@@ -18,6 +18,7 @@ import com.bouilli.nxx.bouillihotel.WelcomeActivity;
 import com.bouilli.nxx.bouillihotel.action.DataAction;
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
 import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
+import com.bouilli.nxx.bouillihotel.fragment.OutOrderFragment;
 import com.bouilli.nxx.bouillihotel.service.PrintService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.Constants;
@@ -175,6 +176,49 @@ public class InitBaseDataTask extends AsyncTask<Void, Void, String> {
                         if(ComFun.strNull(oftenUseMenuSb.toString())){
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "oftenUseMenus", oftenUseMenuSb.toString().substring(0, oftenUseMenuSb.toString().length() - 1));
                         }
+                    }
+                    // 打包、外卖数据
+                    StringBuilder wmRefSb = new StringBuilder("");
+                    if(jsob.has("wmList")){
+                        JSONArray wmList = jsob.getJSONArray("wmList");
+                        StringBuilder wmInfoSb = new StringBuilder("");
+                        for (int i = 0; i < wmList.length(); i++) {
+                            String wmDetailInfo = (String) wmList.get(i);
+                            wmInfoSb.append(wmDetailInfo);
+                            wmRefSb.append("No." + ((wmDetailInfo.split("#&&#")[0]).split("#&#")[1].split(">>")[1]).substring(2, ((wmDetailInfo.split("#&&#")[0]).split("#&#")[1].split(">>")[1]).length()));
+                            if(i < wmList.length()){
+                                wmInfoSb.append("#@#,#");
+                                wmRefSb.append("#@#,#");
+                            }
+                        }
+                        if(ComFun.strNull(wmInfoSb.toString())){
+                            SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "wmInfos", wmInfoSb.toString());
+                        }
+                    }
+                    StringBuilder dbRefSb = new StringBuilder("");
+                    if(jsob.has("dbList")){
+                        JSONArray dbList = jsob.getJSONArray("dbList");
+                        StringBuilder dbInfoSb = new StringBuilder("");
+                        for (int i = 0; i < dbList.length(); i++) {
+                            String dbDetailInfo = (String) dbList.get(i);
+                            dbInfoSb.append(dbDetailInfo);
+                            dbRefSb.append("No." + ((dbDetailInfo.split("#&&#")[0]).split("#&#")[1].split(">>")[1]).substring(2, ((dbDetailInfo.split("#&&#")[0]).split("#&#")[1].split(">>")[1]).length()));
+                            if(i < dbList.length()){
+                                dbInfoSb.append("#@#,#");
+                                dbRefSb.append("#@#,#");
+                            }
+                        }
+                        if(ComFun.strNull(dbInfoSb.toString())){
+                            SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "dbInfos", dbInfoSb.toString());
+                        }
+                    }
+                    if(jsob.has("wmList") || jsob.has("dbList")){
+                        // 发送主页面更新广播
+                        Intent intent = new Intent();
+                        intent.putExtra("wmDataRef", wmRefSb.toString());
+                        intent.putExtra("dbDataRef", dbRefSb.toString());
+                        intent.setAction(OutOrderFragment.MSG_REF_OUTORDER_DATA);
+                        context.sendBroadcast(intent);
                     }
                     // 当前程序版本数据(在程序欢迎页面初始化数据时更改该相关数据)
                     if(!forPollingServiceFlag) {

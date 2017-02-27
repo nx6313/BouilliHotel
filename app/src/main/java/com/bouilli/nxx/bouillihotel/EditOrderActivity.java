@@ -121,7 +121,6 @@ public class EditOrderActivity extends Activity {
                 // 隐藏传菜和加菜按钮
                 btnOrderPageUpMenu.setVisibility(View.GONE);
                 btnOrderPageAddNewMenu.setVisibility(View.GONE);
-                editOrderSendWay.setVisibility(View.VISIBLE);
                 editOrderSendWay.setOnClickListener(new View.OnClickListener(){
                     @Override
                     public void onClick(View v) {
@@ -189,16 +188,28 @@ public class EditOrderActivity extends Activity {
             orderPage_tableNum.setVisibility(View.GONE);
             LinearLayout orderSwitchLayout = (LinearLayout) findViewById(R.id.orderSwitchLayout);
             orderSwitchLayout.setVisibility(View.VISIBLE);
-            orderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if(isChecked){
-                        orderSwitchType.setText("打包餐");
-                    }else{
-                        orderSwitchType.setText("外卖餐");
-                    }
+            if(ComFun.strNull(outOrderAccount) && outOrderAccount.equals("outAccount")){
+                orderSwitch.setEnabled(false);
+                String outOrderNumber = toThisIntent.getExtras().getString("outOrderNumber");
+                if(outOrderNumber.startsWith("[外卖餐]")){
+                    orderSwitch.setChecked(false);
+                    editOrderSendWay.setVisibility(View.VISIBLE);
+                }else{
+                    orderSwitch.setChecked(true);
                 }
-            });
+                orderSwitchType.setText(outOrderNumber);
+            }else{
+                orderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if(isChecked){
+                            orderSwitchType.setText("打包餐");
+                        }else{
+                            orderSwitchType.setText("外卖餐");
+                        }
+                    }
+                });
+            }
         }
         initThisTableOrderedView();
         int showType = toThisIntent.getExtras().getInt("showType");

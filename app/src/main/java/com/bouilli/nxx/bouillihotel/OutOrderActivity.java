@@ -33,7 +33,7 @@ public class OutOrderActivity extends AppCompatActivity {
     private void initTabBar() {
         String[] outOrderGroupNames = new String[]{ "外卖餐", "打包餐" };
         viewPager = (NoSlideViewPager) findViewById(R.id.outOrderViewPager);
-        viewPager.setScanScroll(false);
+        viewPager.setScanScroll(true);
         FragmentManager fm = getSupportFragmentManager();
         mAdapter = new OutFragmentPageAdapter(fm, outOrderGroupNames.length);
         viewPager.setAdapter(mAdapter);
@@ -43,7 +43,7 @@ public class OutOrderActivity extends AppCompatActivity {
         final NavigationTabBar navigationTabBar = (NavigationTabBar) findViewById(R.id.outOrderTabBar);
         final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
         for(int i=0; i<outOrderGroupNames.length; i++){
-            NavigationTabBar.Model itemModel = new NavigationTabBar.Model.Builder(getResources().getDrawable(R.drawable.none), Color.parseColor(colors[i + 3]))
+            NavigationTabBar.Model itemModel = new NavigationTabBar.Model.Builder(getResources().getDrawable(R.drawable.none), Color.parseColor(colors[i + 5]))
                     .title(outOrderGroupNames[i]).build();
             models.add(itemModel);
         }
