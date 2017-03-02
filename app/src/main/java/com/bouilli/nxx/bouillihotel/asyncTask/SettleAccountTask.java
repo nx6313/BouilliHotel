@@ -28,9 +28,10 @@ public class SettleAccountTask extends AsyncTask<Void, Void, String> {
     private String tableNo;
     private String printContext;
 
-    public SettleAccountTask(Context context, String tableOrderId){
+    public SettleAccountTask(Context context, String tableOrderId, String tableNo){
         this.context = context;
         this.tableOrderId = tableOrderId;
+        this.tableNo = tableNo;
     }
     public SettleAccountTask(Context context, String tableOrderId, String printAccountBillId, String tableNo, String printContext){
         this.context = context;
@@ -58,6 +59,8 @@ public class SettleAccountTask extends AsyncTask<Void, Void, String> {
                 msg.what = EditOrderActivity.MSG_ACCOUNT;
                 if(responseCode.equals(Constants.HTTP_REQUEST_SUCCESS_CODE)){
                     data.putString("accountResult", "true");
+                    data.putString("tableNo", tableNo);
+                    data.putString("tableOrderId", tableOrderId);
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_FAIL_CODE)) {
                     data.putString("accountResult", "false");
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_OUT_TIME_CODE)) {

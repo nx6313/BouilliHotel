@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.EditOrderActivity;
 import com.bouilli.nxx.bouillihotel.R;
@@ -40,6 +39,7 @@ public class OutOrderFragment extends Fragment {
     int mNum;// 页号
     private RefDataBroadCastReceive refDataBroadCastReceive;// 刷新数据广播实例
     public static String MSG_REF_OUTORDER_DATA = "requestNewOutOrderDataBouilliHotel";
+    public static String MSG_REF_OUTORDER_DATA_AFTER_ACC = "refOutOrderDataAfterAccount";
 
     private LinearLayout outOrderMainLayout;
 
@@ -60,6 +60,7 @@ public class OutOrderFragment extends Fragment {
         refDataBroadCastReceive = new RefDataBroadCastReceive();
         IntentFilter filter = new IntentFilter();
         filter.addAction("requestNewOutOrderDataBouilliHotel");
+        filter.addAction("refOutOrderDataAfterAccount");
         getActivity().registerReceiver(refDataBroadCastReceive, filter);
         mNum = getArguments() != null ? getArguments().getInt("num") : 1;
     }
@@ -153,7 +154,7 @@ public class OutOrderFragment extends Fragment {
                 // 主体-->服务员
                 TextView menuChildItemDesssTxt = new TextView(getActivity());
                 menuChildItemDesssTxt.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-                menuChildItemDesssTxt.setText("服务员：" + (wmOrDbInfo.split("#&&#")[0]).split("#&#")[4]);
+                menuChildItemDesssTxt.setText("下单时间： " + (wmOrDbInfo.split("#&&#")[0]).split("#&#")[3].substring(0, 16));
                 TextPaint menuChildItemDesssTxtTp = menuChildItemDesssTxt.getPaint();
                 menuChildItemDesssTxtTp.setFakeBoldText(true);
                 LinearLayout.LayoutParams menuChildItemDesssTxtLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -169,12 +170,12 @@ public class OutOrderFragment extends Fragment {
                 menuChildItemPricelayout.setLayoutParams(menuChildItemPriceLp);
                 TextView buyCountTv = new TextView(getActivity());
                 buyCountTv.setTextColor(Color.parseColor("#303030"));
-                buyCountTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                buyCountTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
                 TextPaint buyCountTvTp = buyCountTv.getPaint();
                 buyCountTvTp.setFakeBoldText(true);
                 LinearLayout.LayoutParams buyCountTvLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 buyCountTv.setLayoutParams(buyCountTvLp);
-                buyCountTv.setText("下单时间： " + (wmOrDbInfo.split("#&&#")[0]).split("#&#")[3].substring(0, 16));
+                buyCountTv.setText("服务员：" + (wmOrDbInfo.split("#&&#")[0]).split("#&#")[4]);
                 menuChildItemPricelayout.addView(buyCountTv);
                 menuChildItemlayout.addView(menuChildItemPricelayout);
 
@@ -183,14 +184,19 @@ public class OutOrderFragment extends Fragment {
                 menuChildItemlayout.setOnClickListener(new View.OnClickListener(){
                     @Override
                     public void onClick(View v) {
-                        String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
-                        Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
-                        intentKongXian.putExtra("showType", 3);
-                        intentKongXian.putExtra("tableNum", "-1");
-                        intentKongXian.putExtra("outOrderAccount", "outAccount");
-                        intentKongXian.putExtra("outOrderNumber", v.getTag().toString().trim());
-                        intentKongXian.putExtra("tableOrderId", tag_table_order_id);
-                        startActivity(intentKongXian);
+                        // 判断权限
+                        String userPermission = SharedPreferencesTool.getFromShared(getActivity(), "BouilliProInfo", "userPermission");
+                        if(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 2) {
+                            // 只有员工可以进行结账
+                            String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
+                            Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
+                            intentKongXian.putExtra("showType", 3);
+                            intentKongXian.putExtra("tableNum", "-1");
+                            intentKongXian.putExtra("outOrderAccount", "outAccount");
+                            intentKongXian.putExtra("outOrderNumber", v.getTag().toString().trim());
+                            intentKongXian.putExtra("tableOrderId", tag_table_order_id);
+                            startActivity(intentKongXian);
+                        }
                     }
                 });
 
@@ -266,6 +272,42 @@ public class OutOrderFragment extends Fragment {
                         initView();
                     }
                 }
+            }else if(intent.getAction().equals(MSG_REF_OUTORDER_DATA_AFTER_ACC)){
+                String tableOrderId = intent.getExtras().getString("tableOrderId");
+                String wmInfos = SharedPreferencesTool.getFromShared(getActivity(), "BouilliMenuInfo", "wmInfos", "");
+                String dbInfos = SharedPreferencesTool.getFromShared(getActivity(), "BouilliMenuInfo", "dbInfos", "");
+                if(ComFun.strNull(wmInfos)){
+                    String[] wmArr = wmInfos.split("#@#,#");
+                    StringBuilder wmNewSb = new StringBuilder("");
+                    for(String wmStr : wmArr){
+                        if(!((wmStr.split("#&&#")[0]).split("#&#")[0]).equals(tableOrderId)){
+                            wmNewSb.append(wmStr);
+                            wmNewSb.append("#@#,#");
+                        }
+                    }
+                    if(ComFun.strNull(wmNewSb.toString())){
+                        SharedPreferencesTool.addOrUpdate(getActivity(), "BouilliMenuInfo", "wmInfos", wmNewSb.toString().substring(0, wmNewSb.toString().length() - 5));
+                    }else{
+                        SharedPreferencesTool.addOrUpdate(getActivity(), "BouilliMenuInfo", "wmInfos", "");
+                    }
+                }
+                if(ComFun.strNull(dbInfos)){
+                    String[] dbArr = dbInfos.split("#@#,#");
+                    StringBuilder dbNewSb = new StringBuilder("");
+                    for(String dbStr : dbArr){
+                        if(!((dbStr.split("#&&#")[0]).split("#&#")[0]).equals(tableOrderId)){
+                            dbNewSb.append(dbStr);
+                            dbNewSb.append("#@#,#");
+                        }
+                    }
+                    if(ComFun.strNull(dbNewSb.toString())){
+                        SharedPreferencesTool.addOrUpdate(getActivity(), "BouilliMenuInfo", "dbInfos", dbNewSb.toString().substring(0, dbNewSb.toString().length() - 5));
+                    }else{
+                        SharedPreferencesTool.addOrUpdate(getActivity(), "BouilliMenuInfo", "dbInfos", "");
+                    }
+                }
+
+                initView();
             }
         }
     }

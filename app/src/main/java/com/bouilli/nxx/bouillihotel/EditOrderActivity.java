@@ -42,6 +42,7 @@ import com.bouilli.nxx.bouillihotel.asyncTask.SendMenuTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.SettleAccountTask;
 import com.bouilli.nxx.bouillihotel.customview.ClearEditText;
 import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
+import com.bouilli.nxx.bouillihotel.fragment.OutOrderFragment;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SerializableMap;
@@ -427,7 +428,8 @@ public class EditOrderActivity extends Activity {
                                 }
                                 ComFun.showLoading(EditOrderActivity.this, "结账中，请稍后...");
                                 String tableOrderId = toThisIntent.getExtras().getString("tableOrderId");
-                                new SettleAccountTask(EditOrderActivity.this, tableOrderId).executeOnExecutor(Executors.newCachedThreadPool());
+                                String tableNum = toThisIntent.getExtras().getString("tableNum");
+                                new SettleAccountTask(EditOrderActivity.this, tableOrderId, tableNum).executeOnExecutor(Executors.newCachedThreadPool());
                             }
                         }
                     });
@@ -888,6 +890,15 @@ public class EditOrderActivity extends Activity {
                     if (accountResult.equals("true")) {
                         //String tableNum = toThisIntent.getExtras().getString("tableNum");
                         // 发送主页面更新广播
+                        String tableOrderId = b.getString("tableOrderId");
+                        String tableNo = b.getString("tableNo");
+                        if(!ComFun.strNull(tableNo) || (ComFun.strNull(tableNo) && tableNo.equals("-1"))){
+                            // 发送订单列表页面更新广播
+                            Intent intent = new Intent();
+                            intent.putExtra("tableOrderId", tableOrderId);
+                            intent.setAction(OutOrderFragment.MSG_REF_OUTORDER_DATA_AFTER_ACC);
+                            EditOrderActivity.this.sendBroadcast(intent);
+                        }
                         EditOrderActivity.this.finish();
                     }else if (accountResult.equals("false")) {
                         ComFun.showToast(EditOrderActivity.this, "结账操作失败，请联系管理员", Toast.LENGTH_SHORT);
