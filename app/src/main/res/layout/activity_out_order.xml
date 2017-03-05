@@ -23,4 +23,16 @@
 
     <include layout="@layout/content_out_order" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/message_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        app:backgroundTint="#dbec0a06"
+        app:backgroundTintMode="src_over"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/menu1"
+        android:alpha="0.4"/>
+
 </android.support.design.widget.CoordinatorLayout>

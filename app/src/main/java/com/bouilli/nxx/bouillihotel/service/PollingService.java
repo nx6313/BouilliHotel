@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.WelcomeActivity;
 import com.bouilli.nxx.bouillihotel.asyncTask.InitBaseDataTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.InitOrderDataTask;
 import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
 import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
@@ -45,36 +46,26 @@ public class PollingService extends Service {
      * Polling thread
      * 模拟向Server轮询的异步线程
      */
-    int count = 0;
     class PollingThread extends Thread {
         @Override
         public void run() {
             while(true){
                 try {
-                    sleep(2000);
+                    sleep(3000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                count ++;
-                //当计数能被2整除时弹出通知
-                if (count % 2 == 0) {
-                    // 检测网络连接是否可用
-                    boolean isNetworkAvailable = ComFun.isNetworkAvailable(PollingService.this);
-                    if(isNetworkAvailable){
-                        // 每2秒执行一次数据请求
-                        new InitBaseDataTask(PollingService.this, true).executeOnExecutor(Executors.newCachedThreadPool());
-                    }else{
-                        // 发送全局广播，说明网络异常
-                        Intent intent = new Intent();
-                        intent.setAction(BouilliBroadcastReceiver.ACTION_NOT_NET);
-                        PollingService.this.sendBroadcast(intent);
-                    }
-                    // 数据请求成功并发送广播后，再2秒后执行下一次循环
-                    try {
-                        sleep(2000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                // 检测网络连接是否可用
+                boolean isNetworkAvailable = ComFun.isNetworkAvailable(PollingService.this);
+                if(isNetworkAvailable){
+                    // 每2秒执行一次数据请求
+                    new InitBaseDataTask(PollingService.this, true).executeOnExecutor(Executors.newCachedThreadPool());
+                    new InitOrderDataTask(PollingService.this).executeOnExecutor(Executors.newCachedThreadPool());
+                }else{
+                    // 发送全局广播，说明网络异常
+                    Intent intent = new Intent();
+                    intent.setAction(BouilliBroadcastReceiver.ACTION_NOT_NET);
+                    PollingService.this.sendBroadcast(intent);
                 }
             }
         }

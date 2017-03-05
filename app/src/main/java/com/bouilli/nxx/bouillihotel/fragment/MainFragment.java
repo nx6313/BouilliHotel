@@ -4,11 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.text.TextPaint;
 import android.util.Log;
@@ -27,11 +30,17 @@ import android.widget.Toast;
 import com.bouilli.nxx.bouillihotel.EditOrderActivity;
 import com.bouilli.nxx.bouillihotel.MainActivity;
 import com.bouilli.nxx.bouillihotel.R;
+import com.bouilli.nxx.bouillihotel.asyncTask.GetMenuInThisTableTask;
 import com.bouilli.nxx.bouillihotel.customview.FlowLayout;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SerializableMap;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
+import com.bouilli.nxx.bouillihotel.util.SnackbarUtil;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
 
 /**
  * Created by 18230 on 2016/11/5.
@@ -120,52 +129,66 @@ public class MainFragment extends Fragment {
             tableDesTp.setFakeBoldText(true);
             tableObject.addView(tableDes);
             dining_table_layout.addView(tableObject);
-            // 判断权限
-            String userPermission = SharedPreferencesTool.getFromShared(getActivity(), "BouilliProInfo", "userPermission");
-            if(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 2){
-                // 只有员工可以进行点餐
-                tableObject.setOnClickListener(new View.OnClickListener(){
-                    @Override
-                    public void onClick(View v) {
-                        int tableState = Integer.parseInt(((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_state).toString());
-                        String tableDesInfo = ((TextView) ((LinearLayout) v).getChildAt(1)).getText().toString();
-                        if(tableState == 2){// 编辑中
-                            ComFun.showToast(getActivity(), "该餐桌正在编辑中，选择别的餐桌吧", Toast.LENGTH_SHORT);
-                        }else{
-                            final ImageView clickTableImgView = (ImageView) ((LinearLayout) v).getChildAt(0);
-                            changeLight(clickTableImgView, -80);
-                            Handler tableImgHandler = new Handler();
-                            tableImgHandler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    changeLight(clickTableImgView, 0);
-                                }
-                            }, 80);
-                            if(tableState == 1){// 空闲
-                                Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
-                                intentKongXian.putExtra("showType", 1);
-                                intentKongXian.putExtra("tableNum", tableDesInfo);
-                                startActivity(intentKongXian);
-                            }else if(tableState == -1){// 编辑中(本地状态)
-                                SerializableMap tableHasNewOrderMap = new SerializableMap();
-                                tableHasNewOrderMap.setMap(MainActivity.editBookMap.get(tableDesInfo));
-                                Intent intentEdit = new Intent(getActivity(), EditOrderActivity.class);
-                                intentEdit.putExtra("showType", -1);
-                                intentEdit.putExtra("tableNum", tableDesInfo);
-                                intentEdit.putExtra("hasOrderInEditBook", tableHasNewOrderMap);
-                                startActivity(intentEdit);
-                            }else{// 占用
-                                String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
-                                Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
-                                intentKongXian.putExtra("showType", 3);
-                                intentKongXian.putExtra("tableNum", tableDesInfo);
-                                intentKongXian.putExtra("tableOrderId", tag_table_order_id);
-                                startActivity(intentKongXian);
+            // 只有员工可以进行点餐
+            tableObject.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                int tableState = Integer.parseInt(((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_state).toString());
+                // 判断权限
+                String userPermission = SharedPreferencesTool.getFromShared(getActivity(), "BouilliProInfo", "userPermission");
+                if(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 2) {
+                    String tableDesInfo = ((TextView) ((LinearLayout) v).getChildAt(1)).getText().toString();
+                    if (tableState == 2) {// 编辑中
+                        ComFun.showToast(getActivity(), "该餐桌正在编辑中，选择别的餐桌吧", Toast.LENGTH_SHORT);
+                    } else {
+                        final ImageView clickTableImgView = (ImageView) ((LinearLayout) v).getChildAt(0);
+                        changeLight(clickTableImgView, -80);
+                        Handler tableImgHandler = new Handler();
+                        tableImgHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                changeLight(clickTableImgView, 0);
                             }
+                        }, 80);
+                        if (tableState == 1) {// 空闲
+                            Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
+                            intentKongXian.putExtra("showType", 1);
+                            intentKongXian.putExtra("tableNum", tableDesInfo);
+                            startActivity(intentKongXian);
+                        } else if (tableState == -1) {// 编辑中(本地状态)
+                            SerializableMap tableHasNewOrderMap = new SerializableMap();
+                            tableHasNewOrderMap.setMap(MainActivity.editBookMap.get(tableDesInfo));
+                            Intent intentEdit = new Intent(getActivity(), EditOrderActivity.class);
+                            intentEdit.putExtra("showType", -1);
+                            intentEdit.putExtra("tableNum", tableDesInfo);
+                            intentEdit.putExtra("hasOrderInEditBook", tableHasNewOrderMap);
+                            startActivity(intentEdit);
+                        } else {// 占用
+                            String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
+                            Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
+                            intentKongXian.putExtra("showType", 3);
+                            intentKongXian.putExtra("tableNum", tableDesInfo);
+                            intentKongXian.putExtra("tableOrderId", tag_table_order_id);
+                            startActivity(intentKongXian);
                         }
                     }
-                });
-            }
+                }else{
+                    // 显示预览信息
+                    if (tableState == 2) {
+                        ComFun.showToast(getActivity(), "该餐桌正在点餐哦", Toast.LENGTH_SHORT);
+                    }else if(tableState != 1 || tableState == -1){
+                        String tableDesInfo = ((TextView) ((LinearLayout) v).getChildAt(1)).getText().toString();
+                        String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
+                        // 通知首页显示加载动画
+                        Message msg = new Message();
+                        msg.what = MainActivity.MSG_SEE_TABLE_INFO_LOADING;
+                        MainActivity.mHandler.sendMessage(msg);
+                        // 调用任务根据餐桌号获取该餐桌就餐信息数据
+                        new GetMenuInThisTableTask(getActivity(), tag_table_order_id, true, false, tableDesInfo).executeOnExecutor(Executors.newCachedThreadPool());
+                    }
+                }
+                }
+            });
         }
     }
 

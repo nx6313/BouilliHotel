@@ -106,6 +106,8 @@ public class EditOrderActivity extends Activity {
         // 初始化布局宽度和高度
         //editOrderLayout.getLayoutParams().width = screenWidth * 7 / 8;
         //editOrderLayout.getLayoutParams().height = screenHeight * 3 / 4;
+        // 初始化打票机可选项
+        new GetPrintInfoTask(EditOrderActivity.this, true).executeOnExecutor(Executors.newCachedThreadPool());
         // 初始化点击按钮
         initBtnEvent();
         // 初始化布局背景色
@@ -265,8 +267,6 @@ public class EditOrderActivity extends Activity {
             // 调用任务根据餐桌号获取该餐桌就餐信息数据
             new GetMenuInThisTableTask(EditOrderActivity.this, tableOrderId).executeOnExecutor(Executors.newCachedThreadPool());
         }
-        // 初始化打票机可选项
-        new GetPrintInfoTask(EditOrderActivity.this, true).executeOnExecutor(Executors.newCachedThreadPool());
     }
 
     // 初始化点击按钮
@@ -417,7 +417,17 @@ public class EditOrderActivity extends Activity {
                                         String tableNum = toThisIntent.getExtras().getString("tableNum");
                                         // 获取生成小票内容（用#N#符代替换行）
                                         String smailBillContext = createSmailBillContext();
-                                        new SettleAccountTask(EditOrderActivity.this, tableOrderId, printAccountBillId, tableNum, smailBillContext).executeOnExecutor(Executors.newCachedThreadPool());
+                                        if(userContactWay.getVisibility() == View.VISIBLE){
+                                            String outUserName = userContactWay.getText().toString().trim().split("、")[0];
+                                            String outUserPhone = userContactWay.getText().toString().trim().split("、")[1];
+                                            String outUserAddress = userContactWay.getText().toString().trim().split("、")[2];
+                                            if(outUserName.equals("匿名")){
+                                                outUserName = "-";
+                                            }
+                                            new SettleAccountTask(EditOrderActivity.this, tableOrderId, printAccountBillId, tableNum, smailBillContext, outUserName, outUserPhone, outUserAddress).executeOnExecutor(Executors.newCachedThreadPool());
+                                        }else{
+                                            new SettleAccountTask(EditOrderActivity.this, tableOrderId, printAccountBillId, tableNum, smailBillContext).executeOnExecutor(Executors.newCachedThreadPool());
+                                        }
                                     }
                                 }else{
                                     ComFun.showToast(EditOrderActivity.this, "请选择打印收据小票的设备", Toast.LENGTH_SHORT);
@@ -429,7 +439,17 @@ public class EditOrderActivity extends Activity {
                                 ComFun.showLoading(EditOrderActivity.this, "结账中，请稍后...");
                                 String tableOrderId = toThisIntent.getExtras().getString("tableOrderId");
                                 String tableNum = toThisIntent.getExtras().getString("tableNum");
-                                new SettleAccountTask(EditOrderActivity.this, tableOrderId, tableNum).executeOnExecutor(Executors.newCachedThreadPool());
+                                if(userContactWay.getVisibility() == View.VISIBLE){
+                                    String outUserName = userContactWay.getText().toString().trim().split("、")[0];
+                                    String outUserPhone = userContactWay.getText().toString().trim().split("、")[1];
+                                    String outUserAddress = userContactWay.getText().toString().trim().split("、")[2];
+                                    if(outUserName.equals("匿名")){
+                                        outUserName = "-";
+                                    }
+                                    new SettleAccountTask(EditOrderActivity.this, tableOrderId, tableNum, outUserName, outUserPhone, outUserAddress).executeOnExecutor(Executors.newCachedThreadPool());
+                                }else{
+                                    new SettleAccountTask(EditOrderActivity.this, tableOrderId, tableNum).executeOnExecutor(Executors.newCachedThreadPool());
+                                }
                             }
                         }
                     });

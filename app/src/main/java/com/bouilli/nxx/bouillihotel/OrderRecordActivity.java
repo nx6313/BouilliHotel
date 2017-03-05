@@ -29,6 +29,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.callBack.MsgCallBack;
 import com.bouilli.nxx.bouillihotel.customview.ElasticScrollView;

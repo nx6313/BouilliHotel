@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.R;
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
@@ -82,21 +83,41 @@ public class PrintService extends Service {
                 SQLiteDatabase db = sqlite.getReadableDatabase();
                 List<String> resultList = new ArrayList<>();
                 // 查询需打印订单数据表
-                Cursor cursor = db.query("printinfo", new String[]{"record_id, table_no, print_context"}, "current_state = 0 and tip_count = 0", null, null, null, null, null);
+                Cursor cursor = db.query("printinfo", new String[]{"record_id, table_no, print_context, create_date, create_user, order_num, out_user_name, out_user_phone, out_user_address"}, "current_state = 0 and tip_count = 0", null, null, null, null, null);
                 int recordIdIndex = cursor.getColumnIndex("record_id");
                 int tableNoIndex = cursor.getColumnIndex("table_no");
                 int printContextIndex = cursor.getColumnIndex("print_context");
+                int createDateIndex = cursor.getColumnIndex("create_date");
+                int createUserIndex = cursor.getColumnIndex("create_user");
+                int orderNumIndex = cursor.getColumnIndex("order_num");
+                int outUserNameIndex = cursor.getColumnIndex("out_user_name");
+                int outUserPhoneIndex = cursor.getColumnIndex("out_user_phone");
+                int outUserAddressIndex = cursor.getColumnIndex("out_user_address");
                 for (cursor.moveToFirst(); !(cursor.isAfterLast()); cursor.moveToNext()) {
-                    resultList.add("1#&#" + cursor.getString(recordIdIndex) + "#&#" + cursor.getString(tableNoIndex) + "#&#" + cursor.getString(printContextIndex));
+                    resultList.add("1#&#" + cursor.getString(recordIdIndex) + "#&#" + cursor.getString(tableNoIndex) + "#&#" +
+                            cursor.getString(printContextIndex) + "#&#" + cursor.getString(createDateIndex) + "#&#" +
+                            cursor.getString(createUserIndex) + "#&#" + cursor.getString(orderNumIndex) + "#&#" +
+                            cursor.getString(outUserNameIndex) + "#&#" + cursor.getString(outUserPhoneIndex) + "#&#" +
+                            cursor.getString(outUserAddressIndex));
                 }
                 cursor.close();
                 // 查询需打印小票表
-                Cursor cursor_bill = db.query("billinfo", new String[]{"bill_id, table_no, print_context"}, "current_state = 0 and tip_count = 0", null, null, null, null, null);
+                Cursor cursor_bill = db.query("billinfo", new String[]{"bill_id, table_no, print_context, order_num, order_waiter, order_date, out_user_name, out_user_phone, out_user_address"}, "current_state = 0 and tip_count = 0", null, null, null, null, null);
                 int billIdIndex = cursor_bill.getColumnIndex("bill_id");
                 int billTableNoIndex = cursor_bill.getColumnIndex("table_no");
                 int billPrintContextIndex = cursor_bill.getColumnIndex("print_context");
+                int billOrderNumIndex = cursor_bill.getColumnIndex("order_num");
+                int billOrderWaiterIndex = cursor_bill.getColumnIndex("order_waiter");
+                int billOrderDateIndex = cursor_bill.getColumnIndex("order_date");
+                int billOutUserNameIndex = cursor.getColumnIndex("out_user_name");
+                int billOutUserPhoneIndex = cursor.getColumnIndex("out_user_phone");
+                int billOutUserAddressIndex = cursor.getColumnIndex("out_user_address");
                 for (cursor_bill.moveToFirst(); !(cursor_bill.isAfterLast()); cursor_bill.moveToNext()) {
-                    resultList.add("2#&#" + cursor_bill.getString(billIdIndex) + "#&#" + cursor_bill.getString(billTableNoIndex) + "#&#" + cursor_bill.getString(billPrintContextIndex));
+                    resultList.add("2#&#" + cursor_bill.getString(billIdIndex) + "#&#" + cursor_bill.getString(billTableNoIndex) + "#&#" +
+                            cursor_bill.getString(billPrintContextIndex) + "#&#" + cursor_bill.getString(billOrderDateIndex) + "#&#" +
+                            cursor_bill.getString(billOrderWaiterIndex) + "#&#" + cursor_bill.getString(billOrderNumIndex) + "#&#" +
+                            cursor_bill.getString(billOutUserNameIndex) + "#&#" + cursor_bill.getString(billOutUserPhoneIndex) + "#&#" +
+                            cursor_bill.getString(billOutUserAddressIndex));
                 }
                 cursor_bill.close();
                 db.close();
@@ -109,6 +130,12 @@ public class PrintService extends Service {
                         broadcast.putExtra("printRecordId", resultList.get(i).split("#&#")[1]);
                         broadcast.putExtra("printAboutTable", resultList.get(i).split("#&#")[2]);
                         broadcast.putExtra("printContent", ComFun.formatMenuDetailInfo2(resultList.get(i).split("#&#")[3]));
+                        broadcast.putExtra("printOrderTime", resultList.get(i).split("#&#")[4]);
+                        broadcast.putExtra("printFuWuYuan", resultList.get(i).split("#&#")[5]);
+                        broadcast.putExtra("printOrderNum", resultList.get(i).split("#&#")[6]);
+                        broadcast.putExtra("outUserName", resultList.get(i).split("#&#")[7]);
+                        broadcast.putExtra("outUserPhone", resultList.get(i).split("#&#")[8]);
+                        broadcast.putExtra("outUserAddress", resultList.get(i).split("#&#")[9]);
                         PrintService.this.sendBroadcast(broadcast);
                         try {
                             sleep(2000);

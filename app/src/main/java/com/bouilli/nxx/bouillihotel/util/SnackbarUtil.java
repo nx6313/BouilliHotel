@@ -168,4 +168,20 @@ public class SnackbarUtil {
 
         snackbarLayout.addView(add_view,index,p);
     }
+
+    /**
+     * 向Snackbar中添加view
+     * @param snackbar
+     * @param add_view
+     * @param index 新加布局在Snackbar中的位置
+     */
+    public static void SnackbarAddView( Snackbar snackbar, View add_view, int index) {
+        View snackbarview = snackbar.getView();
+        Snackbar.SnackbarLayout snackbarLayout=(Snackbar.SnackbarLayout)snackbarview;
+
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+        p.gravity= Gravity.CENTER_VERTICAL;
+
+        snackbarLayout.addView(add_view, index, p);
+    }
 }

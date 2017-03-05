@@ -1,12 +1,16 @@
 package com.bouilli.nxx.bouillihotel.asyncTask;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 
 import com.bouilli.nxx.bouillihotel.EditOrderActivity;
+import com.bouilli.nxx.bouillihotel.MainActivity;
+import com.bouilli.nxx.bouillihotel.OutOrderActivity;
 import com.bouilli.nxx.bouillihotel.action.MenuAction;
+import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.Constants;
 import com.bouilli.nxx.bouillihotel.util.URIUtil;
@@ -22,10 +26,20 @@ import org.json.JSONObject;
 public class GetMenuInThisTableTask extends AsyncTask<Void, Void, String> {
     private Context context;
     private String tableOrderId;
+    private boolean seeFlag = false;// 标记是非员工获取点餐信息（不进入后台）
+    private String tableNum;// seeFlag为true时使用（不进入后台）
+    private boolean seeFlagForOut = false;// 标记是非员工获取点餐信息/外卖情况（不进入后台）
 
     public GetMenuInThisTableTask(Context context, String tableOrderId){
         this.context = context;
         this.tableOrderId = tableOrderId;
+    }
+    public GetMenuInThisTableTask(Context context, String tableOrderId, boolean seeFlag, boolean seeFlagForOut, String tableNum){
+        this.context = context;
+        this.tableOrderId = tableOrderId;
+        this.seeFlag = seeFlag;
+        this.seeFlagForOut = seeFlagForOut;
+        this.tableNum = tableNum;
     }
 
     @Override
@@ -54,7 +68,6 @@ public class GetMenuInThisTableTask extends AsyncTask<Void, Void, String> {
                         data.putString("orderInfoDetails", orderInfoDetailSb.toString().substring(0, orderInfoDetailSb.toString().length() - 1));
                     }
                 }
-                msg.what = EditOrderActivity.MSG_GET_TABLE_ORDER_INFO;
                 if(responseCode.equals(Constants.HTTP_REQUEST_SUCCESS_CODE)){
                     data.putString("getTableOrderInfoResult", "true");
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_FAIL_CODE)) {
@@ -62,8 +75,23 @@ public class GetMenuInThisTableTask extends AsyncTask<Void, Void, String> {
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_OUT_TIME_CODE)) {
                     data.putString("getTableOrderInfoResult", "time_out");
                 }
-                msg.setData(data);
-                EditOrderActivity.mHandler.sendMessage(msg);
+                if(!seeFlag){
+                    msg.what = EditOrderActivity.MSG_GET_TABLE_ORDER_INFO;
+                    msg.setData(data);
+                    EditOrderActivity.mHandler.sendMessage(msg);
+                }else{
+                    if(seeFlagForOut){
+                        msg.what = OutOrderActivity.MSG_SEE_TABLE_INFO;
+                        data.putString("tableNum", tableNum);
+                        msg.setData(data);
+                        OutOrderActivity.mHandler.sendMessage(msg);
+                    }else{
+                        msg.what = MainActivity.MSG_SEE_TABLE_INFO;
+                        data.putString("tableNum", tableNum);
+                        msg.setData(data);
+                        MainActivity.mHandler.sendMessage(msg);
+                    }
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }

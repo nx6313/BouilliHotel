@@ -17,6 +17,11 @@ public class URIUtil {
     public static final String INIT_BASE_DATA_URI = "initBaseData.action";
 
     /**
+     * 初始化程序订单数据
+     */
+    public static final String INIT_ORDER_DATA_URI = "initOrderData.action";
+
+    /**
      * 添加新餐桌
      */
     public static final String ADD_NEW_TABLE_URI = "addNewTable.action";

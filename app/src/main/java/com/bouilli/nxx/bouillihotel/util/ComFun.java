@@ -162,17 +162,16 @@ public class ComFun {
         loadingDialog = new AlertDialog.Builder(activity).setCancelable(cancelable).create();
         loadingDialog.show();
         Window win = loadingDialog.getWindow();
-        View loadingView = activity.getLayoutInflater().inflate(R.layout.loading_dialog_movie, null);
+        View loadingView = activity.getLayoutInflater().inflate(R.layout.loading_dialog, null);
         win.setContentView(loadingView);
-        GifViewByMovie loadingGif = (GifViewByMovie) loadingView.findViewById(R.id.loadingGif);
-        loadingGif.setMovieResource(R.drawable.loading10);
+        GifView loadingGif = (GifView) loadingView.findViewById(R.id.loadingGif);
+        loadingGif.setGifImage(R.drawable.loading10);
+        loadingGif.setShowDimension(240, 240);
+        loadingGif.setGifImageType(GifView.GifImageType.COVER);
         TextView loadingTip = (TextView) loadingView.findViewById(R.id.loadingTip);
         if(loadingTip != null){
             if(strNull(loadingTipValue)){
-                loadingTip.setVisibility(View.VISIBLE);
                 loadingTip.setText(loadingTipValue);
-            }else{
-                loadingTip.setVisibility(View.GONE);
             }
         }
     }

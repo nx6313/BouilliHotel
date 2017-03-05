@@ -65,7 +65,7 @@ public class PrintErrorPoolActivity extends AppCompatActivity {
         }).start();
     }
 
-    // 键："printItem_" + 序号          内容：打票类型 #&# 打票Id #&# 打票桌号 #&# 打票内容
+    // 键："printItem_" + 序号          内容：打票类型 #&# 打票Id #&# 打票桌号 #&# 打票内容 #&# 服务员 #&# 订单时间
     private void initPrintErrorPool() {
         final String userId = SharedPreferencesTool.getFromShared(PrintErrorPoolActivity.this, "BouilliProInfo", "userId");
         if(ComFun.strNull(userId)){
@@ -175,12 +175,19 @@ public class PrintErrorPoolActivity extends AppCompatActivity {
                 final String printType = m.getValue().toString().split("#&#")[0];
                 final String printAboutTable = m.getValue().toString().split("#&#")[2];
                 final String printMsg = m.getValue().toString().split("#&#")[3];
+                final String printOrderNum = m.getValue().toString().split("#&#")[4];
+                final String printFuWuYuan = m.getValue().toString().split("#&#")[5];
+                final String printOrderTime = m.getValue().toString().split("#&#")[6];
+                final String outUserName = m.getValue().toString().split("#&#")[7];
+                final String outUserPhone = m.getValue().toString().split("#&#")[8];
+                final String outUserAddress = m.getValue().toString().split("#&#")[9];
 
                 final String printRecordId = m.getValue().toString().split("#&#")[1];
                 recordItemLayout.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     @Override
                     public void onFocusChange(View v, boolean hasFocus) {
-                        if(hasFocus){boolean printUseVol = SharedPreferencesTool.getBooleanFromShared(PrintErrorPoolActivity.this, "BouilliSetInfo", "printUseVol");
+                        if(hasFocus){
+                            boolean printUseVol = SharedPreferencesTool.getBooleanFromShared(PrintErrorPoolActivity.this, "BouilliSetInfo", "printUseVol");
                             if(printUseVol){
                                 // 打印请求
                                 if(MyApplication.mBluetoothAdapter == null){
@@ -202,9 +209,36 @@ public class PrintErrorPoolActivity extends AppCompatActivity {
                                             MyApplication.mOutputStream = MyApplication.mBluetoothSocket.getOutputStream();
                                             if(ComFun.strNull(printAboutTable)){
                                                 if(printType.equals("1")){
-                                                    MyApplication.mOutputStream.write(("**********  "+ printAboutTable +"  **********\n").getBytes("GBK"));
+                                                    MyApplication.mOutputStream.write(0x1c);
+                                                    MyApplication.mOutputStream.write(0x21);
+                                                    MyApplication.mOutputStream.write(12);
+                                                    MyApplication.mOutputStream.write(("     后厨点菜单\n").getBytes("GBK"));
+                                                    MyApplication.mOutputStream.write(0x1c);
+                                                    MyApplication.mOutputStream.write(0x21);
+                                                    MyApplication.mOutputStream.write(0);
+                                                    MyApplication.mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});
+                                                    if(printAboutTable.contains(">>")){
+                                                        if(printAboutTable.contains("DB")){
+                                                            MyApplication.mOutputStream.write(("餐桌：打包单 "+ printAboutTable.substring(9, printAboutTable.length()) +" 号\n").getBytes("GBK"));
+                                                        }else{
+                                                            MyApplication.mOutputStream.write(("餐桌：外卖单 "+ printAboutTable.substring(9, printAboutTable.length()) +" 号\n").getBytes("GBK"));
+                                                        }
+                                                    }else{
+                                                        MyApplication.mOutputStream.write(("餐桌："+ printAboutTable.substring(printAboutTable.indexOf(".") + 1, printAboutTable.length()) +" 号\n").getBytes("GBK"));
+                                                    }
+                                                    MyApplication.mOutputStream.write(0x1c);
+                                                    MyApplication.mOutputStream.write(0x21);
+                                                    MyApplication.mOutputStream.write(0);
+                                                    MyApplication.mOutputStream.write(("*****************************\n").getBytes("GBK"));
                                                 }else{
-                                                    MyApplication.mOutputStream.write(("        红烧肉刀削面\n").getBytes("GBK"));
+                                                    MyApplication.mOutputStream.write(0x1c);
+                                                    MyApplication.mOutputStream.write(0x21);
+                                                    MyApplication.mOutputStream.write(12);
+                                                    MyApplication.mOutputStream.write(("  红烧肉刀削面\n").getBytes("GBK"));
+                                                    MyApplication.mOutputStream.write(0x1c);
+                                                    MyApplication.mOutputStream.write(0x21);
+                                                    MyApplication.mOutputStream.write(0);
+                                                    MyApplication.mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});
                                                     MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
                                                 }
                                             }else{
@@ -213,11 +247,36 @@ public class PrintErrorPoolActivity extends AppCompatActivity {
                                             MyApplication.mOutputStream.write((printMsg+"\n").getBytes("GBK"));
                                             if(printType.equals("1")){
                                                 MyApplication.mOutputStream.write(("*****************************\n").getBytes("GBK"));
+                                                if(!outUserPhone.equals("-") && !outUserAddress.equals("-")){
+                                                    if(outUserName.equals("-")){
+                                                        MyApplication.mOutputStream.write(("外卖联系人姓名：匿名\n").getBytes("GBK"));
+                                                    }else{
+                                                        MyApplication.mOutputStream.write(("外卖联系人姓名："+ outUserName +"\n").getBytes("GBK"));
+                                                    }
+                                                    MyApplication.mOutputStream.write(("外卖联系人电话："+ outUserPhone +"\n").getBytes("GBK"));
+                                                    MyApplication.mOutputStream.write(("外卖联系人地址："+ outUserAddress +"\n").getBytes("GBK"));
+                                                }
+                                                MyApplication.mOutputStream.write(("账单编号："+ printOrderNum +"\n").getBytes("GBK"));
+                                                MyApplication.mOutputStream.write(("服务员："+ printFuWuYuan +"\n").getBytes("GBK"));
+                                                MyApplication.mOutputStream.write(("下单时间："+ printOrderTime +"\n").getBytes("GBK"));
                                             }else{
                                                 MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
+                                                if(!outUserPhone.equals("-") && !outUserAddress.equals("-")){
+                                                    if(outUserName.equals("-")){
+                                                        MyApplication.mOutputStream.write(("外卖联系人姓名：匿名\n").getBytes("GBK"));
+                                                    }else{
+                                                        MyApplication.mOutputStream.write(("外卖联系人姓名："+ outUserName +"\n").getBytes("GBK"));
+                                                    }
+                                                    MyApplication.mOutputStream.write(("外卖联系人电话："+ outUserPhone +"\n").getBytes("GBK"));
+                                                    MyApplication.mOutputStream.write(("外卖联系人地址："+ outUserAddress +"\n").getBytes("GBK"));
+                                                }
+                                                MyApplication.mOutputStream.write(("账单编号："+ printOrderNum +"\n").getBytes("GBK"));
+                                                MyApplication.mOutputStream.write(("服务员："+ printFuWuYuan +"\n").getBytes("GBK"));
+                                                MyApplication.mOutputStream.write(("下单时间："+ printOrderTime +"\n").getBytes("GBK"));
+                                                MyApplication.mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});
                                                 MyApplication.mOutputStream.write(("谢谢您的惠顾！欢迎下次再来！\n").getBytes("GBK"));
                                                 String userMobel = SharedPreferencesTool.getFromShared(PrintErrorPoolActivity.this, "BouilliProInfo", "userMobel");
-                                                if(ComFun.strNull(userMobel)){
+                                                if(ComFun.strNull(userMobel) && !userMobel.equals("-")){
                                                     MyApplication.mOutputStream.write(("联系电话： "+ userMobel +"\n").getBytes("GBK"));
                                                 }
                                             }

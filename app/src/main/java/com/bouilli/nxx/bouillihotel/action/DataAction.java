@@ -31,11 +31,20 @@ public class DataAction extends BaseAction {
      * @param uri
      * @return
      */
-    public static String initBaseData(Context context, String uri, boolean forPrintServiceFlag){
+    public static String initBaseData(Context context, String uri){
+        return getHttpData(context, uri, null);
+    }
+
+    /**
+     * 初始化程序订单数据
+     * @param uri
+     * @return
+     */
+    public static String initOrderData(Context context, String uri, boolean forPrintServiceFlag){
         Map<String, String> paramMap = null;
         if(forPrintServiceFlag){
-            String userId = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userId");
             paramMap = new HashMap<>();
+            String userId = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userId");
             paramMap.put("forPrintServiceUserId", userId);
         }
         return getHttpData(context, uri, paramMap);

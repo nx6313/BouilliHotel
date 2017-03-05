@@ -105,7 +105,7 @@ public class MenuAction extends BaseAction {
      * @param uri
      * @return
      */
-    public static String settleAccount(Context context, String uri, String tableOrderId, String printAccountBillId, String tableNo, String printContext){
+    public static String settleAccount(Context context, String uri, String tableOrderId, String printAccountBillId, String tableNo, String printContext, String outUserName, String outUserPhone, String outUserAddress){
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("tableOrderId", tableOrderId);
         if(ComFun.strNull(printAccountBillId) && ComFun.strNull(tableNo) && ComFun.strNull(printContext)){
@@ -113,6 +113,9 @@ public class MenuAction extends BaseAction {
             paramMap.put("tableNo", tableNo);
             paramMap.put("printContext", printContext);
         }
+        paramMap.put("outUserName", outUserName);
+        paramMap.put("outUserPhone", outUserPhone);
+        paramMap.put("outUserAddress", outUserAddress);
         return getHttpData(context, uri, paramMap);
     }
 

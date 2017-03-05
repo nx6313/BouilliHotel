@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextPaint;
@@ -20,7 +21,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bouilli.nxx.bouillihotel.EditOrderActivity;
+import com.bouilli.nxx.bouillihotel.MainActivity;
+import com.bouilli.nxx.bouillihotel.OutOrderActivity;
 import com.bouilli.nxx.bouillihotel.R;
+import com.bouilli.nxx.bouillihotel.asyncTask.GetMenuInThisTableTask;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
@@ -30,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 /**
  * Created by 18230 on 2016/11/5.
@@ -196,6 +201,15 @@ public class OutOrderFragment extends Fragment {
                             intentKongXian.putExtra("outOrderNumber", v.getTag().toString().trim());
                             intentKongXian.putExtra("tableOrderId", tag_table_order_id);
                             startActivity(intentKongXian);
+                        }else{
+                            String tableDesInfo = v.getTag().toString().trim();
+                            String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
+                            // 通知首页显示加载动画
+                            Message msg = new Message();
+                            msg.what = OutOrderActivity.MSG_SEE_TABLE_INFO_LOADING;
+                            OutOrderActivity.mHandler.sendMessage(msg);
+                            // 调用任务根据餐桌号获取该餐桌就餐信息数据
+                            new GetMenuInThisTableTask(getActivity(), tag_table_order_id, true, true, tableDesInfo).executeOnExecutor(Executors.newCachedThreadPool());
                         }
                     }
                 });

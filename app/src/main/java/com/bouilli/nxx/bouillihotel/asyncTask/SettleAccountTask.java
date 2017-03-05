@@ -27,11 +27,23 @@ public class SettleAccountTask extends AsyncTask<Void, Void, String> {
     private String printAccountBillId;
     private String tableNo;
     private String printContext;
+    /********************* 外卖使用参数 *********************/
+    private String outUserName = "-";
+    private String outUserPhone = "-";
+    private String outUserAddress = "-";
 
     public SettleAccountTask(Context context, String tableOrderId, String tableNo){
         this.context = context;
         this.tableOrderId = tableOrderId;
         this.tableNo = tableNo;
+    }
+    public SettleAccountTask(Context context, String tableOrderId, String tableNo, String outUserName, String outUserPhone, String outUserAddress){
+        this.context = context;
+        this.tableOrderId = tableOrderId;
+        this.tableNo = tableNo;
+        this.outUserName = outUserName;
+        this.outUserPhone = outUserPhone;
+        this.outUserAddress = outUserAddress;
     }
     public SettleAccountTask(Context context, String tableOrderId, String printAccountBillId, String tableNo, String printContext){
         this.context = context;
@@ -40,10 +52,20 @@ public class SettleAccountTask extends AsyncTask<Void, Void, String> {
         this.tableNo = tableNo;
         this.printContext = printContext;
     }
+    public SettleAccountTask(Context context, String tableOrderId, String printAccountBillId, String tableNo, String printContext, String outUserName, String outUserPhone, String outUserAddress){
+        this.context = context;
+        this.tableOrderId = tableOrderId;
+        this.printAccountBillId = printAccountBillId;
+        this.tableNo = tableNo;
+        this.printContext = printContext;
+        this.outUserName = outUserName;
+        this.outUserPhone = outUserPhone;
+        this.outUserAddress = outUserAddress;
+    }
 
     @Override
     protected String doInBackground(Void... params) {
-        return MenuAction.settleAccount(context, URIUtil.SETTLE_ACCOUNT, tableOrderId, printAccountBillId, tableNo, printContext);
+        return MenuAction.settleAccount(context, URIUtil.SETTLE_ACCOUNT, tableOrderId, printAccountBillId, tableNo, printContext, outUserName, outUserPhone, outUserAddress);
     }
 
     @Override

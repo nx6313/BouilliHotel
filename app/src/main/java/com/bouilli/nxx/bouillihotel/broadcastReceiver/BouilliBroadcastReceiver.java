@@ -14,15 +14,11 @@ import android.net.Uri;
 import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.MyApplication;
-import com.bouilli.nxx.bouillihotel.PrintErrorPoolActivity;
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
-import com.bouilli.nxx.bouillihotel.service.PrintService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,11 +39,26 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                 String printRecordId = "";
                 String printAboutTable = "";
                 String printMsg = "";
-                if(intent.hasExtra("printType") && intent.hasExtra("printRecordId") && intent.hasExtra("printAboutTable") && intent.hasExtra("printContent")){
+                String printOrderNum = "";
+                String printFuWuYuan = "";
+                String printOrderTime = "";
+                String outUserName = "-";
+                String outUserPhone = "-";
+                String outUserAddress = "-";
+                if(intent.hasExtra("printType") && intent.hasExtra("printRecordId") && intent.hasExtra("printAboutTable") && intent.hasExtra("printContent")
+                        && intent.hasExtra("printOrderNum") && intent.hasExtra("printFuWuYuan") && intent.hasExtra("printOrderTime")){
                     printType = intent.getStringExtra("printType");
                     printRecordId = intent.getStringExtra("printRecordId");
                     printAboutTable = intent.getStringExtra("printAboutTable");
                     printMsg = intent.getStringExtra("printContent");
+                    printOrderNum = intent.getStringExtra("printOrderNum");
+                    printFuWuYuan = intent.getStringExtra("printFuWuYuan");
+                    printOrderTime = intent.getStringExtra("printOrderTime");
+                }
+                if(intent.hasExtra("outUserName") && intent.hasExtra("outUserPhone") && intent.hasExtra("outUserAddress")){
+                    outUserName = intent.getStringExtra("outUserName");
+                    outUserPhone = intent.getStringExtra("outUserPhone");
+                    outUserAddress = intent.getStringExtra("outUserAddress");
                 }
                 if(ComFun.strNull(printRecordId) && ComFun.strNull(printMsg)){
                     if(printUseVol){
@@ -71,13 +82,36 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                     MyApplication.mOutputStream = MyApplication.mBluetoothSocket.getOutputStream();
                                     if(ComFun.strNull(printAboutTable)){
                                         if(printType.equals("1")){
+                                            MyApplication.mOutputStream.write(0x1c);
+                                            MyApplication.mOutputStream.write(0x21);
+                                            MyApplication.mOutputStream.write(12);
+                                            MyApplication.mOutputStream.write(("     后厨点菜单\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(0x1c);
+                                            MyApplication.mOutputStream.write(0x21);
+                                            MyApplication.mOutputStream.write(16);
+                                            MyApplication.mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});
                                             if(printAboutTable.contains(">>")){
-                                                MyApplication.mOutputStream.write(("*****  "+ printAboutTable +"  *****\n").getBytes("GBK"));
+                                                if(printAboutTable.contains("DB")){
+                                                    MyApplication.mOutputStream.write(("餐桌：打包单 "+ printAboutTable.substring(9, printAboutTable.length()) +" 号\n").getBytes("GBK"));
+                                                }else{
+                                                    MyApplication.mOutputStream.write(("餐桌：外卖单 "+ printAboutTable.substring(9, printAboutTable.length()) +" 号\n").getBytes("GBK"));
+                                                }
                                             }else{
-                                                MyApplication.mOutputStream.write(("**********  "+ printAboutTable +"  **********\n").getBytes("GBK"));
+                                                MyApplication.mOutputStream.write(("餐桌："+ printAboutTable.substring(printAboutTable.indexOf(".") + 1, printAboutTable.length()) +" 号\n").getBytes("GBK"));
                                             }
+                                            MyApplication.mOutputStream.write(0x1c);
+                                            MyApplication.mOutputStream.write(0x21);
+                                            MyApplication.mOutputStream.write(16);
+                                            MyApplication.mOutputStream.write(("*****************************\n").getBytes("GBK"));
                                         }else{
-                                            MyApplication.mOutputStream.write(("        红烧肉刀削面\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(0x1c);
+                                            MyApplication.mOutputStream.write(0x21);
+                                            MyApplication.mOutputStream.write(12);
+                                            MyApplication.mOutputStream.write(("  红烧肉刀削面\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(0x1c);
+                                            MyApplication.mOutputStream.write(0x21);
+                                            MyApplication.mOutputStream.write(16);
+                                            MyApplication.mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});
                                             MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
                                         }
                                     }else{
@@ -86,8 +120,35 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                     MyApplication.mOutputStream.write((printMsg+"\n").getBytes("GBK"));
                                     if(printType.equals("1")){
                                         MyApplication.mOutputStream.write(("*****************************\n").getBytes("GBK"));
+                                        if(!outUserPhone.equals("-") && !outUserAddress.equals("-")){
+                                            if(outUserName.equals("-")){
+                                                MyApplication.mOutputStream.write(("外卖联系人姓名：匿名\n").getBytes("GBK"));
+                                            }else{
+                                                MyApplication.mOutputStream.write(("外卖联系人姓名："+ outUserName +"\n").getBytes("GBK"));
+                                            }
+                                            MyApplication.mOutputStream.write(("外卖联系人电话："+ outUserPhone +"\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("外卖联系人地址："+ outUserAddress +"\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("*****************************\n").getBytes("GBK"));
+                                        }
+                                        MyApplication.mOutputStream.write(("账单编号："+ printOrderNum +"\n").getBytes("GBK"));
+                                        MyApplication.mOutputStream.write(("服务员："+ printFuWuYuan +"\n").getBytes("GBK"));
+                                        MyApplication.mOutputStream.write(("下单时间："+ printOrderTime +"\n").getBytes("GBK"));
                                     }else{
                                         MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
+                                        if(!outUserPhone.equals("-") && !outUserAddress.equals("-")){
+                                            if(outUserName.equals("-")){
+                                                MyApplication.mOutputStream.write(("外卖联系人姓名：匿名\n").getBytes("GBK"));
+                                            }else{
+                                                MyApplication.mOutputStream.write(("外卖联系人姓名："+ outUserName +"\n").getBytes("GBK"));
+                                            }
+                                            MyApplication.mOutputStream.write(("外卖联系人电话："+ outUserPhone +"\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("外卖联系人地址："+ outUserAddress +"\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
+                                        }
+                                        MyApplication.mOutputStream.write(("账单编号："+ printOrderNum +"\n").getBytes("GBK"));
+                                        MyApplication.mOutputStream.write(("服务员："+ printFuWuYuan +"\n").getBytes("GBK"));
+                                        MyApplication.mOutputStream.write(("下单时间："+ printOrderTime +"\n").getBytes("GBK"));
+                                        MyApplication.mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});
                                         MyApplication.mOutputStream.write(("谢谢您的惠顾！欢迎下次再来！\n").getBytes("GBK"));
                                         String userMobel = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userMobel");
                                         if(ComFun.strNull(userMobel) && !userMobel.equals("-")){
@@ -150,7 +211,7 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                     // 保存至本地缓存（与登录账号关联）
                                     if(ComFun.strNull(userId)){
                                         Map<String, ?> map = SharedPreferencesTool.getListFromShared(context, "printPool_" + userId);
-                                        SharedPreferencesTool.addOrUpdate(context, "printPool_" + userId, "printItem_" + map.size(), printType + "#&#" + printRecordId + "#&#" + printAboutTable + "#&#" + printMsg);
+                                        SharedPreferencesTool.addOrUpdate(context, "printPool_" + userId, "printItem_" + map.size(), printType + "#&#" + printRecordId + "#&#" + printAboutTable + "#&#" + printMsg + "#&#" + printOrderNum + "#&#" + printFuWuYuan + "#&#" + printOrderTime + "#&#" + outUserName + "#&#" + outUserPhone + "#&#" + outUserAddress);
                                     }
                                     ComFun.showToastSingle(context, "餐桌【"+ printAboutTable +"】有新订单，检测到打票机连接异常，打票数据已保存，请检查连接后从小票回收站中选择打印\n\n订单详情：\n"+printMsg, 3000);
                                     SQLiteDatabase updateDb = sqlite.getWritableDatabase();
@@ -174,7 +235,7 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                     // 保存至本地缓存（与登录账号关联）
                                     if(ComFun.strNull(userId)){
                                         Map<String, ?> map = SharedPreferencesTool.getListFromShared(context, "printPool_" + userId);
-                                        SharedPreferencesTool.addOrUpdate(context, "printPool_" + userId, "printItem_" + map.size(), printType + "#&#" + printRecordId + "#&#" + printAboutTable + "#&#" + printMsg);
+                                        SharedPreferencesTool.addOrUpdate(context, "printPool_" + userId, "printItem_" + map.size(), printType + "#&#" + printRecordId + "#&#" + printAboutTable + "#&#" + printMsg + "#&#" + printOrderNum + "#&#" + printFuWuYuan + "#&#" + printOrderTime + "#&#" + outUserName + "#&#" + outUserPhone + "#&#" + outUserAddress);
                                     }
                                     ComFun.showToastSingle(context, "餐桌【"+ printAboutTable +"】需要小票，检测到打票机连接异常，小票数据已保存，请检查连接后从小票回收站中选择打印\n\n小票详情：\n"+printMsg, 3000);
                                     SQLiteDatabase updateDb = sqlite.getWritableDatabase();
@@ -202,7 +263,7 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                 // 保存至本地缓存（与登录账号关联）
                                 if(ComFun.strNull(userId)){
                                     Map<String, ?> map = SharedPreferencesTool.getListFromShared(context, "printPool_" + userId);
-                                    SharedPreferencesTool.addOrUpdate(context, "printPool_" + userId, "printItem_" + map.size(), printType + "#&#" + printRecordId + "#&#" + printAboutTable + "#&#" + printMsg);
+                                    SharedPreferencesTool.addOrUpdate(context, "printPool_" + userId, "printItem_" + map.size(), printType + "#&#" + printRecordId + "#&#" + printAboutTable + "#&#" + printMsg + "#&#" + printOrderNum + "#&#" + printFuWuYuan + "#&#" + printOrderTime + "#&#" + outUserName + "#&#" + outUserPhone + "#&#" + outUserAddress);
                                 }
                                 ComFun.showToastSingle(context, "餐桌【"+ printAboutTable +"】有新订单，检测到打票机未启用，请从菜单【打票机设置】处开启，开启后从小票回收站中选择打印\n\n订单详情：\n"+printMsg, 3000);
                                 SQLiteDatabase updateDb = sqlite.getWritableDatabase();
@@ -226,7 +287,7 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                 // 保存至本地缓存（与登录账号关联）
                                 if(ComFun.strNull(userId)){
                                     Map<String, ?> map = SharedPreferencesTool.getListFromShared(context, "printPool_" + userId);
-                                    SharedPreferencesTool.addOrUpdate(context, "printPool_" + userId, "printItem_" + map.size(), printType + "#&#" + printRecordId + "#&#" + printAboutTable + "#&#" + printMsg);
+                                    SharedPreferencesTool.addOrUpdate(context, "printPool_" + userId, "printItem_" + map.size(), printType + "#&#" + printRecordId + "#&#" + printAboutTable + "#&#" + printMsg + "#&#" + printOrderNum + "#&#" + printFuWuYuan + "#&#" + printOrderTime + "#&#" + outUserName + "#&#" + outUserPhone + "#&#" + outUserAddress);
                                 }
                                 ComFun.showToastSingle(context, "餐桌【"+ printAboutTable +"】需要小票，检测到打票机未启用，请从菜单【打票机设置】处开启，开启后从小票回收站中选择打印\n\n小票详情：\n"+printMsg, 3000);
                                 SQLiteDatabase updateDb = sqlite.getWritableDatabase();

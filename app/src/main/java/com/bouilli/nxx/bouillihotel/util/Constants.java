@@ -6,7 +6,7 @@ package com.bouilli.nxx.bouillihotel.util;
 
 public class Constants {
     public static final String OVERALL_TAG = "BouilliHotel";
-    public static final int REQUEST_TIMEOUT = 6000;
+    public static final int REQUEST_TIMEOUT = 10000;
 
     /**
      * 返回数据成功
