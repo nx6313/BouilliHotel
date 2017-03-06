@@ -134,9 +134,9 @@ public class OutOrderActivity extends AppCompatActivity {
                             int buyNum = Integer.parseInt(orderInfo.split("\\|")[1]);
                             double totalMoneyUnit = ComFun.add(0.0, price.multiply(new BigDecimal(buyNum)));
                             if(orderInfo.split("\\|")[2].equals("-")){
-                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份 ---------------- "+ totalMoneyUnit +" 元");
+                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份 -------- "+ totalMoneyUnit +" 元");
                             }else{
-                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份（" + orderInfo.split("\\|")[2] + "） ---------------- "+ totalMoneyUnit +" 元");
+                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份（" + orderInfo.split("\\|")[2] + "） -------- "+ totalMoneyUnit +" 元");
                             }
                             tableReadyOrderSb.append("\n");
                             // orderInfo.split("\\|")[0].split("#&#")[0],

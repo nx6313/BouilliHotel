@@ -33,6 +33,7 @@
         app:backgroundTintMode="src_over"
         app:fabSize="mini"
         app:srcCompat="@drawable/menu1"
+        android:visibility="gone"
         android:alpha="0.4"/>
 
 </android.support.design.widget.CoordinatorLayout>

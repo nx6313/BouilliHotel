@@ -176,11 +176,22 @@ public class MainFragment extends Fragment {
                     // 显示预览信息
                     if (tableState == 2) {
                         ComFun.showToast(getActivity(), "该餐桌正在点餐哦", Toast.LENGTH_SHORT);
-                    }else if(tableState != 1 || tableState == -1){
+                    }else if(tableState == 1 || tableState == -1){
+                        // 通知首页显示加载动画
+                        Message msg = new Message();
+                        Bundle data = new Bundle();
+                        data.putString("seeTableInfoType", "none");
+                        msg.setData(data);
+                        msg.what = MainActivity.MSG_SEE_TABLE_INFO_LOADING;
+                        MainActivity.mHandler.sendMessage(msg);
+                    }else{
                         String tableDesInfo = ((TextView) ((LinearLayout) v).getChildAt(1)).getText().toString();
                         String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
                         // 通知首页显示加载动画
                         Message msg = new Message();
+                        Bundle data = new Bundle();
+                        data.putString("seeTableInfoType", "loading");
+                        msg.setData(data);
                         msg.what = MainActivity.MSG_SEE_TABLE_INFO_LOADING;
                         MainActivity.mHandler.sendMessage(msg);
                         // 调用任务根据餐桌号获取该餐桌就餐信息数据

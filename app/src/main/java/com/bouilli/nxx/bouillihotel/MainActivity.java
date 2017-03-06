@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton new_order = null;// 添加新订单悬浮按钮
     private FloatingActionButton message_info = null;// 查看订单信息悬浮按钮
 
+    private Snackbar seeTableInfoSnackbar = null;// 非员工预览餐桌信息
+
     private long exitTime;
 
     private NoSlideViewPager viewPager;
@@ -137,6 +139,9 @@ public class MainActivity extends AppCompatActivity
         new_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(seeTableInfoSnackbar != null && seeTableInfoSnackbar.isShown()){
+                    seeTableInfoSnackbar.dismiss();
+                }
                 // 添加新单
                 // ObjectAnimator.ofFloat(view, "alpha", 1).setDuration(200).start();
                 // 跳转到添加外卖或者打包饭页面
@@ -150,6 +155,9 @@ public class MainActivity extends AppCompatActivity
         message_info.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(seeTableInfoSnackbar != null && seeTableInfoSnackbar.isShown()){
+                    seeTableInfoSnackbar.dismiss();
+                }
                 Intent outOrderIntent = new Intent(MainActivity.this, OutOrderActivity.class);
                 startActivity(outOrderIntent);
             }
@@ -568,7 +576,14 @@ public class MainActivity extends AppCompatActivity
                     break;
                 case MSG_SEE_TABLE_INFO_LOADING:
                     // 显示加载动画
-                    ComFun.showLoading(MainActivity.this, "正在获取餐桌数据，请稍后", true);
+                    String seeTableInfoType = b.getString("seeTableInfoType");
+                    if(seeTableInfoType.equals("loading")){
+                        ComFun.showLoading(MainActivity.this, "正在获取餐桌数据，请稍后", true);
+                    }else{
+                        if(seeTableInfoSnackbar != null && seeTableInfoSnackbar.isShown()){
+                            seeTableInfoSnackbar.dismiss();
+                        }
+                    }
                     break;
                 case MSG_SEE_TABLE_INFO:
                     // 隐藏加载动画
@@ -583,20 +598,20 @@ public class MainActivity extends AppCompatActivity
                             int buyNum = Integer.parseInt(orderInfo.split("\\|")[1]);
                             double totalMoneyUnit = ComFun.add(0.0, price.multiply(new BigDecimal(buyNum)));
                             if(orderInfo.split("\\|")[2].equals("-")){
-                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份 ---------------- "+ totalMoneyUnit +" 元");
+                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份 -------- "+ totalMoneyUnit +" 元");
                             }else{
-                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份（" + orderInfo.split("\\|")[2] + "） ---------------- "+ totalMoneyUnit +" 元");
+                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份（" + orderInfo.split("\\|")[2] + "） -------- "+ totalMoneyUnit +" 元");
                             }
                             tableReadyOrderSb.append("\n");
                             // orderInfo.split("\\|")[0].split("#&#")[0],
                             // new Object[]{ orderInfo.split("\\|")[0], orderInfo.split("\\|")[1], orderInfo.split("\\|")[2] });
                             // 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
                         }
-                        Snackbar snackbar = SnackbarUtil.IndefiniteSnackbar(message_info, "", -2, Color.parseColor("#FAFAFA"), Color.parseColor("#FF6868"));
-                        View add_view = LayoutInflater.from(snackbar.getView().getContext()).inflate(R.layout.see_table_order_info, null);
+                        seeTableInfoSnackbar = SnackbarUtil.IndefiniteSnackbar(message_info, "", -2, Color.parseColor("#FAFAFA"), Color.parseColor("#FF6868"));
+                        View add_view = LayoutInflater.from(seeTableInfoSnackbar.getView().getContext()).inflate(R.layout.see_table_order_info, null);
                         ((TextView) add_view.findViewById(R.id.seeTableInfoTv)).setText(tableReadyOrderSb.toString());
-                        SnackbarUtil.SnackbarAddView(snackbar, add_view, 0);
-                        snackbar.show();
+                        SnackbarUtil.SnackbarAddView(seeTableInfoSnackbar, add_view, 0);
+                        seeTableInfoSnackbar.show();
                     }else if (getTableOrderInfoResult.equals("false")) {
                         ComFun.showToast(MainActivity.this, "获取餐桌信息失败", Toast.LENGTH_SHORT);
                     }else {
