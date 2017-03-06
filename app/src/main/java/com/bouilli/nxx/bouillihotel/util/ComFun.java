@@ -142,8 +142,8 @@ public class ComFun {
         View loadingView = activity.getLayoutInflater().inflate(R.layout.loading_dialog, null);
         win.setContentView(loadingView);
         GifView loadingGif = (GifView) loadingView.findViewById(R.id.loadingGif);
-        loadingGif.setGifImage(R.drawable.loading1);
-        loadingGif.setShowDimension(64, 64);
+        loadingGif.setGifImage(R.drawable.loading10);
+        loadingGif.setShowDimension(240, 240);
         loadingGif.setGifImageType(GifView.GifImageType.COVER);
         TextView loadingTip = (TextView) loadingView.findViewById(R.id.loadingTip);
         if(loadingTip != null){

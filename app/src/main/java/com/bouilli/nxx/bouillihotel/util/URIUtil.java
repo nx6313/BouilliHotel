@@ -42,6 +42,11 @@ public class URIUtil {
     public static final String DELETE_MENU_URI = "deleteMenu.action";
 
     /**
+     * 移动菜品
+     */
+    public static final String MOVE_MENU_URI = "moveMenu.action";
+
+    /**
      * 提交点的菜品数据
      */
     public static final String SEND_MENU_URI = "sendMenu.action";

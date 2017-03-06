@@ -32,6 +32,8 @@
     <item name="tag_table_has_order" type="id"></item>
     <item name="tag_table_txt_no" type="id"></item>
     <item name="tag_table_order_id" type="id"></item>
+    <item name="tag_menu_item_parent_name" type="id"></item>
+    <item name="tag_menu_item_Info" type="id"></item>
     <string name="title_activity_edit_order">处理订单</string>
     <string name="title_activity_select_menu">选择订单要使用的菜</string>
 

@@ -54,6 +54,19 @@ public class MenuAction extends BaseAction {
     }
 
     /**
+     * 移动菜品
+     * @param uri
+     * @return
+     */
+    public static String moveMenu(Context context, String uri, String moveMenuId, String moveMenuGroupId, String moveMenuToGroupId){
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("moveMenuId", moveMenuId);
+        paramMap.put("moveMenuGroupId", moveMenuGroupId);
+        paramMap.put("moveMenuToGroupId", moveMenuToGroupId);
+        return getHttpData(context, uri, paramMap);
+    }
+
+    /**
      * 传菜品
      * @param uri
      * @return

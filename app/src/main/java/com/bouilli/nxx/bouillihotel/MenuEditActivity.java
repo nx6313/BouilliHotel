@@ -28,26 +28,28 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.asyncTask.AddNewMenuTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.DeleteMenuTask;
-import com.bouilli.nxx.bouillihotel.asyncTask.DeleteTableTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.MoveMenuTask;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 public class MenuEditActivity extends AppCompatActivity {
     public static Handler mHandler = null;
     public static final int MSG_ADD_MENU = 1;
     public static final int MSG_DELETE_MENU = 2;
+    public static final int MSG_MOVE_MENU = 3;
     private FloatingActionButton add_new_menu_info;
     private FloatingActionButton add_new_menu_des_info;
     private FloatingActionButton delete_new_menu_info;
@@ -88,7 +90,6 @@ public class MenuEditActivity extends AppCompatActivity {
     private void setupActionBar() {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            // Show the Up button in the action bar.
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
@@ -161,12 +162,14 @@ public class MenuEditActivity extends AppCompatActivity {
                 if(ComFun.strNull(menuItemChiles)){
                     LinearLayout menuChildlayout = new LinearLayout(MenuEditActivity.this);
                     menuChildlayout.setTag("itemChild_"+ menuGroupName.split("#&#")[0]);
+                    menuChildlayout.setTag(R.id.tag_menu_item_parent_name ,menuGroupName.split("#&#")[1]);
                     menuChildlayout.setOrientation(LinearLayout.VERTICAL);
                     menuChildlayout.setVisibility(View.GONE);// 默认隐藏下拉子项
                     int chileItemIndex = 0;
                     for(String childInfo : menuItemChiles.split(",")){
                         LinearLayout menuChildItemlayout = new LinearLayout(MenuEditActivity.this);
                         menuChildItemlayout.setTag(menuGroupName.split("#&#")[0]);
+                        menuChildItemlayout.setTag(R.id.tag_menu_item_Info, childInfo);
                         menuChildItemlayout.setPadding(DisplayUtil.dip2px(MenuEditActivity.this, 20), 0, DisplayUtil.dip2px(MenuEditActivity.this, 20), 0);
                         if(chileItemIndex % 2 == 0){
                             menuChildItemlayout.setBackgroundColor(Color.parseColor("#aeb39f"));
@@ -188,7 +191,7 @@ public class MenuEditActivity extends AppCompatActivity {
                         LinearLayout menuChildItemDeslayout = new LinearLayout(MenuEditActivity.this);
                         menuChildItemDeslayout.setGravity(Gravity.CENTER|Gravity.LEFT);
                         menuChildItemDeslayout.setOrientation(LinearLayout.VERTICAL);
-                        LinearLayout.LayoutParams menuChildItemDesLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(MenuEditActivity.this, 0), LinearLayout.LayoutParams.MATCH_PARENT, 3);
+                        LinearLayout.LayoutParams menuChildItemDesLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(MenuEditActivity.this, 0), LinearLayout.LayoutParams.MATCH_PARENT, 5);
                         menuChildItemDesLp.setMargins(DisplayUtil.dip2px(MenuEditActivity.this, 8), 0, 0, 0);
                         menuChildItemDeslayout.setLayoutParams(menuChildItemDesLp);
                         // 主体-->菜名
@@ -217,7 +220,7 @@ public class MenuEditActivity extends AppCompatActivity {
                         LinearLayout menuChildItemPricelayout = new LinearLayout(MenuEditActivity.this);
                         menuChildItemPricelayout.setGravity(Gravity.CENTER|Gravity.LEFT);
                         menuChildItemPricelayout.setOrientation(LinearLayout.VERTICAL);
-                        LinearLayout.LayoutParams menuChildItemPriceLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(MenuEditActivity.this, 0), LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                        LinearLayout.LayoutParams menuChildItemPriceLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(MenuEditActivity.this, 0), LinearLayout.LayoutParams.MATCH_PARENT, 2);
                         menuChildItemPriceLp.setMargins(DisplayUtil.dip2px(MenuEditActivity.this, 8), 0, 0, 0);
                         menuChildItemPricelayout.setLayoutParams(menuChildItemPriceLp);
                         // 单价文本
@@ -230,14 +233,29 @@ public class MenuEditActivity extends AppCompatActivity {
                         menuChildItemPriceTxt.setLayoutParams(menuChildItemPriceTxtLp);
                         menuChildItemPricelayout.addView(menuChildItemPriceTxt);
                         menuChildItemlayout.addView(menuChildItemPricelayout);
+                        // 子项每一项操作
+                        LinearLayout menuChildItemDolayout = new LinearLayout(MenuEditActivity.this);
+                        menuChildItemDolayout.setGravity(Gravity.CENTER|Gravity.LEFT);
+                        menuChildItemDolayout.setOrientation(LinearLayout.VERTICAL);
+                        LinearLayout.LayoutParams menuChildItemDoLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(MenuEditActivity.this, 0), LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                        menuChildItemDoLp.setMargins(DisplayUtil.dip2px(MenuEditActivity.this, 8), 0, 0, 0);
+                        menuChildItemDolayout.setLayoutParams(menuChildItemDoLp);
+                        // 删除图标
+                        ImageView menuDeleteImg = new ImageView(MenuEditActivity.this);
+                        menuDeleteImg.setImageResource(R.drawable.cancel);
+                        LinearLayout.LayoutParams menuDeleteImgLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(MenuEditActivity.this, 32), DisplayUtil.dip2px(MenuEditActivity.this, 32));
+                        menuDeleteImgLp.setMargins(DisplayUtil.dip2px(MenuEditActivity.this, 2), DisplayUtil.dip2px(MenuEditActivity.this, 2), DisplayUtil.dip2px(MenuEditActivity.this, 2), DisplayUtil.dip2px(MenuEditActivity.this, 2));
+                        menuDeleteImg.setLayoutParams(menuDeleteImgLp);
+                        menuChildItemDolayout.addView(menuDeleteImg);
+                        menuChildItemlayout.addView(menuChildItemDolayout);
 
                         menuChildlayout.addView(menuChildItemlayout);
-                        menuChildItemlayout.setOnLongClickListener(new View.OnLongClickListener() {
+                        menuDeleteImg.setOnClickListener(new View.OnClickListener(){
                             @Override
-                            public boolean onLongClick(View v) {
-                                final String menuGroupId = v.getTag().toString();
-                                final String menuNameId = (((LinearLayout) v).getChildAt(0)).getTag().toString();
-                                final String menuNameInfo = ((TextView) ((LinearLayout) ((LinearLayout) v).getChildAt(1)).getChildAt(0)).getText().toString();
+                            public void onClick(View v) {
+                                final String menuGroupId = ((LinearLayout) v.getParent().getParent()).getTag().toString();
+                                final String menuNameId = (((LinearLayout) v.getParent().getParent()).getChildAt(0)).getTag().toString();
+                                final String menuNameInfo = ((TextView) ((LinearLayout) ((LinearLayout) v.getParent().getParent()).getChildAt(1)).getChildAt(0)).getText().toString();
                                 new android.support.v7.app.AlertDialog.Builder(MenuEditActivity.this).setTitle("删除菜品").setMessage("确认删除菜品【"+ menuNameInfo +"】吗？")
                                         .setPositiveButton("确定", new DialogInterface.OnClickListener(){
                                             @Override
@@ -250,6 +268,51 @@ public class MenuEditActivity extends AppCompatActivity {
                                             }
                                         })
                                         .setNegativeButton("取消", null).show();
+                            }
+                        });
+                        menuChildItemlayout.setOnLongClickListener(new View.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View v) {
+                                if(ComFun.strNull(menuGroupNames) && menuGroupNames.split(",").length > 1){
+                                    final String menuGroupId = v.getTag().toString();
+                                    final String menuItemInfo = v.getTag(R.id.tag_menu_item_Info).toString();
+                                    final String thisMenuGroupName = ((LinearLayout)v.getParent()).getTag(R.id.tag_menu_item_parent_name).toString();
+                                    final String menuNameId = (((LinearLayout) v).getChildAt(0)).getTag().toString();
+                                    final String menuNameInfo = ((TextView) ((LinearLayout) ((LinearLayout) v).getChildAt(1)).getChildAt(0)).getText().toString();
+                                    List<String> menuGroupForMove = new ArrayList<>();
+                                    Map<Integer, String> menuGroupForMoveMap = new HashMap<>();
+                                    int thisIndex = 0;
+                                    int index = 0;
+                                    for(String menuGroupName : menuGroupNames.split(",")){
+                                        menuGroupForMove.add(menuGroupName.split("#&#")[1]);
+                                        menuGroupForMoveMap.put(index, menuGroupName.split("#&#")[0]);
+                                        if(menuGroupName.split("#&#")[1].equals(thisMenuGroupName)){
+                                            thisIndex = index;
+                                        }
+                                        index++;
+                                    }
+                                    AlertDialog.Builder ab = new AlertDialog.Builder(MenuEditActivity.this);  //(普通消息框)
+                                    ab.setTitle("想要将【"+ menuNameInfo +"】移动到什么位置呢？");  //设置标题
+                                    ab.setIcon(R.drawable.menu1);//设置图标
+                                    final int currentSelectMenuGroupIndex = thisIndex;
+                                    final Map<Integer, String> menuGroupForMoveMapUs = menuGroupForMoveMap;
+                                    ab.setSingleChoiceItems(menuGroupForMove.toArray(new String[menuGroupForMove.size()]), thisIndex, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            if(currentSelectMenuGroupIndex != which){
+                                                // 执行方法移动菜品所在组位置
+                                                // 显示加载动画
+                                                ComFun.showLoading(MenuEditActivity.this, "正在移动菜品，请稍后", true);
+                                                new MoveMenuTask(MenuEditActivity.this, menuItemInfo, menuNameId, menuNameInfo, menuGroupId, menuGroupForMoveMapUs.get(which)).executeOnExecutor(Executors.newCachedThreadPool());
+                                            }
+                                            dialog.dismiss();
+                                        }
+                                    });//设置确定按钮
+                                    ab.setNegativeButton("取消", null);//设置取消按钮
+                                    ab.show();//显示弹出框
+                                }else{
+                                    ComFun.showToast(MenuEditActivity.this, "不存在可以移动到的菜品组，请先添加", Toast.LENGTH_SHORT);
+                                }
                                 return false;
                             }
                         });
@@ -603,6 +666,43 @@ public class MenuEditActivity extends AppCompatActivity {
                         }else{
                             ComFun.showToast(MenuEditActivity.this, "删除菜品超时，请稍后重试", Toast.LENGTH_SHORT);
                         }
+                    }
+                    break;
+                case MSG_MOVE_MENU:
+                    // 隐藏加载动画
+                    ComFun.hideLoading(MenuEditActivity.this);
+                    String moveMenuResult = b.getString("moveMenuResult");
+                    String menuItemInfo = b.getString("menuItemInfo");
+                    String moveMenuId = b.getString("moveMenuId");
+                    String menuInfoNameFMove = b.getString("menuInfoNameFMove");
+                    String moveMenuGroupId = b.getString("moveMenuGroupId");
+                    String moveMenuToGroupId = b.getString("moveMenuToGroupId");
+                    if (moveMenuResult.equals("true")) {
+                        // 更新本地菜品组数据
+                        ComFun.showToast(MenuEditActivity.this, "移动菜品【"+ menuInfoNameFMove +"】成功", Toast.LENGTH_SHORT);
+                        // 菜品所在的组
+                        String menuItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuGroupId);
+                        StringBuilder menuInfoMoveAfter = new StringBuilder("");
+                        for(String menuItem : menuItemChiles.split(",")){
+                            if(!menuItem.split("#&#")[0].equals(moveMenuId)){
+                                menuInfoMoveAfter.append(menuItem);
+                                menuInfoMoveAfter.append(",");
+                            }
+                        }
+                        if(ComFun.strNull(menuInfoMoveAfter.toString())){
+                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuGroupId, menuInfoMoveAfter.toString().substring(0, menuInfoMoveAfter.toString().length() - 1));
+                        }else{
+                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuGroupId, "");
+                        }
+                        // 移动至的组
+                        String menuToItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuToGroupId);
+                        menuToItemChiles = menuItemInfo + "," + menuToItemChiles;
+                        SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuToGroupId, menuToItemChiles);
+                        initMenuView();
+                    }else if (moveMenuResult.equals("false")) {
+                        ComFun.showToast(MenuEditActivity.this, "移动菜品失败，请联系管理员", Toast.LENGTH_SHORT);
+                    }else if (moveMenuResult.equals("time_out")) {
+                        ComFun.showToast(MenuEditActivity.this, "移动菜品超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                     break;
             }
