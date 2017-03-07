@@ -35,6 +35,10 @@ public class URIUtil {
      * 添加新菜品
      */
     public static final String ADD_NEW_MENU_URI = "addNewMenu.action";
+    /**
+     * 修改菜品
+     */
+    public static final String UPDATE_MENU_URI = "updateMenu.action";
 
     /**
      * 删除菜品

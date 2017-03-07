@@ -32,6 +32,21 @@ public class MenuAction extends BaseAction {
     }
 
     /**
+     * 修改菜品
+     * @param uri
+     * @return
+     */
+    public static String updateMenu(Context context, String uri, String menuId, String menuInfoName, String selectMenuGroupId, String menuInfoDes, String menuInfoPrice){
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("menuId", menuId);
+        paramMap.put("menuInfoName", menuInfoName);
+        paramMap.put("selectMenuGroupId", selectMenuGroupId);
+        paramMap.put("menuInfoDes", menuInfoDes);
+        paramMap.put("menuInfoPrice", menuInfoPrice);
+        return getHttpData(context, uri, paramMap);
+    }
+
+    /**
      * 删除菜品
      * @param uri
      * @return

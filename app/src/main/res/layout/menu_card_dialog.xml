@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/loading_border"
+    android:orientation="vertical"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:gravity="center">
+
+        <ImageView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/menu1"
+            android:layout_marginBottom="2dp"/>
+
+        <TextView
+            android:id="@+id/card_menu_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:text="凉菜大盘"/>
+
+        <TextView
+            android:id="@+id/card_menu_price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:paddingLeft="10dp"
+            android:textSize="15sp"
+            android:text="菜品单价：￥ ##.## 元"/>
+
+        <TextView
+            android:id="@+id/card_menu_des"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:textSize="15sp"
+            android:text="菜品简介："
+            android:visibility="gone"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnUpdateMenuInfo"
+                    android:background="@drawable/edit_table_btn_style"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="2dp"
+                    android:layout_weight="4"
+                    android:textColor="#edecec"
+                    android:textStyle="bold"
+                    android:text="修改信息" />
+
+                <Button
+                    android:id="@+id/btnMoveMenuTo"
+                    android:background="@drawable/edit_table_btn_style"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="2dp"
+                    android:layout_weight="4"
+                    android:textColor="#edecec"
+                    android:textStyle="bold"
+                    android:text="移动至..." />
+
+                <Button
+                    android:id="@+id/btnMenuCardCancel"
+                    android:background="@drawable/edit_table_btn_style"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="2dp"
+                    android:layout_weight="1"
+                    android:textColor="#edecec"
+                    android:textStyle="bold"
+                    android:text="取消" />
+        </LinearLayout>
+</LinearLayout>

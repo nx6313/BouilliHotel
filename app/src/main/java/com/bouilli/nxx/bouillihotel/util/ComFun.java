@@ -11,11 +11,14 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -127,6 +130,66 @@ public class ComFun {
                 netErrorToast = null;
             }
         }
+    }
+
+    /**
+     * 显示菜单预览卡片
+     * @param activity
+     * @param loadingTipValue
+     */
+    public static AlertDialog menuCardDialog = null;
+    public static void showMenuCard(Activity activity, String menuName, String menuPrice, String menuDes, final MenuCardEvent menuCardEvent){
+        menuCardDialog = new AlertDialog.Builder(activity).setCancelable(true).create();
+        menuCardDialog.show();
+
+        //设置dialog的宽度和手机宽度一样
+        WindowManager.LayoutParams lp = menuCardDialog.getWindow().getAttributes();
+        lp.width = menuCardDialog.getWindow().getWindowManager().getDefaultDisplay().getWidth();
+        menuCardDialog.getWindow().setAttributes(lp);//设置宽度
+
+        Window win = menuCardDialog.getWindow();
+        win.setWindowAnimations(R.style.AnimBottom);
+        View menuCardView = activity.getLayoutInflater().inflate(R.layout.menu_card_dialog, null);
+        win.setContentView(menuCardView);
+        if(strNull(menuName)) {
+            TextView cardMenuName = (TextView) menuCardView.findViewById(R.id.card_menu_name);
+            cardMenuName.setText(menuName);
+        }
+        if(strNull(menuPrice)){
+            TextView cardMenuPrice = (TextView) menuCardView.findViewById(R.id.card_menu_price);
+            cardMenuPrice.setText("菜品单价：￥ " + menuPrice + " 元");
+        }
+        if(strNull(menuDes) && !menuDes.equals("-")){
+            TextView cardMenuDes = (TextView) menuCardView.findViewById(R.id.card_menu_des);
+            cardMenuDes.setText("菜品简介：" + menuDes);
+            cardMenuDes.setVisibility(View.VISIBLE);
+        }
+        Button btnUpdateMenuInfo = (Button) menuCardView.findViewById(R.id.btnUpdateMenuInfo);
+        Button btnMoveMenuTo = (Button) menuCardView.findViewById(R.id.btnMoveMenuTo);
+        Button btnMenuCardCancel = (Button) menuCardView.findViewById(R.id.btnMenuCardCancel);
+        btnUpdateMenuInfo.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                menuCardEvent.updateMenuInfo(menuCardDialog);
+            }
+        });
+        btnMoveMenuTo.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                menuCardEvent.moveMenuInfo(menuCardDialog);
+            }
+        });
+        btnMenuCardCancel.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                menuCardDialog.dismiss();
+            }
+        });
+    }
+
+    public interface MenuCardEvent{
+        void updateMenuInfo(AlertDialog view);
+        void moveMenuInfo(AlertDialog view);
     }
 
     /**
