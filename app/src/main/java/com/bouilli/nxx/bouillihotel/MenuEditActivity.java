@@ -402,7 +402,8 @@ public class MenuEditActivity extends AppCompatActivity {
                                                         //设置对话框的图标
                                                         builder.setIcon(R.drawable.ask);
                                                         //设置对话框的标题
-                                                        builder.setTitle("确定将菜品【"+ menuNameInfo +"】从 ‘"+ thisMenuGroupName +"’ 移动至 ‘"+ menuGroupForMoveMapUs.get(which).split("#&#")[1] +"’ 吗？");
+                                                        builder.setTitle("提示");
+                                                        builder.setMessage("确定将菜品【"+ menuNameInfo +"】从 ‘"+ thisMenuGroupName +"’ 移动至 ‘"+ menuGroupForMoveMapUs.get(which).split("#&#")[1] +"’ 吗？");
 
                                                         //添加一个确定按钮
                                                         final int whichMove = which;

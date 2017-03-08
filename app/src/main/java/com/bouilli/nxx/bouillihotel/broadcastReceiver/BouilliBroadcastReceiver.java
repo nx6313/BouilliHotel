@@ -97,7 +97,7 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                                     MyApplication.mOutputStream.write(("餐桌：外卖单 "+ printAboutTable.substring(9, printAboutTable.length()) +" 号\n").getBytes("GBK"));
                                                 }
                                             }else{
-                                                MyApplication.mOutputStream.write(("餐桌："+ printAboutTable.substring(printAboutTable.indexOf(".") + 1, printAboutTable.length()) +" 号\n").getBytes("GBK"));
+                                                MyApplication.mOutputStream.write(("餐桌："+ printAboutTable +" 号\n").getBytes("GBK"));
                                             }
                                             MyApplication.mOutputStream.write(0x1c);
                                             MyApplication.mOutputStream.write(0x21);
