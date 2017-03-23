@@ -29,6 +29,7 @@
             android:orientation="vertical"
             android:paddingTop="5dp"
             android:paddingBottom="60dp">
+
         </LinearLayout>
     </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
 </RelativeLayout>

@@ -10,6 +10,7 @@ import com.bouilli.nxx.bouillihotel.action.DataAction;
 import com.bouilli.nxx.bouillihotel.fragment.OutOrderFragment;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.Constants;
+import com.bouilli.nxx.bouillihotel.util.L;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 import com.bouilli.nxx.bouillihotel.util.URIUtil;
 

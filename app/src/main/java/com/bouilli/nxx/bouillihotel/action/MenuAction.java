@@ -91,7 +91,11 @@ public class MenuAction extends BaseAction {
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("tableOrderId", tableOrderId);
         paramMap.put("tableNum", tableNum);
-        paramMap.put("showType", showType+"");
+        if(ComFun.strNull(tableOrderId)){
+            paramMap.put("showType", showType+"");
+        }else{
+            paramMap.put("showType", "1");// 订单Id为空，认为是餐桌新订单（子订单情况）
+        }
         StringBuilder orderMenuInfoSb = new StringBuilder("");
         for(Map.Entry<String, Object[]> m : tableHasNewOrderMap.entrySet()){
             String menuId = m.getKey();

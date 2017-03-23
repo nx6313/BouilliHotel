@@ -13,11 +13,14 @@ import com.bouilli.nxx.bouillihotel.action.MenuAction;
 import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.Constants;
+import com.bouilli.nxx.bouillihotel.util.L;
 import com.bouilli.nxx.bouillihotel.util.URIUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 /**
  * Created by 18230 on 2016/10/30.
@@ -58,14 +61,21 @@ public class GetMenuInThisTableTask extends AsyncTask<Void, Void, String> {
                 Message msg = new Message();
                 Bundle data = new Bundle();
                 StringBuilder orderInfoDetailSb = new StringBuilder("");
-                if(jsob.has("orderInfoDetailList")){
-                    JSONArray orderInfoDetailList = jsob.getJSONArray("orderInfoDetailList");
-                    for (int i = 0; i < orderInfoDetailList.length(); i++) {
-                        String orderInfoDetail = (String) orderInfoDetailList.get(i);
-                        orderInfoDetailSb.append(orderInfoDetail + ",");
+                if(jsob.has("orderInfoDetailAllMap")){
+                    JSONObject orderInfoDetailAllMap = jsob.getJSONObject("orderInfoDetailAllMap");
+                    String[] tableOrderIdArr = tableOrderId.split("#");
+                    for (int i = 0; i < tableOrderIdArr.length; i++) {
+                        String tableOrderId = tableOrderIdArr[i];
+                        for(int j = 0; j < orderInfoDetailAllMap.getJSONArray(tableOrderId).length(); j++){
+                            orderInfoDetailSb.append(orderInfoDetailAllMap.getJSONArray(tableOrderId).get(j) + ",");
+                        }
+                        if(ComFun.strNull(orderInfoDetailSb.toString())){
+                            orderInfoDetailSb = new StringBuilder(orderInfoDetailSb.toString().substring(0, orderInfoDetailSb.toString().length() - 1));
+                        }
+                        orderInfoDetailSb.append("||#|#|#||");
                     }
                     if(ComFun.strNull(orderInfoDetailSb.toString())){
-                        data.putString("orderInfoDetails", orderInfoDetailSb.toString().substring(0, orderInfoDetailSb.toString().length() - 1));
+                        data.putString("orderInfoDetails", orderInfoDetailSb.toString().substring(0, orderInfoDetailSb.toString().length() - "||#|#|#||".length()));
                     }
                 }
                 if(responseCode.equals(Constants.HTTP_REQUEST_SUCCESS_CODE)){
