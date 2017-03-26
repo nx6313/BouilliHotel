@@ -58,7 +58,9 @@ public class UserLoginTask extends AsyncTask<Void, Void, String> {
                         String userSex = loginUserInfo.split("#&#")[4];
                         String userBirthday = loginUserInfo.split("#&#")[5];// 12-06
                         String userMobel = loginUserInfo.split("#&#")[6];
+                        String userPwd = loginUserInfo.split("#&#")[7];
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userId", userId);
+                        SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userPwd", userPwd);
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userPermission", userPermission);
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userLoginName", userLoginName);
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userRealName", userRealName);
@@ -77,6 +79,9 @@ public class UserLoginTask extends AsyncTask<Void, Void, String> {
                         }
                         // 登录时，默认将上次登录是否退出的缓存值保存为false，未退出
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "hasExitLast", "false");
+
+                        // 将推送注册标记值置空
+                        SharedPreferencesTool.addOrUpdate(context, com.bouilli.nxx.bouillihotel.push.org.androidpn.client.Constants.SHARED_PREFERENCE_NAME, com.bouilli.nxx.bouillihotel.push.org.androidpn.client.Constants.XMPP_AUTHORIZED, "");
                     }
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_LOGIN_ERROR_CODE)) {
                     data.putString("userLoginResult", "error");

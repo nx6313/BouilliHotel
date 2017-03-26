@@ -2,3 +2,5 @@ ipconfig=192.168.1.10
 port=8080
 #ipconfig=139.224.25.220
 #port=80
+
+openPushServer=0 #1打开 0关闭

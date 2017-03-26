@@ -21,6 +21,11 @@ public class L {
             Log.d(TAG, msg);
     }
 
+    public static void d(String tag, String  msg){
+        if(debugFlag)
+            Log.d(tag, msg);
+    }
+
     public static void toast(Context context, String text, int duration){
         if(debugFlag)
             ComFun.showToast(context, text, duration);

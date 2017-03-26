@@ -1,10 +1,12 @@
 package com.bouilli.nxx.bouillihotel;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,7 +17,9 @@ import android.os.Message;
 import android.support.design.internal.NavigationMenuView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.view.KeyEvent;
@@ -34,17 +38,22 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bouilli.nxx.bouillihotel.asyncTask.CheckVersionTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.customview.HorizontalProgressbarWithProgress;
 import com.bouilli.nxx.bouillihotel.customview.NavigationTabBar;
 import com.bouilli.nxx.bouillihotel.customview.NoSlideViewPager;
 import com.bouilli.nxx.bouillihotel.fragment.adapter.FragmentPageAdapter;
+import com.bouilli.nxx.bouillihotel.push.org.androidpn.client.NotificationService;
+import com.bouilli.nxx.bouillihotel.push.org.androidpn.client.ServiceManager;
 import com.bouilli.nxx.bouillihotel.service.PollingService;
 import com.bouilli.nxx.bouillihotel.service.PrintService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
+import com.bouilli.nxx.bouillihotel.util.L;
 import com.bouilli.nxx.bouillihotel.util.MyTagHandler;
+import com.bouilli.nxx.bouillihotel.util.PropertiesUtil;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 import com.bouilli.nxx.bouillihotel.util.SnackbarUtil;
+import com.bouilli.nxx.bouillihotel.util.URIUtil;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.Thing;
 
@@ -60,7 +69,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -68,6 +76,8 @@ public class MainActivity extends AppCompatActivity
     public static final int MSG_CHECK_NEW_VERSION = 1;
     public static final int MSG_SEE_TABLE_INFO = 2;
     public static final int MSG_SEE_TABLE_INFO_LOADING = 3;
+    public static final int REQUEST_READ_PHONE_STATE = 4;
+    public static final int MSG_PUSH_CONNECTION_LOADING = 5;
     private Toolbar toolbar;
     private FloatingActionButton new_order = null;// 添加新订单悬浮按钮
     private FloatingActionButton message_info = null;// 查看订单信息悬浮按钮
@@ -280,11 +290,56 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+        // 动态权限申请
+        applyPermission();
+    }
+
+    @Override
+    protected void onResume() {
         // 开启轮询服务
         Intent refDataServiceIntent = new Intent(MainActivity.this, PollingService.class);
         refDataServiceIntent.setAction(PollingService.ACTION);
         refDataServiceIntent.setPackage(getPackageName());
         MainActivity.this.startService(refDataServiceIntent);
+
+        String openPushServer = PropertiesUtil.getPropertiesURL("bouilli.prop", MainActivity.this, "openPushServer");
+        // 开启推送服务
+        if(openPushServer.equals("1") && !ComFun.isServiceRunning(MainActivity.this, "com.bouilli.nxx.bouillihotel.push." + NotificationService.SERVICE_NAME)){
+            // 发送首页广播，提示连接推送服务器中...
+            Message msg = new Message();
+            Bundle data = new Bundle();
+            msg.what = MainActivity.MSG_PUSH_CONNECTION_LOADING;
+            data.putString("pushConnectionType", "loading");
+            msg.setData(data);
+            MainActivity.mHandler.sendMessage(msg);
+
+            ServiceManager serviceManager = new ServiceManager(MainActivity.this);
+            serviceManager.setNotificationIcon(R.drawable.cholesterol);
+            serviceManager.startService();
+        }
+        super.onResume();
+    }
+
+    private void applyPermission() {
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, REQUEST_READ_PHONE_STATE);
+        } else {
+            //TODO
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_READ_PHONE_STATE:
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    //TODO
+                }
+                break;
+            default:
+                break;
+        }
     }
 
     // 初始化选项卡
@@ -416,7 +471,7 @@ public class MainActivity extends AppCompatActivity
             // 直接执行任务，检查是否有版本更新
             // 显示加载动画
             ComFun.showLoading(MainActivity.this, "正在检查是否有新版本，请稍后");
-            new CheckVersionTask(MainActivity.this).executeOnExecutor(Executors.newCachedThreadPool());
+            AllRequestUtil.CheckVersion(MainActivity.this, null);
         } else if (id == R.id.nav_exit) {
             // 退出登录
             new android.support.v7.app.AlertDialog.Builder(MainActivity.this).setTitle("提示").setMessage("确定退出登录吗？")
@@ -433,6 +488,9 @@ public class MainActivity extends AppCompatActivity
                             refDataServiceIntent.setAction(PollingService.ACTION);
                             refDataServiceIntent.setPackage(getPackageName());
                             MainActivity.this.stopService(refDataServiceIntent);
+                            // 关闭推送服务
+                            ServiceManager serviceManager = new ServiceManager(MainActivity.this);
+                            serviceManager.stopService();
 
                             String userPermission = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "userPermission");
                             if(Integer.parseInt(userPermission) == 3){
@@ -443,7 +501,7 @@ public class MainActivity extends AppCompatActivity
                                 }
                             }
                             NotificationManager mNotificationManager = (NotificationManager) MainActivity.this.getSystemService(Context.NOTIFICATION_SERVICE);
-                            mNotificationManager.cancel(123456789);
+                            mNotificationManager.cancel(PrintService.NOTIFY_ID);
 
                             // 删除打票机设置信息
                             //SharedPreferencesTool.deleteFromShared(MainActivity.this, "BouilliSetInfo", "printUseVol");
@@ -451,6 +509,7 @@ public class MainActivity extends AppCompatActivity
                             //SharedPreferencesTool.deleteFromShared(MainActivity.this, "BouilliProInfo", "printAddress");
 
                             SharedPreferencesTool.addOrUpdate(MainActivity.this, "BouilliProInfo", "hasExitLast", "true");
+
                             Intent welcomeIntent = new Intent(MainActivity.this, WelcomeActivity.class);
                             startActivity(welcomeIntent);
                             MainActivity.this.finish();
@@ -514,6 +573,10 @@ public class MainActivity extends AppCompatActivity
                     ComFun.showToast(this, "再按一次离开", 2000);
                     exitTime = System.currentTimeMillis();
                 } else {
+                    // 关闭推送服务
+                    ServiceManager serviceManager = new ServiceManager(MainActivity.this);
+                    serviceManager.stopService();
+
                     System.exit(0);
                 }
             }
@@ -521,6 +584,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    AlertDialog pushConnectionDialog = null;
     class mHandler extends Handler {
         public mHandler() {
         }
@@ -534,43 +598,32 @@ public class MainActivity extends AppCompatActivity
             Bundle b = msg.getData();
             switch (msg.what) {
                 case MSG_CHECK_NEW_VERSION:
-                    // 隐藏加载动画
-                    ComFun.hideLoading(MainActivity.this);
-                    String checkNewVersionResult = b.getString("checkNewVersionResult");
-                    if (checkNewVersionResult.equals("true")) {
-                        boolean hasNewVersionFlag = false;
-                        int lastVersionNo = b.getInt("lastVersionNo");
-                        String lastVersionName = b.getString("lastVersionName");
-                        int currentVersionNo;
-                        String currentVersionName = "";
-                        try {
-                            currentVersionNo = ComFun.getVersionNo(MainActivity.this);
-                            currentVersionName = ComFun.getVersionName(MainActivity.this);
-                            if(lastVersionNo > currentVersionNo){
-                                // 有新版本
-                                hasNewVersionFlag = true;
-                            }
-                        } catch (Exception e) {}
-                        if(hasNewVersionFlag){
-                            String lastVersionContent = b.getString("lastVersionContent");
-                            // 弹框显示新版本详细内容
-                            new android.support.v7.app.AlertDialog.Builder(MainActivity.this).setTitle("发现新版本").setMessage(
-                                    "当前版本：V." + currentVersionName + "   最新版本：" + lastVersionName + "\n\n更新内容：\n" + Html.fromHtml(lastVersionContent, null, new MyTagHandler(MainActivity.this)) +"\n\n确定下载更新吗？")
-                                    .setPositiveButton("下载更新", new DialogInterface.OnClickListener(){
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            startToDownloadNewVersion();
-                                        }
-                                    })
-                                    .setNegativeButton("取消", null).show();
-                        }else{
-                            ComFun.showToast(MainActivity.this, "当前已经是最新的版本啦", Toast.LENGTH_SHORT);
+                    boolean hasNewVersionFlag = false;
+                    int lastVersionNo = b.getInt("lastVersionNo");
+                    String lastVersionName = b.getString("lastVersionName");
+                    int currentVersionNo;
+                    String currentVersionName = "";
+                    try {
+                        currentVersionNo = ComFun.getVersionNo(MainActivity.this);
+                        currentVersionName = ComFun.getVersionName(MainActivity.this);
+                        if(lastVersionNo > currentVersionNo){
+                            // 有新版本
+                            hasNewVersionFlag = true;
                         }
-                    }else if (checkNewVersionResult.equals("false")) {
-                        ComFun.showToast(MainActivity.this, "检查更新失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (checkNewVersionResult.equals("time_out")) {
-                        ComFun.showToast(MainActivity.this, "检查更新超时，请稍后重试", Toast.LENGTH_SHORT);
-                    }else if (checkNewVersionResult.equals("none")) {
+                    } catch (Exception e) {}
+                    if(hasNewVersionFlag){
+                        String lastVersionContent = b.getString("lastVersionContent");
+                        // 弹框显示新版本详细内容
+                        new android.support.v7.app.AlertDialog.Builder(MainActivity.this).setTitle("发现新版本").setMessage(
+                                "当前版本：V." + currentVersionName + "   最新版本：" + lastVersionName + "\n\n更新内容：\n" + Html.fromHtml(lastVersionContent, null, new MyTagHandler(MainActivity.this)) +"\n\n确定下载更新吗？")
+                                .setPositiveButton("下载更新", new DialogInterface.OnClickListener(){
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        startToDownloadNewVersion();
+                                    }
+                                })
+                                .setNegativeButton("取消", null).show();
+                    }else{
                         ComFun.showToast(MainActivity.this, "当前已经是最新的版本啦", Toast.LENGTH_SHORT);
                     }
                     break;
@@ -586,36 +639,46 @@ public class MainActivity extends AppCompatActivity
                     }
                     break;
                 case MSG_SEE_TABLE_INFO:
-                    // 隐藏加载动画
-                    ComFun.hideLoading(MainActivity.this);
-                    String getTableOrderInfoResult = b.getString("getTableOrderInfoResult");
-                    if (getTableOrderInfoResult.equals("true")) {
-                        String tableNum = b.getString("tableNum");
-                        StringBuilder tableReadyOrderSb = new StringBuilder("餐桌【" + tableNum + "】\n\n");
-                        String orderInfoDetails = b.getString("orderInfoDetails");
-                        for(String orderInfo : orderInfoDetails.split(",")){
-                            BigDecimal price = new BigDecimal(orderInfo.split("\\|")[0].split("#&#")[4]);
-                            int buyNum = Integer.parseInt(orderInfo.split("\\|")[1]);
-                            double totalMoneyUnit = ComFun.add(0.0, price.multiply(new BigDecimal(buyNum)));
-                            if(orderInfo.split("\\|")[2].equals("-")){
-                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份 -------- "+ totalMoneyUnit +" 元");
-                            }else{
-                                tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份（" + orderInfo.split("\\|")[2] + "） -------- "+ totalMoneyUnit +" 元");
-                            }
-                            tableReadyOrderSb.append("\n");
-                            // orderInfo.split("\\|")[0].split("#&#")[0],
-                            // new Object[]{ orderInfo.split("\\|")[0], orderInfo.split("\\|")[1], orderInfo.split("\\|")[2] });
-                            // 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
+                    String tableNum = b.getString("tableNum");
+                    StringBuilder tableReadyOrderSb = new StringBuilder("餐桌【" + tableNum + "】\n\n");
+                    String orderInfoDetails = b.getString("orderInfoDetails");
+                    for(String orderInfo : orderInfoDetails.split(",")){
+                        BigDecimal price = new BigDecimal(orderInfo.split("\\|")[0].split("#&#")[4]);
+                        int buyNum = Integer.parseInt(orderInfo.split("\\|")[1]);
+                        double totalMoneyUnit = ComFun.add(0.0, price.multiply(new BigDecimal(buyNum)));
+                        if(orderInfo.split("\\|")[2].equals("-")){
+                            tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份 -------- "+ totalMoneyUnit +" 元");
+                        }else{
+                            tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份（" + orderInfo.split("\\|")[2] + "） -------- "+ totalMoneyUnit +" 元");
                         }
-                        seeTableInfoSnackbar = SnackbarUtil.IndefiniteSnackbar(message_info, "", -2, Color.parseColor("#FAFAFA"), Color.parseColor("#FF6868"));
-                        View add_view = LayoutInflater.from(seeTableInfoSnackbar.getView().getContext()).inflate(R.layout.see_table_order_info, null);
-                        ((TextView) add_view.findViewById(R.id.seeTableInfoTv)).setText(tableReadyOrderSb.toString());
-                        SnackbarUtil.SnackbarAddView(seeTableInfoSnackbar, add_view, 0);
-                        seeTableInfoSnackbar.show();
-                    }else if (getTableOrderInfoResult.equals("false")) {
-                        ComFun.showToast(MainActivity.this, "获取餐桌信息失败", Toast.LENGTH_SHORT);
-                    }else {
-                        ComFun.showToast(MainActivity.this, "获取餐桌信息超时，请稍后重试", Toast.LENGTH_SHORT);
+                        tableReadyOrderSb.append("\n");
+                        // orderInfo.split("\\|")[0].split("#&#")[0],
+                        // new Object[]{ orderInfo.split("\\|")[0], orderInfo.split("\\|")[1], orderInfo.split("\\|")[2] });
+                        // 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
+                    }
+                    seeTableInfoSnackbar = SnackbarUtil.IndefiniteSnackbar(message_info, "", -2, Color.parseColor("#FAFAFA"), Color.parseColor("#FF6868"));
+                    View add_view = LayoutInflater.from(seeTableInfoSnackbar.getView().getContext()).inflate(R.layout.see_table_order_info, null);
+                    ((TextView) add_view.findViewById(R.id.seeTableInfoTv)).setText(tableReadyOrderSb.toString());
+                    SnackbarUtil.SnackbarAddView(seeTableInfoSnackbar, add_view, 0);
+                    seeTableInfoSnackbar.show();
+                    break;
+                case MSG_PUSH_CONNECTION_LOADING:
+                    // 显示加载动画
+                    String pushConnectionType = b.getString("pushConnectionType");
+                    if(pushConnectionType.equals("loading")){
+                        if(pushConnectionDialog == null || !pushConnectionDialog.isShowing()){
+                            pushConnectionDialog = ComFun.showLoading(MainActivity.this, "正在连接推送服务...", true);
+                        }
+                    }else if(pushConnectionType.equals("connectionSuccess")){
+                        if(pushConnectionDialog != null && pushConnectionDialog.isShowing()){
+                            pushConnectionDialog.dismiss();
+                        }
+                        ComFun.showToast(MainActivity.this, "推送服务连接成功", Toast.LENGTH_SHORT);
+                    }else if(pushConnectionType.equals("reconnection")){
+                        int reconnectionAfterTime = b.getInt("reconnectionAfterTime");
+                        L.toast(MainActivity.this, reconnectionAfterTime + " 秒后尝试重新连接推送服务", Toast.LENGTH_SHORT);
+                    }else if(pushConnectionType.equals("reconnectionErr")){
+                        L.toast(MainActivity.this, "已认证登录信息", Toast.LENGTH_SHORT);
                     }
                     break;
             }

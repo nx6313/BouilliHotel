@@ -1,0 +1,87 @@
+/**
+ * get方式请求
+ */
+private void getRequest(String url, RequestParams params) {
+    CommonOkHttpClient.get(CommonRequest.createGetRequest(context, url, params), new DisposeDataHandle(new DisposeDataListener() {
+        @Override
+        public void onFinish() {
+
+        }
+
+        @Override
+        public void onSuccess(Object responseObj) {
+
+        }
+
+        @Override
+        public void onFailure(OkHttpException okHttpE) {
+
+        }
+    }));
+}
+
+/**
+ * post方式请求
+ */
+private void postRequest(String url, RequestParams params) {
+    CommonOkHttpClient.get(CommonRequest.createPostRequest(context, url, params), new DisposeDataHandle(new DisposeDataListener() {
+        @Override
+        public void onFinish() {
+
+        }
+
+        @Override
+        public void onSuccess(Object responseObj) {
+
+        }
+
+        @Override
+        public void onFailure(OkHttpException okHttpE) {
+
+        }
+    }));
+}
+
+/**
+ * 文件下载
+ */
+private void fileDownRequest(String url, RequestParams params) {
+    CommonOkHttpClient.downloadFile(CommonRequest.createGetRequest(context, url, params), new DisposeDataHandle(new DisposeDataListener() {
+        @Override
+        public void onFinish() {
+
+        }
+
+        @Override
+        public void onSuccess(Object responseObj) {
+
+        }
+
+        @Override
+        public void onFailure(OkHttpException okHttpE) {
+
+        }
+    }, Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + System.currentTimeMillis() + ".xxx"));
+}
+
+/**
+ * 文件上传
+ */
+private void fileUploadRequest(String url, RequestParams params) {
+    CommonOkHttpClient.get(CommonRequest.createMultiPostRequest(context, url, params), new DisposeDataHandle(new DisposeDataListener() {
+        @Override
+        public void onFinish() {
+
+        }
+
+        @Override
+        public void onSuccess(Object responseObj) {
+
+        }
+
+        @Override
+        public void onFailure(OkHttpException okHttpE) {
+
+        }
+    }));
+}

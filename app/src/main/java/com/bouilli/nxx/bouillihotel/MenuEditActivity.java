@@ -35,6 +35,8 @@ import com.bouilli.nxx.bouillihotel.asyncTask.AddNewMenuTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.DeleteMenuTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.MoveMenuTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.UpdateMenuTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
+import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
@@ -266,7 +268,21 @@ public class MenuEditActivity extends AppCompatActivity {
                                                 ComFun.showLoading(MenuEditActivity.this, "正在删除菜品，请稍后");
                                                 List<String> deleteMenuGroupIds = new ArrayList<>();
                                                 deleteMenuGroupIds.add(menuGroupId);
-                                                new DeleteMenuTask(MenuEditActivity.this, "menuInfo", deleteMenuGroupIds, menuNameId, menuNameInfo).executeOnExecutor(Executors.newCachedThreadPool());
+
+                                                RequestParams requestParams = new RequestParams();
+                                                requestParams.put("deleteType", "menuInfo");
+                                                StringBuilder deleteMenuGrouIds = new StringBuilder("");
+                                                if(ComFun.strNull(deleteMenuGroupIds) && deleteMenuGroupIds.size() > 0){
+                                                    for(String s : deleteMenuGroupIds){
+                                                        deleteMenuGrouIds.append(s);
+                                                        deleteMenuGrouIds.append(",");
+                                                    }
+                                                }
+                                                if(ComFun.strNull(deleteMenuGrouIds.toString())){
+                                                    requestParams.put("menuGroupIds", deleteMenuGrouIds.toString().substring(0, deleteMenuGrouIds.toString().length() - 1));
+                                                }
+                                                requestParams.put("menuInfoId", menuNameId);
+                                                AllRequestUtil.DeleteMenu(MenuEditActivity.this, requestParams, "menuInfo", deleteMenuGroupIds, menuNameId, menuNameInfo);
                                             }
                                         })
                                         .setNegativeButton("取消", null).show();
@@ -361,8 +377,14 @@ public class MenuEditActivity extends AppCompatActivity {
                                                     // 显示加载动画
                                                     ComFun.showLoading(MenuEditActivity.this, "菜品数据修改中，请稍后", true);
                                                     // 异步任务提交修改菜品数据
-                                                    new UpdateMenuTask(MenuEditActivity.this, menuNameId, etMenuInfoName.getText().toString(), oldMenuGroupId, selectMenuGroupId,
-                                                            etMenuInfoDes.getText().toString(), etMenuInfoPrice.getText().toString()).executeOnExecutor(Executors.newCachedThreadPool());
+                                                    RequestParams requestParams = new RequestParams();
+                                                    requestParams.put("menuId", menuNameId);
+                                                    requestParams.put("menuInfoName", etMenuInfoName.getText().toString());
+                                                    requestParams.put("selectMenuGroupId", selectMenuGroupId);
+                                                    requestParams.put("menuInfoDes", etMenuInfoDes.getText().toString());
+                                                    requestParams.put("menuInfoPrice", etMenuInfoPrice.getText().toString());
+                                                    AllRequestUtil.UpdateMenu(MenuEditActivity.this, requestParams, menuNameId, etMenuInfoName.getText().toString(), oldMenuGroupId, selectMenuGroupId,
+                                                            etMenuInfoDes.getText().toString(), etMenuInfoPrice.getText().toString());
                                                 }
                                             }
                                         });
@@ -413,7 +435,11 @@ public class MenuEditActivity extends AppCompatActivity {
                                                                 // 执行方法移动菜品所在组位置
                                                                 // 显示加载动画
                                                                 ComFun.showLoading(MenuEditActivity.this, "正在移动菜品，请稍后", true);
-                                                                new MoveMenuTask(MenuEditActivity.this, menuItemInfo, menuNameId, menuNameInfo, menuGroupId, menuGroupForMoveMapUs.get(whichMove).split("#&#")[0]).executeOnExecutor(Executors.newCachedThreadPool());
+                                                                RequestParams requestParams = new RequestParams();
+                                                                requestParams.put("moveMenuId", menuNameId);
+                                                                requestParams.put("moveMenuGroupId", menuGroupId);
+                                                                requestParams.put("moveMenuToGroupId", menuGroupForMoveMapUs.get(whichMove).split("#&#")[0]);
+                                                                AllRequestUtil.MoveMenu(MenuEditActivity.this, requestParams, menuNameInfo, menuItemInfo, menuNameId, menuGroupId, menuGroupForMoveMapUs.get(whichMove).split("#&#")[0]);
                                                             }
                                                         });
                                                         //添加一个取消按钮
@@ -540,8 +566,15 @@ public class MenuEditActivity extends AppCompatActivity {
                                 // 显示加载动画
                                 ComFun.showLoading(MenuEditActivity.this, "菜品数据提交中，请稍后");
                                 // 异步任务提交数据
-                                new AddNewMenuTask(MenuEditActivity.this, null, etMenuInfoName.getText().toString(), selectMenuGroupId,
-                                        etMenuInfoDes.getText().toString(), etMenuInfoPrice.getText().toString(), "menuInfo").executeOnExecutor(Executors.newCachedThreadPool());
+                                RequestParams requestParams = new RequestParams();
+                                //requestParams.put("groupName", null);
+                                requestParams.put("menuInfoName", etMenuInfoName.getText().toString());
+                                requestParams.put("selectMenuGroupId", selectMenuGroupId);
+                                requestParams.put("menuInfoDes", etMenuInfoDes.getText().toString());
+                                requestParams.put("menuInfoPrice", etMenuInfoPrice.getText().toString());
+                                requestParams.put("addType", "menuInfo");
+                                AllRequestUtil.AddNewMenu(MenuEditActivity.this, requestParams, "menuInfo", null, etMenuInfoName.getText().toString(), selectMenuGroupId,
+                                        etMenuInfoDes.getText().toString(), etMenuInfoPrice.getText().toString());
                             }
                         }
                     });
@@ -592,7 +625,14 @@ public class MenuEditActivity extends AppCompatActivity {
                             // 显示加载动画
                             ComFun.showLoading(MenuEditActivity.this, "菜品数据提交中，请稍后");
                             // 异步任务提交数据
-                            new AddNewMenuTask(MenuEditActivity.this, etMenuGroupName.getText().toString(), null, null, null, null, "group").executeOnExecutor(Executors.newCachedThreadPool());
+                            RequestParams requestParams = new RequestParams();
+                            requestParams.put("groupName", etMenuGroupName.getText().toString());
+                            //requestParams.put("menuInfoName", null);
+                            //requestParams.put("selectMenuGroupId", null);
+                            //requestParams.put("menuInfoDes", null);
+                            //requestParams.put("menuInfoPrice", null);
+                            requestParams.put("addType", "group");
+                            AllRequestUtil.AddNewMenu(MenuEditActivity.this, requestParams, "group", etMenuGroupName.getText().toString(), null, null, null, null);
                         }
                     }
                 });
@@ -634,7 +674,21 @@ public class MenuEditActivity extends AppCompatActivity {
                             if(deleteSelectMenuGroupIdList.size() > 0){
                                 // 显示加载动画
                                 ComFun.showLoading(MenuEditActivity.this, "正在删除菜品组，请稍后");
-                                new DeleteMenuTask(MenuEditActivity.this, "group", deleteSelectMenuGroupIdList, null, null).executeOnExecutor(Executors.newCachedThreadPool());
+
+                                RequestParams requestParams = new RequestParams();
+                                requestParams.put("deleteType", "group");
+                                StringBuilder deleteMenuGrouIds = new StringBuilder("");
+                                if(ComFun.strNull(deleteSelectMenuGroupIdList) && deleteSelectMenuGroupIdList.size() > 0){
+                                    for(String s : deleteSelectMenuGroupIdList){
+                                        deleteMenuGrouIds.append(s);
+                                        deleteMenuGrouIds.append(",");
+                                    }
+                                }
+                                if(ComFun.strNull(deleteMenuGrouIds.toString())){
+                                    requestParams.put("menuGroupIds", deleteMenuGrouIds.toString().substring(0, deleteMenuGrouIds.toString().length() - 1));
+                                }
+                                //requestParams.put("menuInfoId", null);
+                                AllRequestUtil.DeleteMenu(MenuEditActivity.this, requestParams, "group", deleteSelectMenuGroupIdList, null, null);
                             }else{
                                 ComFun.showToast(MenuEditActivity.this, "没有选择要删除的菜品组", Toast.LENGTH_SHORT);
                             }
@@ -665,235 +719,179 @@ public class MenuEditActivity extends AppCompatActivity {
             Bundle b = msg.getData();
             switch (msg.what) {
                 case MSG_ADD_MENU:
-                    // 隐藏加载动画
-                    ComFun.hideLoading(MenuEditActivity.this);
                     String addType = b.getString("addType");
-                    String addNewMenuResult = b.getString("addNewMenuResult");
                     String groupName = b.getString("groupName");
                     String menuInfoName = b.getString("menuInfoName");
                     String menuInfoDes = b.getString("menuInfoDes");
                     String menuInfoPrice = b.getString("menuInfoPrice");
-                    if (addNewMenuResult.equals("true")) {
-                        String otherData = "";
-                        if(b.containsKey("otherData")){
-                            otherData = b.getString("otherData");
-                        }
-                        // 添加或更新本地菜品组数据
-                        if(addType.equals("group")){
-                            ComFun.showToast(MenuEditActivity.this, "添加新菜品组成功", Toast.LENGTH_SHORT);
-                            if(ComFun.strNull(otherData)){
-                                menuGroupNames = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames");
-                                if(ComFun.strNull(menuGroupNames)){
-                                    if(!ComFun.strInArr(menuGroupNames.split(","), groupName)){
-                                        SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames", menuGroupNames + "," + otherData + "#&#" + groupName);
-                                    }
-                                }else{
-                                    SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames", otherData + "#&#" + groupName);
+                    String otherData = "";
+                    if(b.containsKey("otherData")){
+                        otherData = b.getString("otherData");
+                    }
+                    // 添加或更新本地菜品组数据
+                    if(addType.equals("group")){
+                        ComFun.showToast(MenuEditActivity.this, "添加新菜品组成功", Toast.LENGTH_SHORT);
+                        if(ComFun.strNull(otherData)){
+                            menuGroupNames = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames");
+                            if(ComFun.strNull(menuGroupNames)){
+                                if(!ComFun.strInArr(menuGroupNames.split(","), groupName)){
+                                    SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames", menuGroupNames + "," + otherData + "#&#" + groupName);
                                 }
-                            }
-                        }else{
-                            ComFun.showToast(MenuEditActivity.this, "添加新菜品【"+ menuInfoName +"】成功", Toast.LENGTH_SHORT);
-                            if(ComFun.strNull(otherData)){
-                                BigDecimal price = new BigDecimal(menuInfoPrice);
-                                price.setScale(2);
-                                String menuItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+otherData.split(",")[1]);
-                                String newMenuInfos = otherData.split(",")[0] + "#&#" + otherData.split(",")[1] + "#&#" + menuInfoName
-                                        + "#&#" + (ComFun.strNull(menuInfoDes)?menuInfoDes:"-") + "#&#" + price + "#&#0";
-                                if(ComFun.strNull(menuItemChiles)){
-                                    SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+otherData.split(",")[1], menuItemChiles + "," + newMenuInfos);
-                                }else{
-                                    SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+otherData.split(",")[1], newMenuInfos);
-                                }
+                            }else{
+                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames", otherData + "#&#" + groupName);
                             }
                         }
-                        initMenuView();
-                    }else if (addNewMenuResult.equals("false")) {
-                        if(addType.equals("group")){
-                            ComFun.showToast(MenuEditActivity.this, "添加新菜品组失败，请联系管理员", Toast.LENGTH_SHORT);
-                        }else{
-                            ComFun.showToast(MenuEditActivity.this, "添加新菜品失败，请联系管理员", Toast.LENGTH_SHORT);
-                        }
-                    }else if (addNewMenuResult.equals("time_out")) {
-                        if(addType.equals("group")){
-                            ComFun.showToast(MenuEditActivity.this, "添加新菜品组超时，请稍后重试", Toast.LENGTH_SHORT);
-                        }else{
-                            ComFun.showToast(MenuEditActivity.this, "添加新菜品超时，请稍后重试", Toast.LENGTH_SHORT);
-                        }
-                    }else if (addNewMenuResult.equals("has_menu_group")) {
-                        if(addType.equals("group")){
-                            ComFun.showToast(MenuEditActivity.this, "组【"+ groupName +"已经存在，请重新添加", Toast.LENGTH_SHORT);
+                    }else{
+                        ComFun.showToast(MenuEditActivity.this, "添加新菜品【"+ menuInfoName +"】成功", Toast.LENGTH_SHORT);
+                        if(ComFun.strNull(otherData)){
+                            BigDecimal price = new BigDecimal(menuInfoPrice);
+                            price.setScale(2);
+                            String menuItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+otherData.split(",")[1]);
+                            String newMenuInfos = otherData.split(",")[0] + "#&#" + otherData.split(",")[1] + "#&#" + menuInfoName
+                                    + "#&#" + (ComFun.strNull(menuInfoDes)?menuInfoDes:"-") + "#&#" + price + "#&#0";
+                            if(ComFun.strNull(menuItemChiles)){
+                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+otherData.split(",")[1], menuItemChiles + "," + newMenuInfos);
+                            }else{
+                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+otherData.split(",")[1], newMenuInfos);
+                            }
                         }
                     }
+                    initMenuView();
                     break;
                 case MSG_DELETE_MENU:
-                    // 隐藏加载动画
-                    ComFun.hideLoading(MenuEditActivity.this);
                     String deleteType = b.getString("deleteType");
-                    String deleteMenuResult = b.getString("deleteMenuResult");
                     String menuGroupIds = b.getString("menuGroupIds");
                     String menuInfoId = b.getString("menuInfoId");
                     String menuInfoNameFDel = b.getString("menuInfoNameFDel");
-                    if (deleteMenuResult.equals("true")) {
-                        // 更新本地菜品组数据
-                        if(deleteType.equals("group")){
-                            ComFun.showToast(MenuEditActivity.this, "删除菜品组成功", Toast.LENGTH_SHORT);
-                            menuGroupNames = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames");
-                            if(ComFun.strNull(menuGroupNames)){
-                                StringBuilder menuGroupDelAfter = new StringBuilder("");
-                                for(String menuGroup : menuGroupNames.split(",")){
-                                    if(!ComFun.strInArr(menuGroupIds.split(","), menuGroup.split("#&#")[0])){
-                                        menuGroupDelAfter.append(menuGroup);
-                                        menuGroupDelAfter.append(",");
-                                    }
-                                }
-                                if(ComFun.strNull(menuGroupDelAfter.toString())){
-                                    SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames", menuGroupDelAfter.toString().substring(0, menuGroupDelAfter.toString().length() - 1));
-                                }else{
-                                    SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames", "");
+                    // 更新本地菜品组数据
+                    if(deleteType.equals("group")){
+                        ComFun.showToast(MenuEditActivity.this, "删除菜品组成功", Toast.LENGTH_SHORT);
+                        menuGroupNames = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames");
+                        if(ComFun.strNull(menuGroupNames)){
+                            StringBuilder menuGroupDelAfter = new StringBuilder("");
+                            for(String menuGroup : menuGroupNames.split(",")){
+                                if(!ComFun.strInArr(menuGroupIds.split(","), menuGroup.split("#&#")[0])){
+                                    menuGroupDelAfter.append(menuGroup);
+                                    menuGroupDelAfter.append(",");
                                 }
                             }
-                        }else{
-                            if(!menuGroupIds.contains(",")){
-                                ComFun.showToast(MenuEditActivity.this, "删除菜品【"+ menuInfoNameFDel +"】成功", Toast.LENGTH_SHORT);
-                                String menuItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+menuGroupIds);
-                                StringBuilder menuInfoDelAfter = new StringBuilder("");
-                                for(String menuItem : menuItemChiles.split(",")){
-                                    if(!menuItem.split("#&#")[0].equals(menuInfoId)){
-                                        menuInfoDelAfter.append(menuItem);
-                                        menuInfoDelAfter.append(",");
-                                    }
-                                }
-                                if(ComFun.strNull(menuInfoDelAfter.toString())){
-                                    SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+menuGroupIds, menuInfoDelAfter.toString().substring(0, menuInfoDelAfter.toString().length() - 1));
-                                }else{
-                                    SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+menuGroupIds, "");
-                                }
+                            if(ComFun.strNull(menuGroupDelAfter.toString())){
+                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames", menuGroupDelAfter.toString().substring(0, menuGroupDelAfter.toString().length() - 1));
+                            }else{
+                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuGroupNames", "");
                             }
                         }
-                        initMenuView();
-                    }else if (deleteMenuResult.equals("false")) {
-                        if(deleteType.equals("group")){
-                            ComFun.showToast(MenuEditActivity.this, "删除菜品组失败，请联系管理员", Toast.LENGTH_SHORT);
-                        }else{
-                            ComFun.showToast(MenuEditActivity.this, "删除菜品失败，请联系管理员", Toast.LENGTH_SHORT);
-                        }
-                    }else if (deleteMenuResult.equals("time_out")) {
-                        if(deleteType.equals("group")){
-                            ComFun.showToast(MenuEditActivity.this, "删除菜品组超时，请稍后重试", Toast.LENGTH_SHORT);
-                        }else{
-                            ComFun.showToast(MenuEditActivity.this, "删除菜品超时，请稍后重试", Toast.LENGTH_SHORT);
+                    }else{
+                        if(!menuGroupIds.contains(",")){
+                            ComFun.showToast(MenuEditActivity.this, "删除菜品【"+ menuInfoNameFDel +"】成功", Toast.LENGTH_SHORT);
+                            String menuItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+menuGroupIds);
+                            StringBuilder menuInfoDelAfter = new StringBuilder("");
+                            for(String menuItem : menuItemChiles.split(",")){
+                                if(!menuItem.split("#&#")[0].equals(menuInfoId)){
+                                    menuInfoDelAfter.append(menuItem);
+                                    menuInfoDelAfter.append(",");
+                                }
+                            }
+                            if(ComFun.strNull(menuInfoDelAfter.toString())){
+                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+menuGroupIds, menuInfoDelAfter.toString().substring(0, menuInfoDelAfter.toString().length() - 1));
+                            }else{
+                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+menuGroupIds, "");
+                            }
                         }
                     }
+                    initMenuView();
                     break;
                 case MSG_MOVE_MENU:
-                    // 隐藏加载动画
-                    ComFun.hideLoading(MenuEditActivity.this);
-                    String moveMenuResult = b.getString("moveMenuResult");
                     String menuItemInfo = b.getString("menuItemInfo");
                     String moveMenuId = b.getString("moveMenuId");
                     String menuInfoNameFMove = b.getString("menuInfoNameFMove");
                     String moveMenuGroupId = b.getString("moveMenuGroupId");
                     String moveMenuToGroupId = b.getString("moveMenuToGroupId");
-                    if (moveMenuResult.equals("true")) {
-                        // 更新本地菜品组数据
-                        ComFun.showToast(MenuEditActivity.this, "移动菜品【"+ menuInfoNameFMove +"】成功", Toast.LENGTH_SHORT);
-                        // 菜品所在的组
-                        String menuItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuGroupId);
-                        StringBuilder menuInfoMoveAfter = new StringBuilder("");
-                        for(String menuItem : menuItemChiles.split(",")){
-                            if(!menuItem.split("#&#")[0].equals(moveMenuId)){
-                                menuInfoMoveAfter.append(menuItem);
-                                menuInfoMoveAfter.append(",");
-                            }
+                    // 更新本地菜品组数据
+                    ComFun.showToast(MenuEditActivity.this, "移动菜品【"+ menuInfoNameFMove +"】成功", Toast.LENGTH_SHORT);
+                    // 菜品所在的组
+                    String menuItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuGroupId);
+                    StringBuilder menuInfoMoveAfter = new StringBuilder("");
+                    for(String menuItem : menuItemChiles.split(",")){
+                        if(!menuItem.split("#&#")[0].equals(moveMenuId)){
+                            menuInfoMoveAfter.append(menuItem);
+                            menuInfoMoveAfter.append(",");
                         }
-                        if(ComFun.strNull(menuInfoMoveAfter.toString())){
-                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuGroupId, menuInfoMoveAfter.toString().substring(0, menuInfoMoveAfter.toString().length() - 1));
-                        }else{
-                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuGroupId, "");
-                        }
-                        // 移动至的组
-                        String menuToItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuToGroupId);
-                        menuToItemChiles = menuItemInfo + "," + menuToItemChiles;
-                        SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuToGroupId, menuToItemChiles);
-                        initMenuView();
-                    }else if (moveMenuResult.equals("false")) {
-                        ComFun.showToast(MenuEditActivity.this, "移动菜品失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (moveMenuResult.equals("time_out")) {
-                        ComFun.showToast(MenuEditActivity.this, "移动菜品超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
+                    if(ComFun.strNull(menuInfoMoveAfter.toString())){
+                        SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuGroupId, menuInfoMoveAfter.toString().substring(0, menuInfoMoveAfter.toString().length() - 1));
+                    }else{
+                        SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuGroupId, "");
+                    }
+                    // 移动至的组
+                    String menuToItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuToGroupId);
+                    menuToItemChiles = menuItemInfo + "," + menuToItemChiles;
+                    SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+moveMenuToGroupId, menuToItemChiles);
+                    initMenuView();
                     break;
                 case MSG_UPDATE_MENU:
-                    // 隐藏加载动画
-                    ComFun.hideLoading(MenuEditActivity.this);
-                    String updateMenuResult = b.getString("updateMenuResult");
                     String menuId = b.getString("menuId");
                     String menuName = b.getString("menuInfoName");
                     String oldMenuInGroupId = b.getString("oldMenuInGroupId");
                     String selectMenuGroupId = b.getString("selectMenuGroupId");
                     String menuDes = b.getString("menuInfoDes");
                     String menuPrice = b.getString("menuInfoPrice");
-                    if (updateMenuResult.equals("true")) {
-                        // 更新本地菜品组数据
-                        ComFun.showToast(MenuEditActivity.this, "菜品已成功修改为【 "+ menuName +" 】", Toast.LENGTH_SHORT);
-                        if(oldMenuInGroupId.equals(selectMenuGroupId)){
-                            // 未跨组
-                            String useCount = "";
-                            String menuItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId);
-                            StringBuilder menuInfoDelAfter = new StringBuilder("");
-                            for(String menuItem : menuItemChiles.split(",")){
-                                if(!menuItem.split("#&#")[0].equals(menuId)){
-                                    menuInfoDelAfter.append(menuItem);
-                                    menuInfoDelAfter.append(",");
-                                }else{
-                                    useCount = menuItem.split("#&#")[5];
-                                }
-                            }
-                            BigDecimal price = new BigDecimal(menuPrice);
-                            String newMenuInfos2 = menuId + "#&#" + selectMenuGroupId + "#&#" + menuName
-                                    + "#&#" + (ComFun.strNull(menuDes)?menuDes:"-") + "#&#" + price + "#&#" + useCount;
-                            if(ComFun.strNull(menuInfoDelAfter.toString())){
-                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId, menuInfoDelAfter.toString().substring(0, menuInfoDelAfter.toString().length() - 1) + "," + newMenuInfos2);
+                    // 更新本地菜品组数据
+                    ComFun.showToast(MenuEditActivity.this, "菜品已成功修改为【 "+ menuName +" 】", Toast.LENGTH_SHORT);
+                    if(oldMenuInGroupId.equals(selectMenuGroupId)){
+                        // 未跨组
+                        String useCount = "";
+                        String menuItemUpdateChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId);
+                        StringBuilder menuInfoDelAfter = new StringBuilder("");
+                        for(String menuItem : menuItemUpdateChiles.split(",")){
+                            if(!menuItem.split("#&#")[0].equals(menuId)){
+                                menuInfoDelAfter.append(menuItem);
+                                menuInfoDelAfter.append(",");
                             }else{
-                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId, newMenuInfos2);
-                            }
-                        }else{
-                            // 已跨组
-                            // 删除之前组中的
-                            String useCount = "";
-                            String menuItemChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+oldMenuInGroupId);
-                            StringBuilder menuInfoDelAfter = new StringBuilder("");
-                            for(String menuItem : menuItemChiles.split(",")){
-                                if(!menuItem.split("#&#")[0].equals(menuId)){
-                                    menuInfoDelAfter.append(menuItem);
-                                    menuInfoDelAfter.append(",");
-                                }else{
-                                    useCount = menuItem.split("#&#")[5];
-                                }
-                            }
-                            if(ComFun.strNull(menuInfoDelAfter.toString())){
-                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+oldMenuInGroupId, menuInfoDelAfter.toString().substring(0, menuInfoDelAfter.toString().length() - 1));
-                            }else{
-                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+oldMenuInGroupId, "");
-                            }
-                            // 更新新组中的
-                            BigDecimal price = new BigDecimal(menuPrice);
-                            price.setScale(2);
-                            String menuItemChiles2 = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId);
-                            String newMenuInfos2 = menuId + "#&#" + selectMenuGroupId + "#&#" + menuName
-                                    + "#&#" + (ComFun.strNull(menuDes)?menuDes:"-") + "#&#" + price + "#&#" + useCount;
-                            if(ComFun.strNull(menuItemChiles2)){
-                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId, menuItemChiles2 + "," + newMenuInfos2);
-                            }else{
-                                SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId, newMenuInfos2);
+                                useCount = menuItem.split("#&#")[5];
                             }
                         }
-
-                        initMenuView();
-                    }else if (updateMenuResult.equals("false")) {
-                        ComFun.showToast(MenuEditActivity.this, "修改菜品失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (updateMenuResult.equals("time_out")) {
-                        ComFun.showToast(MenuEditActivity.this, "修改菜品超时，请稍后重试", Toast.LENGTH_SHORT);
+                        BigDecimal price = new BigDecimal(menuPrice);
+                        String newMenuInfos2 = menuId + "#&#" + selectMenuGroupId + "#&#" + menuName
+                                + "#&#" + (ComFun.strNull(menuDes)?menuDes:"-") + "#&#" + price + "#&#" + useCount;
+                        if(ComFun.strNull(menuInfoDelAfter.toString())){
+                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId, menuInfoDelAfter.toString().substring(0, menuInfoDelAfter.toString().length() - 1) + "," + newMenuInfos2);
+                        }else{
+                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId, newMenuInfos2);
+                        }
+                    }else{
+                        // 已跨组
+                        // 删除之前组中的
+                        String useCount = "";
+                        String menuItemUpdateChiles = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+oldMenuInGroupId);
+                        StringBuilder menuInfoDelAfter = new StringBuilder("");
+                        for(String menuItem : menuItemUpdateChiles.split(",")){
+                            if(!menuItem.split("#&#")[0].equals(menuId)){
+                                menuInfoDelAfter.append(menuItem);
+                                menuInfoDelAfter.append(",");
+                            }else{
+                                useCount = menuItem.split("#&#")[5];
+                            }
+                        }
+                        if(ComFun.strNull(menuInfoDelAfter.toString())){
+                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+oldMenuInGroupId, menuInfoDelAfter.toString().substring(0, menuInfoDelAfter.toString().length() - 1));
+                        }else{
+                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+oldMenuInGroupId, "");
+                        }
+                        // 更新新组中的
+                        BigDecimal price = new BigDecimal(menuPrice);
+                        price.setScale(2);
+                        String menuItemChiles2 = SharedPreferencesTool.getFromShared(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId);
+                        String newMenuInfos2 = menuId + "#&#" + selectMenuGroupId + "#&#" + menuName
+                                + "#&#" + (ComFun.strNull(menuDes)?menuDes:"-") + "#&#" + price + "#&#" + useCount;
+                        if(ComFun.strNull(menuItemChiles2)){
+                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId, menuItemChiles2 + "," + newMenuInfos2);
+                        }else{
+                            SharedPreferencesTool.addOrUpdate(MenuEditActivity.this, "BouilliMenuInfo", "menuItemChild"+selectMenuGroupId, newMenuInfos2);
+                        }
                     }
+
+                    initMenuView();
                     break;
             }
             super.handleMessage(msg);

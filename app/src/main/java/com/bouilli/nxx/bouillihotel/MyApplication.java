@@ -4,9 +4,6 @@ import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Intent;
-
-import com.bouilli.nxx.bouillihotel.service.PrintService;
 
 import java.io.OutputStream;
 import java.util.ArrayList;

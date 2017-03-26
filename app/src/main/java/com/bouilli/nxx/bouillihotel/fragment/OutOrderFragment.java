@@ -25,6 +25,8 @@ import com.bouilli.nxx.bouillihotel.MainActivity;
 import com.bouilli.nxx.bouillihotel.OutOrderActivity;
 import com.bouilli.nxx.bouillihotel.R;
 import com.bouilli.nxx.bouillihotel.asyncTask.GetMenuInThisTableTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
+import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
@@ -209,7 +211,9 @@ public class OutOrderFragment extends Fragment {
                             msg.what = OutOrderActivity.MSG_SEE_TABLE_INFO_LOADING;
                             OutOrderActivity.mHandler.sendMessage(msg);
                             // 调用任务根据餐桌号获取该餐桌就餐信息数据
-                            new GetMenuInThisTableTask(getActivity(), tag_table_order_id, true, true, tableDesInfo).executeOnExecutor(Executors.newCachedThreadPool());
+                            RequestParams params = new RequestParams();
+                            params.put("tableOrderId", tag_table_order_id);
+                            AllRequestUtil.GetMenuInThisTable(getActivity(), params, true, true, tag_table_order_id, tableDesInfo);
                         }
                     }
                 });

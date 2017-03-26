@@ -28,12 +28,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bouilli.nxx.bouillihotel.asyncTask.InitBaseDataTask;
-import com.bouilli.nxx.bouillihotel.asyncTask.UserLoginTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.customview.ClearEditText;
 import com.bouilli.nxx.bouillihotel.customview.HorizontalProgressbarWithProgress;
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
 import com.bouilli.nxx.bouillihotel.db.DBInfo;
+import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.MyTagHandler;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
@@ -48,6 +48,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 public class WelcomeActivity extends Activity {
@@ -143,7 +144,10 @@ public class WelcomeActivity extends Activity {
                     btnLogin.requestFocus();
                     ComFun.showLoading2(WelcomeActivity.this, "登陆中，请稍后...", false);
                     // 执行登录任务
-                    new UserLoginTask(WelcomeActivity.this, tvLoginName.getText().toString().trim(), tvLoginPwd.getText().toString().trim()).executeOnExecutor(Executors.newCachedThreadPool());
+                    Map<String, String> paramsMap = new HashMap<>();
+                    paramsMap.put("loginName", tvLoginName.getText().toString().trim());
+                    paramsMap.put("loginPwd", tvLoginPwd.getText().toString().trim());
+                    AllRequestUtil.UserLogin(WelcomeActivity.this, new RequestParams(paramsMap));
                 }else{
                     if(!ComFun.strNull(tvLoginName.getText().toString())){
                         ComFun.showToast(WelcomeActivity.this, "请输入登录账号", Toast.LENGTH_SHORT);
@@ -343,7 +347,7 @@ public class WelcomeActivity extends Activity {
         // 检测网络连接是否可用
         boolean isNetworkAvailable = ComFun.isNetworkAvailable(WelcomeActivity.this);
         if(isNetworkAvailable){
-            new InitBaseDataTask(WelcomeActivity.this).executeOnExecutor(Executors.newCachedThreadPool());
+            AllRequestUtil.InitBaseData(WelcomeActivity.this, null, false);
         }else{
             ComFun.showToast(WelcomeActivity.this, "网络异常，请检查网络连接", Toast.LENGTH_SHORT);
             Message msg = new Message();
@@ -423,28 +427,16 @@ public class WelcomeActivity extends Activity {
                     }
                     break;
                 case MSG_USER_LOGIN:
-                    ComFun.hideLoading(WelcomeActivity.this);
-                    if(b.containsKey("userLoginResult")){
-                        String userLoginResult = b.getString("userLoginResult");
-                        if(userLoginResult.equals("true")){
-                            // 清空打印数据表
-                            SQLiteOpenHelper deleteSqlite = new DBHelper(WelcomeActivity.this);
-                            SQLiteDatabase deleteDb = deleteSqlite.getReadableDatabase();
-                            deleteDb.execSQL(DBInfo.CreateTable.CLEAR_PRINT_TABLE);
-                            deleteDb.execSQL(DBInfo.CreateTable.CLEAR_BILL_TABLE);
-                            deleteDb.close();
-                            // 跳转主页面
-                            mWelcomeHandler = new Handler();
-                            mWelcomeTesk = new WelcomeTask();
-                            mWelcomeHandler.postDelayed(mWelcomeTesk, 500);
-                        }else if (userLoginResult.equals("error")) {
-                            ComFun.showToast(WelcomeActivity.this, "登录失败，用户名或密码错误", Toast.LENGTH_SHORT);
-                        }else if (userLoginResult.equals("false")) {
-                            ComFun.showToast(WelcomeActivity.this, "登录失败，请联系管理员", Toast.LENGTH_SHORT);
-                        }else if (userLoginResult.equals("time_out")) {
-                            ComFun.showToast(WelcomeActivity.this, "登录超时，请稍后重试", Toast.LENGTH_SHORT);
-                        }
-                    }
+                    // 清空打印数据表
+                    SQLiteOpenHelper deleteSqlite = new DBHelper(WelcomeActivity.this);
+                    SQLiteDatabase deleteDb = deleteSqlite.getReadableDatabase();
+                    deleteDb.execSQL(DBInfo.CreateTable.CLEAR_PRINT_TABLE);
+                    deleteDb.execSQL(DBInfo.CreateTable.CLEAR_BILL_TABLE);
+                    deleteDb.close();
+                    // 跳转主页面
+                    mWelcomeHandler = new Handler();
+                    mWelcomeTesk = new WelcomeTask();
+                    mWelcomeHandler.postDelayed(mWelcomeTesk, 500);
                     break;
             }
             super.handleMessage(msg);
@@ -523,7 +515,7 @@ public class WelcomeActivity extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK
                 && event.getAction() == KeyEvent.ACTION_DOWN) {
-            System.exit(0);
+            // 欢迎页面屏蔽后退键事件
         }
         return true;
     }

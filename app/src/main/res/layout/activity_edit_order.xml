@@ -66,18 +66,17 @@
             android:id="@+id/add_new_table_order"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="true"
             android:layout_above="@+id/order_footer"
             android:layout_marginTop="@dimen/fab_margin"
             android:layout_marginBottom="@dimen/fab_margin"
-            android:layout_marginLeft="@dimen/fab_margin"
+            android:layout_marginLeft="30dp"
             android:layout_marginRight="@dimen/fab_margin"
             app:backgroundTint="#b32c733e"
             app:backgroundTintMode="src_over"
             app:fabSize="mini"
             app:srcCompat="@drawable/add"
-            android:alpha="0.8"
+            android:alpha="0.7"
             android:visibility="gone"/>
 
         <LinearLayout

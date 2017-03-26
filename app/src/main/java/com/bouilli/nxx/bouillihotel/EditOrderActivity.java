@@ -38,10 +38,12 @@ import com.bouilli.nxx.bouillihotel.asyncTask.GetMenuInThisTableTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.GetPrintInfoTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.SendMenuTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.SettleAccountTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.customview.ClearEditText;
 import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
 import com.bouilli.nxx.bouillihotel.fragment.OutOrderFragment;
 import com.bouilli.nxx.bouillihotel.fragment.adapter.OrderEveryFragmentPageAdapter;
+import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.L;
 import com.bouilli.nxx.bouillihotel.util.SerializableMap;
@@ -124,7 +126,7 @@ public class EditOrderActivity extends AppCompatActivity {
         //editOrderLayout.getLayoutParams().width = screenWidth * 7 / 8;
         //editOrderLayout.getLayoutParams().height = screenHeight * 3 / 4;
         // 初始化打票机可选项
-        new GetPrintInfoTask(EditOrderActivity.this, true).executeOnExecutor(Executors.newCachedThreadPool());
+        AllRequestUtil.GetPrintInfo(EditOrderActivity.this, null, true);
         // 初始化点击按钮
         initBtnEvent();
         // 初始化布局背景色
@@ -282,7 +284,9 @@ public class EditOrderActivity extends AppCompatActivity {
             String tableOrderIds = toThisIntent.getExtras().getString("tableOrderId");
             editOrderLayout.setBackgroundColor(Color.parseColor("#F8EDEA"));
             // 调用任务根据餐桌号获取该餐桌就餐信息数据
-            new GetMenuInThisTableTask(EditOrderActivity.this, tableOrderIds).executeOnExecutor(Executors.newCachedThreadPool());
+            RequestParams params = new RequestParams();
+            params.put("tableOrderId", tableOrderIds);
+            AllRequestUtil.GetMenuInThisTable(EditOrderActivity.this, params, false, false, tableOrderIds, null);
         }
 
         add_new_table_order.setOnClickListener(new View.OnClickListener(){
@@ -334,9 +338,11 @@ public class EditOrderActivity extends AppCompatActivity {
             tableReadyOrderList.add(tableReadyOrderMap);
             tableHasNewOrderList.add(tableHasNewOrderMap);
         }else{
-            String tableNum = this.getIntent().getExtras().getString("tableNum");
-            TextView orderPage_tableNum = (TextView) findViewById(R.id.orderPage_tableNum);
-            orderPage_tableNum.setText("餐桌号【 " + tableNum + " 】( 子订单 " + (order_every_pager.getCurrentItem() + 1) + " )");
+            if(order_every_pager.getAdapter().getCount() > 1){
+                String tableNum = this.getIntent().getExtras().getString("tableNum");
+                TextView orderPage_tableNum = (TextView) findViewById(R.id.orderPage_tableNum);
+                orderPage_tableNum.setText("餐桌号【 " + tableNum + " 】( 子订单 " + (order_every_pager.getCurrentItem() + 1) + " )");
+            }
         }
         orderEveryAdapter.notifyDataSetChanged();
         // 初始化第一个选项卡页面的金额数量
@@ -544,9 +550,30 @@ public class EditOrderActivity extends AppCompatActivity {
                                             if(outUserName.equals("匿名")){
                                                 outUserName = "-";
                                             }
-                                            new SettleAccountTask(EditOrderActivity.this, tableOrderId, printAccountBillId, tableNum, smailBillContext, outUserName, outUserPhone, outUserAddress).executeOnExecutor(Executors.newCachedThreadPool());
+
+                                            RequestParams requestParams = new RequestParams();
+                                            requestParams.put("tableOrderId", tableOrderId);
+                                            if(ComFun.strNull(printAccountBillId) && ComFun.strNull(tableNum) && ComFun.strNull(smailBillContext)){
+                                                requestParams.put("printAccountBillId", printAccountBillId);
+                                                requestParams.put("tableNo", tableNum);
+                                                requestParams.put("printContext", smailBillContext);
+                                            }
+                                            requestParams.put("outUserName", outUserName);
+                                            requestParams.put("outUserPhone", outUserPhone);
+                                            requestParams.put("outUserAddress", outUserAddress);
+                                            AllRequestUtil.SettleAccount(EditOrderActivity.this, requestParams, tableNum, tableOrderId);
                                         }else{
-                                            new SettleAccountTask(EditOrderActivity.this, tableOrderId, printAccountBillId, tableNum, smailBillContext).executeOnExecutor(Executors.newCachedThreadPool());
+                                            RequestParams requestParams = new RequestParams();
+                                            requestParams.put("tableOrderId", tableOrderId);
+                                            if(ComFun.strNull(printAccountBillId) && ComFun.strNull(tableNum) && ComFun.strNull(smailBillContext)){
+                                                requestParams.put("printAccountBillId", printAccountBillId);
+                                                requestParams.put("tableNo", tableNum);
+                                                requestParams.put("printContext", smailBillContext);
+                                            }
+                                            requestParams.put("outUserName", "-");
+                                            requestParams.put("outUserPhone", "-");
+                                            requestParams.put("outUserAddress", "-");
+                                            AllRequestUtil.SettleAccount(EditOrderActivity.this, requestParams, tableNum, tableOrderId);
                                         }
                                     }
                                 }else{
@@ -576,9 +603,20 @@ public class EditOrderActivity extends AppCompatActivity {
                                     if(outUserName.equals("匿名")){
                                         outUserName = "-";
                                     }
-                                    new SettleAccountTask(EditOrderActivity.this, tableOrderId, tableNum, outUserName, outUserPhone, outUserAddress).executeOnExecutor(Executors.newCachedThreadPool());
+
+                                    RequestParams requestParams = new RequestParams();
+                                    requestParams.put("tableOrderId", tableOrderId);
+                                    requestParams.put("outUserName", outUserName);
+                                    requestParams.put("outUserPhone", outUserPhone);
+                                    requestParams.put("outUserAddress", outUserAddress);
+                                    AllRequestUtil.SettleAccount(EditOrderActivity.this, requestParams, tableNum, tableOrderId);
                                 }else{
-                                    new SettleAccountTask(EditOrderActivity.this, tableOrderId, tableNum).executeOnExecutor(Executors.newCachedThreadPool());
+                                    RequestParams requestParams = new RequestParams();
+                                    requestParams.put("tableOrderId", tableOrderId);
+                                    requestParams.put("outUserName", "-");
+                                    requestParams.put("outUserPhone", "-");
+                                    requestParams.put("outUserAddress", "-");
+                                    AllRequestUtil.SettleAccount(EditOrderActivity.this, requestParams, tableNum, tableOrderId);
                                 }
                             }
                         }
@@ -622,7 +660,39 @@ public class EditOrderActivity extends AppCompatActivity {
                         }
                         tableOrderId = tableOrderIdList.get(order_every_pager.getCurrentItem());
                     }
-                    new SendMenuTask(EditOrderActivity.this, tableNum, showType, tableHasNewOrderMap, tableOrderId).executeOnExecutor(Executors.newCachedThreadPool());
+
+                    RequestParams requestParams = new RequestParams();
+                    String orderType = "1";
+                    requestParams.put("tableOrderId", tableOrderId);
+                    requestParams.put("tableNum", tableNum);
+                    if(ComFun.strNull(tableOrderId)){
+                        requestParams.put("showType", showType+"");
+                    }else{
+                        requestParams.put("showType", "1");// 订单Id为空，认为是餐桌新订单（子订单情况）
+                    }
+                    StringBuilder orderMenuInfoSb = new StringBuilder("");
+                    for(Map.Entry<String, Object[]> m : tableHasNewOrderMap.entrySet()){
+                        String menuId = m.getKey();
+                        String menuPrice = m.getValue()[0].toString().split("#&#")[4].toString();
+                        String menuBuyCount = m.getValue()[1].toString();
+                        String menuAboutRemark = m.getValue()[2].toString();
+                        orderMenuInfoSb.append(menuId + "|" + menuPrice + "|" + menuBuyCount + "|" + menuAboutRemark);
+                        orderMenuInfoSb.append(",");
+                    }
+                    if(ComFun.strNull(orderMenuInfoSb.toString())){
+                        if(showType == -10){
+                            if(tableNum.equals("wmTable")){
+                                orderType = "2";
+                            }else{
+                                orderType = "3";
+                            }
+                            requestParams.put("takeOutMenuInfo", orderMenuInfoSb.toString().substring(0, orderMenuInfoSb.toString().length() - 1));
+                        }else{
+                            requestParams.put("orderMenuInfo", orderMenuInfoSb.toString().substring(0, orderMenuInfoSb.toString().length() - 1));
+                        }
+                    }
+                    requestParams.put("orderType", orderType);
+                    AllRequestUtil.SendMenu(EditOrderActivity.this, requestParams);
                 }else{
                     ComFun.showToast(EditOrderActivity.this, "该餐桌还没有点新菜哦", Toast.LENGTH_SHORT);
                 }
@@ -761,153 +831,121 @@ public class EditOrderActivity extends AppCompatActivity {
             Bundle b = msg.getData();
             switch (msg.what) {
                 case MSG_SEND_MENU:
-                    // 隐藏加载动画
-                    ComFun.hideLoading(EditOrderActivity.this);
-                    String sendMenuResult = b.getString("sendMenuResult");
-                    if (sendMenuResult.equals("true")) {
-                        tableHasNewOrderMap = tableHasNewOrderList.get(order_every_pager.getCurrentItem());
-                        tableReadyOrderMap = tableReadyOrderList.get(order_every_pager.getCurrentItem());
-                        ComFun.showToast(EditOrderActivity.this, "提交数据成功", Toast.LENGTH_SHORT);
-                        for(Map.Entry<String, Object[]> map : tableHasNewOrderMap.entrySet()){
-                            if(tableReadyOrderMap.containsKey(map.getKey())){
-                                Object[] objArr = tableReadyOrderMap.get(map.getKey());
-                                tableReadyOrderMap.put(map.getKey(), new Object[]{ objArr[0], Integer.parseInt(objArr[1].toString()) + Integer.parseInt(map.getValue()[1].toString()), objArr[2] });
-                            }else{
-                                tableReadyOrderMap.put(map.getKey(), map.getValue());
-                            }
-                        }
-                        String tableOrderInfoPId = b.getString("tableOrderInfoPId");
-                        String showType = b.getString("showType");
-                        if(showType.equals("-10")){
-                            EditOrderActivity.this.finish();
+                    tableHasNewOrderMap = tableHasNewOrderList.get(order_every_pager.getCurrentItem());
+                    tableReadyOrderMap = tableReadyOrderList.get(order_every_pager.getCurrentItem());
+                    ComFun.showToast(EditOrderActivity.this, "提交数据成功", Toast.LENGTH_SHORT);
+                    for(Map.Entry<String, Object[]> map : tableHasNewOrderMap.entrySet()){
+                        if(tableReadyOrderMap.containsKey(map.getKey())){
+                            Object[] objArr = tableReadyOrderMap.get(map.getKey());
+                            tableReadyOrderMap.put(map.getKey(), new Object[]{ objArr[0], Integer.parseInt(objArr[1].toString()) + Integer.parseInt(map.getValue()[1].toString()), objArr[2] });
                         }else{
-                            toThisIntent.putExtra("tableOrderId", tableOrderInfoPId);
-                            toThisIntent.putExtra("showType", 2);
-                            tableHasNewOrderMap.clear();
-                            editOrderLayout.setBackgroundColor(Color.parseColor("#F8EDEA"));
-                            initThisTableOrderedView(true);
+                            tableReadyOrderMap.put(map.getKey(), map.getValue());
                         }
-                    }else if (sendMenuResult.equals("false")) {
-                        ComFun.showToast(EditOrderActivity.this, "提交数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (sendMenuResult.equals("time_out")) {
-                        ComFun.showToast(EditOrderActivity.this, "提交数据超时，请稍后重试", Toast.LENGTH_SHORT);
+                    }
+                    String tableOrderInfoPId = b.getString("tableOrderInfoPId");
+                    String showType = b.getString("showType");
+                    if(showType.equals("-10")){
+                        EditOrderActivity.this.finish();
+                    }else{
+                        toThisIntent.putExtra("tableOrderId", tableOrderInfoPId);
+                        toThisIntent.putExtra("showType", 2);
+                        tableHasNewOrderMap.clear();
+                        editOrderLayout.setBackgroundColor(Color.parseColor("#F8EDEA"));
+                        initThisTableOrderedView(true);
                     }
                     break;
                 case MSG_GET_TABLE_ORDER_INFO:
-                    String getTableOrderInfoResult = b.getString("getTableOrderInfoResult");
-                    if (getTableOrderInfoResult.equals("true")) {
-                        add_new_table_order.setVisibility(View.VISIBLE);
-                        // 初始化 tableReadyOrderMap 该餐桌正在制作中的菜品信息
-                        if(b.containsKey("orderInfoDetails")){
-                            String orderInfoDetails = b.getString("orderInfoDetails");
-                            String[] orderInfoDetailsArr = orderInfoDetails.split("\\|\\|#\\|#\\|#\\|\\|");
-                            Map<String, Object[]> tableOrderMap1;
-                            Map<String, Object[]> tableOrderMap2;
-                            tableReadyOrderList.clear();
-                            tableHasNewOrderList.clear();
-                            for(String orderInfoDetail : orderInfoDetailsArr){
-                                tableOrderMap1 = new HashMap<>();
-                                tableOrderMap2 = new HashMap<>();
-                                for(String orderInfo : orderInfoDetail.split(",")){
-                                    tableOrderMap1.put(orderInfo.split("\\|")[0].split("#&#")[0], new Object[]{
-                                            orderInfo.split("\\|")[0], orderInfo.split("\\|")[1], orderInfo.split("\\|")[2]
-                                    });// 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
-                                }
-                                tableReadyOrderList.add(tableOrderMap1);
-                                tableHasNewOrderList.add(tableOrderMap2);
+                    add_new_table_order.setVisibility(View.VISIBLE);
+                    // 初始化 tableReadyOrderMap 该餐桌正在制作中的菜品信息
+                    if(b.containsKey("orderInfoDetails")){
+                        String orderInfoDetails = b.getString("orderInfoDetails");
+                        String[] orderInfoDetailsArr = orderInfoDetails.split("\\|\\|#\\|#\\|#\\|\\|");
+                        Map<String, Object[]> tableOrderMap1;
+                        Map<String, Object[]> tableOrderMap2;
+                        tableReadyOrderList.clear();
+                        tableHasNewOrderList.clear();
+                        for(String orderInfoDetail : orderInfoDetailsArr){
+                            tableOrderMap1 = new HashMap<>();
+                            tableOrderMap2 = new HashMap<>();
+                            for(String orderInfo : orderInfoDetail.split(",")){
+                                tableOrderMap1.put(orderInfo.split("\\|")[0].split("#&#")[0], new Object[]{
+                                        orderInfo.split("\\|")[0], orderInfo.split("\\|")[1], orderInfo.split("\\|")[2]
+                                });// 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
                             }
-                            initThisTableOrderedView(true);
+                            tableReadyOrderList.add(tableOrderMap1);
+                            tableHasNewOrderList.add(tableOrderMap2);
                         }
-                    }else if (getTableOrderInfoResult.equals("false")) {
-                        ComFun.showToast(EditOrderActivity.this, "初始化餐桌数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (getTableOrderInfoResult.equals("time_out")) {
-                        ComFun.showToast(EditOrderActivity.this, "初始化餐桌数据超时，请稍后重试", Toast.LENGTH_SHORT);
+                        initThisTableOrderedView(true);
                     }
                     break;
                 case MSG_ACCOUNT:
-                    // 隐藏加载动画
-                    ComFun.hideLoading(EditOrderActivity.this);
-                    String accountResult = b.getString("accountResult");
-                    if (accountResult.equals("true")) {
-                        //String tableNum = toThisIntent.getExtras().getString("tableNum");
-                        // 发送主页面更新广播
-                        String tableOrderId = b.getString("tableOrderId");
-                        String tableNo = b.getString("tableNo");
-                        if(!ComFun.strNull(tableNo) || (ComFun.strNull(tableNo) && tableNo.equals("-1"))){
-                            // 发送订单列表页面更新广播
-                            Intent intent = new Intent();
-                            intent.putExtra("tableOrderId", tableOrderId);
-                            intent.setAction(OutOrderFragment.MSG_REF_OUTORDER_DATA_AFTER_ACC);
-                            EditOrderActivity.this.sendBroadcast(intent);
-                        }else{
-                            // 将订单id “ tableOrderId ” 在餐桌信息缓存数据中清除
-                            String thisGroupTableInfo = SharedPreferencesTool.getFromShared(EditOrderActivity.this, "BouilliTableInfo", "tableFullInfo");
-                            StringBuilder thisGroupTableInfoUpdate = new StringBuilder("");
-                            String[] thisGroupTableInfoArr = thisGroupTableInfo.split(",");
-                            for(String thisGroupTableIn : thisGroupTableInfoArr){
-                                if(thisGroupTableIn.contains(tableOrderId)){
-                                    String[] needUpdateTableInfoArr = thisGroupTableIn.split("\\|");
-                                    if(needUpdateTableInfoArr.length == 3){
-                                        String needUpdateTableInfo = needUpdateTableInfoArr[2];
-                                        String[] needUpdateTableOrderIdArr = needUpdateTableInfo.split("#");
-                                        StringBuilder needUpdateTableOrderIdSb = new StringBuilder("");
-                                        for(String needUpdateTableOrderId : needUpdateTableOrderIdArr){
-                                            if(!needUpdateTableOrderId.equals(tableOrderId)){
-                                                needUpdateTableOrderIdSb.append(needUpdateTableOrderId);
-                                                needUpdateTableOrderIdSb.append("#");
-                                            }
+                    //String tableNum = toThisIntent.getExtras().getString("tableNum");
+                    // 发送主页面更新广播
+                    String tableOrderId = b.getString("tableOrderId");
+                    String tableNo = b.getString("tableNo");
+                    if(!ComFun.strNull(tableNo) || (ComFun.strNull(tableNo) && tableNo.equals("-1"))){
+                        // 发送订单列表页面更新广播
+                        Intent intent = new Intent();
+                        intent.putExtra("tableOrderId", tableOrderId);
+                        intent.setAction(OutOrderFragment.MSG_REF_OUTORDER_DATA_AFTER_ACC);
+                        EditOrderActivity.this.sendBroadcast(intent);
+                    }else{
+                        // 将订单id “ tableOrderId ” 在餐桌信息缓存数据中清除
+                        String thisGroupTableInfo = SharedPreferencesTool.getFromShared(EditOrderActivity.this, "BouilliTableInfo", "tableFullInfo");
+                        StringBuilder thisGroupTableInfoUpdate = new StringBuilder("");
+                        String[] thisGroupTableInfoArr = thisGroupTableInfo.split(",");
+                        for(String thisGroupTableIn : thisGroupTableInfoArr){
+                            if(thisGroupTableIn.contains(tableOrderId)){
+                                String[] needUpdateTableInfoArr = thisGroupTableIn.split("\\|");
+                                if(needUpdateTableInfoArr.length == 3){
+                                    String needUpdateTableInfo = needUpdateTableInfoArr[2];
+                                    String[] needUpdateTableOrderIdArr = needUpdateTableInfo.split("#");
+                                    StringBuilder needUpdateTableOrderIdSb = new StringBuilder("");
+                                    for(String needUpdateTableOrderId : needUpdateTableOrderIdArr){
+                                        if(!needUpdateTableOrderId.equals(tableOrderId)){
+                                            needUpdateTableOrderIdSb.append(needUpdateTableOrderId);
+                                            needUpdateTableOrderIdSb.append("#");
                                         }
-                                        thisGroupTableInfoUpdate.append(needUpdateTableInfoArr[0]);
-                                        thisGroupTableInfoUpdate.append("|");
-                                        if(ComFun.strNull(needUpdateTableOrderIdSb.toString())){
-                                            thisGroupTableInfoUpdate.append(needUpdateTableInfoArr[1]);
-                                            thisGroupTableInfoUpdate.append("|");
-                                            thisGroupTableInfoUpdate.append(needUpdateTableOrderIdSb.toString().substring(0, needUpdateTableOrderIdSb.toString().length() - 1));
-                                        }else{
-                                            thisGroupTableInfoUpdate.append("1");
-                                        }
-                                        thisGroupTableInfoUpdate.append(",");
                                     }
-                                }else{
-                                    thisGroupTableInfoUpdate.append(thisGroupTableIn);
+                                    thisGroupTableInfoUpdate.append(needUpdateTableInfoArr[0]);
+                                    thisGroupTableInfoUpdate.append("|");
+                                    if(ComFun.strNull(needUpdateTableOrderIdSb.toString())){
+                                        thisGroupTableInfoUpdate.append(needUpdateTableInfoArr[1]);
+                                        thisGroupTableInfoUpdate.append("|");
+                                        thisGroupTableInfoUpdate.append(needUpdateTableOrderIdSb.toString().substring(0, needUpdateTableOrderIdSb.toString().length() - 1));
+                                    }else{
+                                        thisGroupTableInfoUpdate.append("1");
+                                    }
                                     thisGroupTableInfoUpdate.append(",");
                                 }
-                            }
-                            if(ComFun.strNull(thisGroupTableInfoUpdate.toString())){
-                                SharedPreferencesTool.addOrUpdate(EditOrderActivity.this, "BouilliTableInfo", "tableFullInfo", thisGroupTableInfoUpdate.toString().substring(0, thisGroupTableInfoUpdate.toString().length() - 1));
                             }else{
-                                SharedPreferencesTool.addOrUpdate(EditOrderActivity.this, "BouilliTableInfo", "tableFullInfo", "");
+                                thisGroupTableInfoUpdate.append(thisGroupTableIn);
+                                thisGroupTableInfoUpdate.append(",");
                             }
-                            // 发送主页面更新广播
-                            Intent intent = new Intent();
-                            intent.putExtra("newData", true);
-                            intent.setAction(MainFragment.MSG_REFDATA);
-                            EditOrderActivity.this.sendBroadcast(intent);
                         }
-                        EditOrderActivity.this.finish();
-                    }else if (accountResult.equals("false")) {
-                        ComFun.showToast(EditOrderActivity.this, "结账操作失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (accountResult.equals("time_out")) {
-                        ComFun.showToast(EditOrderActivity.this, "结账操作超时，请稍后重试", Toast.LENGTH_SHORT);
+                        if(ComFun.strNull(thisGroupTableInfoUpdate.toString())){
+                            SharedPreferencesTool.addOrUpdate(EditOrderActivity.this, "BouilliTableInfo", "tableFullInfo", thisGroupTableInfoUpdate.toString().substring(0, thisGroupTableInfoUpdate.toString().length() - 1));
+                        }else{
+                            SharedPreferencesTool.addOrUpdate(EditOrderActivity.this, "BouilliTableInfo", "tableFullInfo", "");
+                        }
+                        // 发送主页面更新广播
+                        Intent intent = new Intent();
+                        intent.putExtra("newData", true);
+                        intent.setAction(MainFragment.MSG_REFDATA);
+                        EditOrderActivity.this.sendBroadcast(intent);
                     }
+                    EditOrderActivity.this.finish();
                     break;
                 case MSG_GET_PRINT_INFO_ACCOUNT_NEED:
-                    String initPrintResult = b.getString("initPrintResult");
-                    if (initPrintResult.equals("true")) {
-                        if(b.containsKey("AllPrintsInfo")){
-                            String AllPrintsInfo = b.getString("AllPrintsInfo");
-                            if(ComFun.strNull(AllPrintsInfo)){
-                                for(String printInfo : AllPrintsInfo.split(",")){
-                                    if(printInfo.split("#&#")[6].equals("use")){
-                                        printForAccountMap.put(printInfo.split("#&#")[0], printInfo.split("#&#")[1]);
-                                    }
+                    if(b.containsKey("AllPrintsInfo")){
+                        String AllPrintsInfo = b.getString("AllPrintsInfo");
+                        if(ComFun.strNull(AllPrintsInfo)){
+                            for(String printInfo : AllPrintsInfo.split(",")){
+                                if(printInfo.split("#&#")[6].equals("use")){
+                                    printForAccountMap.put(printInfo.split("#&#")[0], printInfo.split("#&#")[1]);
                                 }
                             }
                         }
-                    }else if (initPrintResult.equals("false")) {
-                        //ComFun.showToast(EditOrderActivity.this, "初始化结账打票机失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (initPrintResult.equals("time_out")) {
-                        //ComFun.showToast(EditOrderActivity.this, "初始化结账打票机超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                     break;
             }

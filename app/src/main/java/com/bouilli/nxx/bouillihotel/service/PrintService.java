@@ -2,6 +2,7 @@ package com.bouilli.nxx.bouillihotel.service;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -9,10 +10,13 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
+import com.bouilli.nxx.bouillihotel.MainActivity;
 import com.bouilli.nxx.bouillihotel.R;
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
+import com.bouilli.nxx.bouillihotel.push.org.androidpn.client.NotificationService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 
 import java.util.ArrayList;
@@ -24,12 +28,16 @@ import java.util.List;
 
 public class PrintService extends Service {
     public static final String ACTION = "com.bouilli.nxx.bouillihotel.service.PrintService";
+    public static final int NOTIFY_ID = 1432257853;
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
+    /**
+     * @deprecated
+     */
     public void showNotification(){
         NotificationManager mNotificationManager = (NotificationManager) PrintService.this.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification.Builder builder = new Notification.Builder(PrintService.this);
@@ -60,9 +68,35 @@ public class PrintService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        showNotification();
+        useForeground("红烧肉点餐打印服务已开启", "红烧肉点餐打印服务", "  打印服务运行中");
         new PrintThread().start();
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    public void useForeground(CharSequence tickerText, String currTitle, String currSong) {
+        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
+        /* Method 01
+         * this method must SET SMALLICON!
+         * otherwise it can't do what we want in Android 4.4 KitKat,
+         * it can only show the application info page which contains the 'Force Close' button.*/
+        NotificationCompat.Builder mNotifyBuilder = new NotificationCompat.Builder(PrintService.this)
+                .setSmallIcon(R.drawable.print_set)
+                .setTicker(tickerText)
+                .setWhen(System.currentTimeMillis())
+                .setContentTitle(currTitle)
+                .setContentText(currSong);
+                //.setContentIntent(pendingIntent);
+        Notification notification = mNotifyBuilder.build();
+
+        /* Method 02
+        Notification notification = new Notification(R.drawable.ic_launcher, tickerText,
+                System.currentTimeMillis());
+        notification.setLatestEventInfo(PlayService.this, getText(R.string.app_name),
+                currSong, pendingIntent);
+        */
+
+        startForeground(NOTIFY_ID, notification);
     }
 
     /**
@@ -150,10 +184,8 @@ public class PrintService extends Service {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         // 清除打印服务的状态栏通知（如果有的话）
-        NotificationManager mNotificationManager = (NotificationManager) PrintService.this.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(123456789);
+        stopForeground(true);
     }
 
 }

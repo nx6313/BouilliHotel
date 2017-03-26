@@ -4,17 +4,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.bouilli.nxx.bouillihotel.WelcomeActivity;
-import com.bouilli.nxx.bouillihotel.asyncTask.InitBaseDataTask;
-import com.bouilli.nxx.bouillihotel.asyncTask.InitOrderDataTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
-import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
-
-import java.util.Random;
-import java.util.concurrent.Executors;
 
 /**
  * Created by 18230 on 2016/10/29.
@@ -59,8 +52,8 @@ public class PollingService extends Service {
                 boolean isNetworkAvailable = ComFun.isNetworkAvailable(PollingService.this);
                 if(isNetworkAvailable){
                     // 每2秒执行一次数据请求
-                    new InitBaseDataTask(PollingService.this, true).executeOnExecutor(Executors.newCachedThreadPool());
-                    new InitOrderDataTask(PollingService.this).executeOnExecutor(Executors.newCachedThreadPool());
+                    AllRequestUtil.InitBaseData(PollingService.this, null, true);
+                    AllRequestUtil.InitOrderData(PollingService.this, null, false);
                 }else{
                     // 发送全局广播，说明网络异常
                     Intent intent = new Intent();

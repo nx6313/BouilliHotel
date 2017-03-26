@@ -57,7 +57,7 @@ public class CheckVersionTask extends AsyncTask<Void, Void, String> {
                     data.putString("checkNewVersionResult", "false");
                 }else if(responseCode.equals(Constants.HTTP_REQUEST_OUT_TIME_CODE)) {
                     data.putString("checkNewVersionResult", "time_out");
-                }else if(responseCode.equals("none")) {
+                }else if(responseCode.equals(Constants.HTTP_LAST_VERSION_NULL)) {
                     data.putString("checkNewVersionResult", "none");
                 }
                 msg.setData(data);

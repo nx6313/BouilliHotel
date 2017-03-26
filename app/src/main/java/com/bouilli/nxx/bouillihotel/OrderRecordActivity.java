@@ -2,7 +2,6 @@ package com.bouilli.nxx.bouillihotel;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -29,7 +28,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.callBack.MsgCallBack;
 import com.bouilli.nxx.bouillihotel.customview.ElasticScrollView;

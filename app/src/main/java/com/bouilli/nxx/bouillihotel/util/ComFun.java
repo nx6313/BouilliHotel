@@ -221,7 +221,7 @@ public class ComFun {
      * @param activity
      * @param loadingTipValue
      */
-    public static void showLoading(Activity activity, String loadingTipValue, boolean cancelable){
+    public static AlertDialog showLoading(Activity activity, String loadingTipValue, boolean cancelable){
         loadingDialog = new AlertDialog.Builder(activity).setCancelable(cancelable).create();
         loadingDialog.show();
         Window win = loadingDialog.getWindow();
@@ -237,6 +237,7 @@ public class ComFun {
                 loadingTip.setText(loadingTipValue);
             }
         }
+        return loadingDialog;
     }
 
     /**
@@ -403,7 +404,6 @@ public class ComFun {
         if (serviceList.size()>0) {
             for (int i=0; i<serviceList.size(); i++) {
                 if (serviceList.get(i).service.getClassName().equals(className) == true) {
-                    Log.d("发现服务启动中", ">>>"+className+"服务正在启动中");
                     isRunning = true;
                     break;
                 }

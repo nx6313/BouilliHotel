@@ -4,17 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.text.TextPaint;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -30,17 +27,13 @@ import android.widget.Toast;
 import com.bouilli.nxx.bouillihotel.EditOrderActivity;
 import com.bouilli.nxx.bouillihotel.MainActivity;
 import com.bouilli.nxx.bouillihotel.R;
-import com.bouilli.nxx.bouillihotel.asyncTask.GetMenuInThisTableTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.customview.FlowLayout;
+import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SerializableMap;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
-import com.bouilli.nxx.bouillihotel.util.SnackbarUtil;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Executors;
 
 /**
  * Created by 18230 on 2016/11/5.
@@ -195,7 +188,9 @@ public class MainFragment extends Fragment {
                         msg.what = MainActivity.MSG_SEE_TABLE_INFO_LOADING;
                         MainActivity.mHandler.sendMessage(msg);
                         // 调用任务根据餐桌号获取该餐桌就餐信息数据
-                        new GetMenuInThisTableTask(getActivity(), tag_table_order_id, true, false, tableDesInfo).executeOnExecutor(Executors.newCachedThreadPool());
+                        RequestParams params = new RequestParams();
+                        params.put("tableOrderId", tag_table_order_id);
+                        AllRequestUtil.GetMenuInThisTable(getActivity(), params, true, false, tag_table_order_id, tableDesInfo);
                     }
                 }
                 }

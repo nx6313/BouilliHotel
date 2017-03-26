@@ -33,6 +33,7 @@ import com.bouilli.nxx.bouillihotel.asyncTask.AddPrintTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.DeletePrintTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.GetPrintInfoTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.SaveUserPrintSetTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.customview.FlowLayout;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
@@ -151,7 +152,7 @@ public class PrintAreaActivity extends AppCompatActivity {
         printAreaSetMainLayout = (LinearLayout) findViewById(R.id.printAreaSetMainLayout);
         printAreaSetMainLayout.removeAllViews();
         // 初始化打票机区域布局
-        new GetPrintInfoTask(PrintAreaActivity.this).executeOnExecutor(Executors.newCachedThreadPool());
+        AllRequestUtil.GetPrintInfo(PrintAreaActivity.this, null, false);
 
         btnAddNewPrintArea.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -497,110 +498,103 @@ public class PrintAreaActivity extends AppCompatActivity {
             Bundle b = msg.getData();
             switch (msg.what) {
                 case MSG_INIT_PRINT:
-                    String initPrintResult = b.getString("initPrintResult");
-                    if (initPrintResult.equals("true")) {
-                        if(b.containsKey("AllPrintsInfo")){
-                            String AllPrintsInfo = b.getString("AllPrintsInfo");
-                            if(ComFun.strNull(AllPrintsInfo)){
-                                int defaultSelectRbId = -1;
-                                int index = 0;
-                                for(String printInfo : AllPrintsInfo.split(",")){
-                                    index++;
-                                    if(printAreaSetLayout.getVisibility() == View.VISIBLE){
-                                        View printAreaSetItemView = View.inflate(PrintAreaActivity.this, R.layout.print_area_set_item, null);
-                                        ((RelativeLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(0)).getChildAt(0).setVisibility(View.VISIBLE);
-                                        ((TextView) ((RelativeLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(0)).getChildAt(0)).setText(printInfo.split("#&#")[1]);
-                                        ((RelativeLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(0)).getChildAt(1).setVisibility(View.GONE);
+                    if(b.containsKey("AllPrintsInfo")){
+                        String AllPrintsInfo = b.getString("AllPrintsInfo");
+                        if(ComFun.strNull(AllPrintsInfo)){
+                            int defaultSelectRbId = -1;
+                            int index = 0;
+                            for(String printInfo : AllPrintsInfo.split(",")){
+                                index++;
+                                if(printAreaSetLayout.getVisibility() == View.VISIBLE){
+                                    View printAreaSetItemView = View.inflate(PrintAreaActivity.this, R.layout.print_area_set_item, null);
+                                    ((RelativeLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(0)).getChildAt(0).setVisibility(View.VISIBLE);
+                                    ((TextView) ((RelativeLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(0)).getChildAt(0)).setText(printInfo.split("#&#")[1]);
+                                    ((RelativeLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(0)).getChildAt(1).setVisibility(View.GONE);
 
-                                        ((TextView) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(2)).setText(printInfo.split("#&#")[2]);
-                                        ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(2).setTag(printInfo.split("#&#")[0]);
-                                        ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(2).requestFocus();
-                                        ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(2).setOnClickListener(null);
-                                        ((LinearLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(4)).getChildAt(0).setVisibility(View.VISIBLE);
-                                        ((LinearLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(4)).getChildAt(1).setVisibility(View.GONE);
+                                    ((TextView) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(2)).setText(printInfo.split("#&#")[2]);
+                                    ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(2).setTag(printInfo.split("#&#")[0]);
+                                    ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(2).requestFocus();
+                                    ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(2).setOnClickListener(null);
+                                    ((LinearLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(4)).getChildAt(0).setVisibility(View.VISIBLE);
+                                    ((LinearLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(0)).getChildAt(4)).getChildAt(1).setVisibility(View.GONE);
 
-                                        FlowLayout printAboutMenuTypeCkLayout = (FlowLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(1)).getChildAt(1);
-                                        printAboutMenuTypeCkLayout.removeAllViews();
-                                        // 获取缓存数据中，菜品类型
-                                        String menuGroupNames = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliMenuInfo", "menuGroupNames");
-                                        if(ComFun.strNull(menuGroupNames)){
-                                            for(String menuGroup : menuGroupNames.split(",")){
-                                                CheckBox printAboutMenuGroupCk = new CheckBox(PrintAreaActivity.this);
-                                                ViewGroup.MarginLayoutParams printAboutMenuGroupCkLp = new ViewGroup.MarginLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                                                printAboutMenuGroupCkLp.setMargins(DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4));
-                                                printAboutMenuGroupCk.setLayoutParams(printAboutMenuGroupCkLp);
-                                                printAboutMenuGroupCk.setText(menuGroup.split("#&#")[1]);
-                                                printAboutMenuGroupCk.setTag(menuGroup.split("#&#")[0]);
-                                                printAboutMenuGroupCk.setEnabled(false);
-                                                if(ComFun.strInArr(printInfo.split("#&#")[3].split("\\|"), menuGroup.split("#&#")[0])){
-                                                    printAboutMenuGroupCk.setChecked(true);
-                                                }
-                                                printAboutMenuTypeCkLayout.addView(printAboutMenuGroupCk);
+                                    FlowLayout printAboutMenuTypeCkLayout = (FlowLayout) ((LinearLayout) ((LinearLayout) printAreaSetItemView).getChildAt(1)).getChildAt(1);
+                                    printAboutMenuTypeCkLayout.removeAllViews();
+                                    // 获取缓存数据中，菜品类型
+                                    String menuGroupNames = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliMenuInfo", "menuGroupNames");
+                                    if(ComFun.strNull(menuGroupNames)){
+                                        for(String menuGroup : menuGroupNames.split(",")){
+                                            CheckBox printAboutMenuGroupCk = new CheckBox(PrintAreaActivity.this);
+                                            ViewGroup.MarginLayoutParams printAboutMenuGroupCkLp = new ViewGroup.MarginLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                                            printAboutMenuGroupCkLp.setMargins(DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4));
+                                            printAboutMenuGroupCk.setLayoutParams(printAboutMenuGroupCkLp);
+                                            printAboutMenuGroupCk.setText(menuGroup.split("#&#")[1]);
+                                            printAboutMenuGroupCk.setTag(menuGroup.split("#&#")[0]);
+                                            printAboutMenuGroupCk.setEnabled(false);
+                                            if(ComFun.strInArr(printInfo.split("#&#")[3].split("\\|"), menuGroup.split("#&#")[0])){
+                                                printAboutMenuGroupCk.setChecked(true);
                                             }
-                                        }else{
-                                            TextView printAboutMenuGroupNullTv = new TextView(PrintAreaActivity.this);
-                                            ViewGroup.MarginLayoutParams printAboutMenuGroupNullTvLp = new ViewGroup.MarginLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                                            printAboutMenuGroupNullTvLp.setMargins(DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4));
-                                            printAboutMenuGroupNullTv.setLayoutParams(printAboutMenuGroupNullTvLp);
-                                            printAboutMenuGroupNullTv.setText("未找到相关菜品类型，请先添加");
-                                            printAboutMenuTypeCkLayout.addView(printAboutMenuGroupNullTv);
+                                            printAboutMenuTypeCkLayout.addView(printAboutMenuGroupCk);
                                         }
-                                        printAreaSetMainLayout.addView(printAreaSetItemView);
                                     }else{
-                                        RadioButton rbSelectPrintAreaItem = new RadioButton(PrintAreaActivity.this);
-                                        RadioGroup.LayoutParams rbSelectPrintAreaItemLp = new RadioGroup.LayoutParams(RadioGroup.LayoutParams.MATCH_PARENT, RadioGroup.LayoutParams.WRAP_CONTENT);
-                                        rbSelectPrintAreaItemLp.setMargins(0, 0, 0, DisplayUtil.dip2px(PrintAreaActivity.this, 8));
-                                        rbSelectPrintAreaItem.setLayoutParams(rbSelectPrintAreaItemLp);
-                                        StringBuilder printAreaAboutMenuGroupNameSb = new StringBuilder("");
-                                        if(printInfo.split("#&#")[4].split("\\|").length > 0){
-                                            for(String printAreaAboutMenuName : printInfo.split("#&#")[4].split("\\|")){
-                                                if(ComFun.strNull(printAreaAboutMenuName) && !printAreaAboutMenuName.equals("-")){
-                                                    printAreaAboutMenuGroupNameSb.append(printAreaAboutMenuName);
-                                                    printAreaAboutMenuGroupNameSb.append("、");
-                                                }
+                                        TextView printAboutMenuGroupNullTv = new TextView(PrintAreaActivity.this);
+                                        ViewGroup.MarginLayoutParams printAboutMenuGroupNullTvLp = new ViewGroup.MarginLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                                        printAboutMenuGroupNullTvLp.setMargins(DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4), DisplayUtil.dip2px(PrintAreaActivity.this, 4));
+                                        printAboutMenuGroupNullTv.setLayoutParams(printAboutMenuGroupNullTvLp);
+                                        printAboutMenuGroupNullTv.setText("未找到相关菜品类型，请先添加");
+                                        printAboutMenuTypeCkLayout.addView(printAboutMenuGroupNullTv);
+                                    }
+                                    printAreaSetMainLayout.addView(printAreaSetItemView);
+                                }else{
+                                    RadioButton rbSelectPrintAreaItem = new RadioButton(PrintAreaActivity.this);
+                                    RadioGroup.LayoutParams rbSelectPrintAreaItemLp = new RadioGroup.LayoutParams(RadioGroup.LayoutParams.MATCH_PARENT, RadioGroup.LayoutParams.WRAP_CONTENT);
+                                    rbSelectPrintAreaItemLp.setMargins(0, 0, 0, DisplayUtil.dip2px(PrintAreaActivity.this, 8));
+                                    rbSelectPrintAreaItem.setLayoutParams(rbSelectPrintAreaItemLp);
+                                    StringBuilder printAreaAboutMenuGroupNameSb = new StringBuilder("");
+                                    if(printInfo.split("#&#")[4].split("\\|").length > 0){
+                                        for(String printAreaAboutMenuName : printInfo.split("#&#")[4].split("\\|")){
+                                            if(ComFun.strNull(printAreaAboutMenuName) && !printAreaAboutMenuName.equals("-")){
+                                                printAreaAboutMenuGroupNameSb.append(printAreaAboutMenuName);
+                                                printAreaAboutMenuGroupNameSb.append("、");
                                             }
-                                        }
-                                        if(printInfo.split("#&#")[5].equals("use")){
-                                            // 已被占用，不可选择
-                                            rbSelectPrintAreaItem.setEnabled(false);
-                                        }
-                                        String printAreaAboutMenuGroupNameStr = "";
-                                        if(ComFun.strNull(printAreaAboutMenuGroupNameSb.toString())){
-                                            printAreaAboutMenuGroupNameStr = printAreaAboutMenuGroupNameSb.toString().substring(0, printAreaAboutMenuGroupNameSb.toString().length() - 1);
-                                        }
-                                        if(ComFun.strNull(printAreaAboutMenuGroupNameStr)){
-                                            rbSelectPrintAreaItem.setText("作为打票区域【 "+ printInfo.split("#&#")[1] +" 】\n打印的菜品分类：" + printAreaAboutMenuGroupNameStr);
-                                        }else{
-                                            rbSelectPrintAreaItem.setText("作为打票区域【 "+ printInfo.split("#&#")[1] +" 】\n打印的菜品分类：无");
-                                        }
-                                        rbSelectPrintAreaItem.setId(index);
-                                        rbSelectPrintAreaItem.setTag(printInfo.split("#&#")[0] + "&" + printInfo.split("#&#")[2]);
-                                        rgSelectPrintArea.addView(rbSelectPrintAreaItem);
-                                        String printAreaId = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliProInfo", "printAreaId");
-                                        String printAddress = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliProInfo", "printAddress");
-                                        if (ComFun.strNull(printAreaId) && ComFun.strNull(printAddress) && printInfo.split("#&#")[0].equals(printAreaId) && printInfo.split("#&#")[2].equals(printAddress)) {
-                                            defaultSelectRbId = index;
-                                            selectPrintAreaId = printAreaId;
                                         }
                                     }
+                                    if(printInfo.split("#&#")[5].equals("use")){
+                                        // 已被占用，不可选择
+                                        rbSelectPrintAreaItem.setEnabled(false);
+                                    }
+                                    String printAreaAboutMenuGroupNameStr = "";
+                                    if(ComFun.strNull(printAreaAboutMenuGroupNameSb.toString())){
+                                        printAreaAboutMenuGroupNameStr = printAreaAboutMenuGroupNameSb.toString().substring(0, printAreaAboutMenuGroupNameSb.toString().length() - 1);
+                                    }
+                                    if(ComFun.strNull(printAreaAboutMenuGroupNameStr)){
+                                        rbSelectPrintAreaItem.setText("作为打票区域【 "+ printInfo.split("#&#")[1] +" 】\n打印的菜品分类：" + printAreaAboutMenuGroupNameStr);
+                                    }else{
+                                        rbSelectPrintAreaItem.setText("作为打票区域【 "+ printInfo.split("#&#")[1] +" 】\n打印的菜品分类：无");
+                                    }
+                                    rbSelectPrintAreaItem.setId(index);
+                                    rbSelectPrintAreaItem.setTag(printInfo.split("#&#")[0] + "&" + printInfo.split("#&#")[2]);
+                                    rgSelectPrintArea.addView(rbSelectPrintAreaItem);
+                                    String printAreaId = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliProInfo", "printAreaId");
+                                    String printAddress = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliProInfo", "printAddress");
+                                    if (ComFun.strNull(printAreaId) && ComFun.strNull(printAddress) && printInfo.split("#&#")[0].equals(printAreaId) && printInfo.split("#&#")[2].equals(printAddress)) {
+                                        defaultSelectRbId = index;
+                                        selectPrintAreaId = printAreaId;
+                                    }
                                 }
-                                if(printAreaSetLayout.getVisibility() == View.GONE){
-                                    // 初始化默认选中
-                                    boolean printUseVol = SharedPreferencesTool.getBooleanFromShared(PrintAreaActivity.this, "BouilliSetInfo", "printUseVol");
-                                    if(printUseVol){
-                                        String printAreaId = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliProInfo", "printAreaId");
-                                        String printAddress = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliProInfo", "printAddress");
-                                        if(ComFun.strNull(printAreaId) && ComFun.strNull(printAddress) && defaultSelectRbId != -1){
-                                            rgSelectPrintArea.check(defaultSelectRbId);
-                                        }
+                            }
+                            if(printAreaSetLayout.getVisibility() == View.GONE){
+                                // 初始化默认选中
+                                boolean printUseVol = SharedPreferencesTool.getBooleanFromShared(PrintAreaActivity.this, "BouilliSetInfo", "printUseVol");
+                                if(printUseVol){
+                                    String printAreaId = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliProInfo", "printAreaId");
+                                    String printAddress = SharedPreferencesTool.getFromShared(PrintAreaActivity.this, "BouilliProInfo", "printAddress");
+                                    if(ComFun.strNull(printAreaId) && ComFun.strNull(printAddress) && defaultSelectRbId != -1){
+                                        rgSelectPrintArea.check(defaultSelectRbId);
                                     }
                                 }
                             }
                         }
-                    }else if (initPrintResult.equals("false")) {
-                        ComFun.showToast(PrintAreaActivity.this, "初始化打票机数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (initPrintResult.equals("time_out")) {
-                        ComFun.showToast(PrintAreaActivity.this, "初始化打票机数据超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                     break;
                 case MSG_ADD_PRINT:
