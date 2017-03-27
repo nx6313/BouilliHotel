@@ -179,7 +179,7 @@ public class SnackbarUtil {
         View snackbarview = snackbar.getView();
         Snackbar.SnackbarLayout snackbarLayout=(Snackbar.SnackbarLayout)snackbarview;
 
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
         p.gravity= Gravity.CENTER_VERTICAL;
 
         snackbarLayout.addView(add_view, index, p);

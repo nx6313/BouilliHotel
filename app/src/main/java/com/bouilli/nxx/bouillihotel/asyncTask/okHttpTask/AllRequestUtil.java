@@ -258,7 +258,21 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
+                if(!forPollingServiceFlag){
+                    if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                        ComFun.showToast(context, "初始化数据失败，请联系管理员", Toast.LENGTH_SHORT);
+                    }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                        ComFun.showToast(context, "初始化数据超时，请稍后重试", Toast.LENGTH_SHORT);
+                    }
 
+                    // 发送Handler通知页面更新UI
+                    Message msg = new Message();
+                    Bundle data = new Bundle();
+                    msg.what = WelcomeActivity.MSG_INIT_BASE_DATA;
+                    data.putString("initBaseDataResult", "false");
+                    msg.setData(data);
+                    WelcomeActivity.mHandler.sendMessage(msg);
+                }
             }
         }));
     }
@@ -267,9 +281,18 @@ public class AllRequestUtil {
      * 初始化订单数据
      * @param context
      * @param params
-     * @param forPrintServiceFlag
      */
-    public static void InitOrderData(final Context context, RequestParams params, final boolean forPrintServiceFlag) {
+    public static void InitOrderData(final Context context, RequestParams params) {
+        // 检测用户权限等信息，如果是传菜员权限登录，则额外传传菜员Id参数值
+        String userPermission = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userPermission");
+        String hasExitLast = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "hasExitLast");
+        boolean forPrintFlag;
+        if(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 3 && ComFun.strNull(hasExitLast) && hasExitLast.equals("false")){
+            forPrintFlag = true;
+        }else{
+            forPrintFlag = false;
+        }
+        final boolean forPrintServiceFlag = forPrintFlag;
         CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.INIT_ORDER_DATA_URI, params), new DisposeDataHandle(new DisposeDataListener() {
             @Override
             public void onFinish() {
@@ -619,7 +642,7 @@ public class AllRequestUtil {
                     }
                 }else{
                     if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
-                        ComFun.showToast(context, "获取餐桌信息失败", Toast.LENGTH_SHORT);
+                        ComFun.showToast(context, "获取餐桌信息失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "获取餐桌信息超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
@@ -763,13 +786,13 @@ public class AllRequestUtil {
             public void onFailure(OkHttpException okHttpE) {
                 if(deleteType.equals("group")){
                     if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
-                        ComFun.showToast(context, "提交数据失败，请联系管理员", Toast.LENGTH_SHORT);
+                        ComFun.showToast(context, "删除菜品组失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
-                        ComFun.showToast(context, "提交数据超时，请稍后重试", Toast.LENGTH_SHORT);
+                        ComFun.showToast(context, "删除菜品组超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                 }else{
                     if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
-                        ComFun.showToast(context, "删除菜品组超时，请稍后重试", Toast.LENGTH_SHORT);
+                        ComFun.showToast(context, "删除菜品失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "删除菜品超时，请稍后重试", Toast.LENGTH_SHORT);
                     }

@@ -10,8 +10,39 @@
     android:paddingRight="12dp"
     android:gravity="center">
 
-        <TextView
-            android:id="@+id/seeTableInfoTv"
+        <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
+            android:id="@+id/tableDetailScrollView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:scrollbarThumbVertical="@color/colorScroll"
+            android:overScrollMode="never"
+            android:scrollbarSize="2dp">
+
+                <LinearLayout
+                    android:id="@+id/tableDetailMainLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center|top"
+                    android:orientation="vertical"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="60dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="2"
+                                    android:text="qwweweweew"/>
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="end"
+                                    android:text="qwweweweew"/>
+                        </LinearLayout>
+                </LinearLayout>
+        </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
 </LinearLayout>

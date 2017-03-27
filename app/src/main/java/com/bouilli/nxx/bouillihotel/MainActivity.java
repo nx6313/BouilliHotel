@@ -22,6 +22,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
+import android.text.TextPaint;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,12 +51,12 @@ import com.bouilli.nxx.bouillihotel.push.org.androidpn.client.ServiceManager;
 import com.bouilli.nxx.bouillihotel.service.PollingService;
 import com.bouilli.nxx.bouillihotel.service.PrintService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
+import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.L;
 import com.bouilli.nxx.bouillihotel.util.MyTagHandler;
 import com.bouilli.nxx.bouillihotel.util.PropertiesUtil;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 import com.bouilli.nxx.bouillihotel.util.SnackbarUtil;
-import com.bouilli.nxx.bouillihotel.util.URIUtil;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.Thing;
 
@@ -69,6 +72,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -639,26 +643,99 @@ public class MainActivity extends AppCompatActivity
                     }
                     break;
                 case MSG_SEE_TABLE_INFO:
+                    Map<String, List<String[]>> tableInfoMap = new TreeMap<>();
                     String tableNum = b.getString("tableNum");
-                    StringBuilder tableReadyOrderSb = new StringBuilder("餐桌【" + tableNum + "】\n\n");
                     String orderInfoDetails = b.getString("orderInfoDetails");
-                    for(String orderInfo : orderInfoDetails.split(",")){
-                        BigDecimal price = new BigDecimal(orderInfo.split("\\|")[0].split("#&#")[4]);
-                        int buyNum = Integer.parseInt(orderInfo.split("\\|")[1]);
-                        double totalMoneyUnit = ComFun.add(0.0, price.multiply(new BigDecimal(buyNum)));
-                        if(orderInfo.split("\\|")[2].equals("-")){
-                            tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份 -------- "+ totalMoneyUnit +" 元");
-                        }else{
-                            tableReadyOrderSb.append("【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份（" + orderInfo.split("\\|")[2] + "） -------- "+ totalMoneyUnit +" 元");
+                    String[] orderInfoDetailArr = orderInfoDetails.split("\\|\\|#\\|#\\|#\\|\\|");
+                    if(orderInfoDetailArr.length > 1){
+                        for(int i = 1; i <= orderInfoDetailArr.length; i++){
+                            List<String[]> detailList = new ArrayList<>();
+
+                            for(String orderInfo : orderInfoDetailArr[i - 1].split(",")){
+                                BigDecimal price = new BigDecimal(orderInfo.split("\\|")[0].split("#&#")[4]);
+                                int buyNum = Integer.parseInt(orderInfo.split("\\|")[1]);
+                                double totalMoneyUnit = ComFun.add(0.0, price.multiply(new BigDecimal(buyNum)));
+                                if(orderInfo.split("\\|")[2].equals("-") || !ComFun.strNull(ComFun.formatMenuDetailInfo3(orderInfo.split("\\|")[2]))){
+                                    detailList.add(new String[]{ "【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份", totalMoneyUnit +" 元" });
+                                }else{
+                                    detailList.add(new String[]{ "【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份（" + ComFun.formatMenuDetailInfo3(orderInfo.split("\\|")[2]) + "）", totalMoneyUnit +" 元" });
+                                }
+                                // orderInfo.split("\\|")[0].split("#&#")[0],
+                                // new Object[]{ orderInfo.split("\\|")[0], orderInfo.split("\\|")[1], orderInfo.split("\\|")[2] });
+                                // 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
+                            }
+
+                            tableInfoMap.put("餐桌【" + tableNum + "】( 子订单 " + i + " )", detailList);
                         }
-                        tableReadyOrderSb.append("\n");
-                        // orderInfo.split("\\|")[0].split("#&#")[0],
-                        // new Object[]{ orderInfo.split("\\|")[0], orderInfo.split("\\|")[1], orderInfo.split("\\|")[2] });
-                        // 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
+                    }else{
+                        List<String[]> detailList = new ArrayList<>();
+
+                        for(String orderInfo : orderInfoDetailArr[0].split(",")){
+                            BigDecimal price = new BigDecimal(orderInfo.split("\\|")[0].split("#&#")[4]);
+                            int buyNum = Integer.parseInt(orderInfo.split("\\|")[1]);
+                            double totalMoneyUnit = ComFun.add(0.0, price.multiply(new BigDecimal(buyNum)));
+                            if(orderInfo.split("\\|")[2].equals("-") || !ComFun.strNull(ComFun.formatMenuDetailInfo3(orderInfo.split("\\|")[2]))){
+                                detailList.add(new String[]{ "【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份", totalMoneyUnit +" 元" });
+                            }else{
+                                detailList.add(new String[]{ "【" + orderInfo.split("\\|")[0].split("#&#")[2] + "】购买" + orderInfo.split("\\|")[1] + "份（" + ComFun.formatMenuDetailInfo3(orderInfo.split("\\|")[2]) + "）", totalMoneyUnit +" 元" });
+                            }
+                            // orderInfo.split("\\|")[0].split("#&#")[0],
+                            // new Object[]{ orderInfo.split("\\|")[0], orderInfo.split("\\|")[1], orderInfo.split("\\|")[2] });
+                            // 键：菜品id，值：[菜品信息(菜id #&# 菜组id #&# 菜名称 #&# 菜描述 #&# 菜单价 #&# 菜被点次数), 点餐数量, 备注信息]
+                        }
+
+                        tableInfoMap.put("餐桌【" + tableNum + "】", detailList);
                     }
                     seeTableInfoSnackbar = SnackbarUtil.IndefiniteSnackbar(message_info, "", -2, Color.parseColor("#FAFAFA"), Color.parseColor("#FF6868"));
                     View add_view = LayoutInflater.from(seeTableInfoSnackbar.getView().getContext()).inflate(R.layout.see_table_order_info, null);
-                    ((TextView) add_view.findViewById(R.id.seeTableInfoTv)).setText(tableReadyOrderSb.toString());
+                    LinearLayout tableDetailMainLayout = (LinearLayout) add_view.findViewById(R.id.tableDetailMainLayout);
+                    tableDetailMainLayout.removeAllViews();
+                    int index = 0;
+                    for(Map.Entry<String, List<String[]>> map : tableInfoMap.entrySet()){
+                        index++;
+                        TextView tvTitle = new TextView(MainActivity.this);
+                        tvTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                        TextPaint tvTitleTp = tvTitle.getPaint();
+                        tvTitleTp.setFakeBoldText(true);
+                        LinearLayout.LayoutParams tvTitleLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        tvTitleLp.setMargins(DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 10));
+                        tvTitle.setLayoutParams(tvTitleLp);
+                        tvTitle.setText(map.getKey());
+                        tableDetailMainLayout.addView(tvTitle);
+
+                        for(String[] detailArr : map.getValue()){
+                            LinearLayout tableDetailItemLayout = new LinearLayout(MainActivity.this);
+                            tableDetailItemLayout.setOrientation(LinearLayout.HORIZONTAL);
+                            LinearLayout.LayoutParams tableDetailItemLayoutLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                            tableDetailItemLayout.setLayoutParams(tableDetailItemLayoutLp);
+
+                            TextView tvContent = new TextView(MainActivity.this);
+                            LinearLayout.LayoutParams tvContentLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(MainActivity.this, 0), LinearLayout.LayoutParams.WRAP_CONTENT, 2);
+                            tvContent.setLayoutParams(tvContentLp);
+                            tvContent.setText(detailArr[0]);
+                            tableDetailItemLayout.addView(tvContent);
+
+                            TextView tvBuyCount = new TextView(MainActivity.this);
+                            tvBuyCount.setGravity(Gravity.END);
+                            LinearLayout.LayoutParams tvBuyCountLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(MainActivity.this, 0), LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+                            tvBuyCount.setLayoutParams(tvBuyCountLp);
+                            tvBuyCount.setText(detailArr[1]);
+                            tableDetailItemLayout.addView(tvBuyCount);
+
+                            tableDetailMainLayout.addView(tableDetailItemLayout);
+                        }
+
+                        if(index < tableInfoMap.size()){
+                            // 添加分割线
+                            View splitView = new View(MainActivity.this);
+                            splitView.setBackgroundColor(Color.parseColor("#b7b7b7"));
+                            LinearLayout.LayoutParams splitViewLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, DisplayUtil.dip2px(MainActivity.this, 1));
+                            splitViewLp.setMargins(DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 16), DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 16));
+                            splitView.setLayoutParams(splitViewLp);
+                            tableDetailMainLayout.addView(splitView);
+                        }
+
+                    }
                     SnackbarUtil.SnackbarAddView(seeTableInfoSnackbar, add_view, 0);
                     seeTableInfoSnackbar.show();
                     break;

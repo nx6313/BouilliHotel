@@ -355,7 +355,7 @@ public class ComFun {
     }
 
     /**
-     * 格式化流水订单详情数据(  去掉(-)、替换#N#为空格  )
+     * 格式化流水订单详情数据(  去掉(-)、替换#N#为换行  )
      * @param menuDetailInfo
      * @return
      */
@@ -363,6 +363,28 @@ public class ComFun {
         if(ComFun.strNull(menuDetailInfo)){
             menuDetailInfo = menuDetailInfo.replaceAll("\\(-\\)", "");
             menuDetailInfo = menuDetailInfo.replaceAll("#N#", "\n");
+            return menuDetailInfo;
+        }
+        return "";
+    }
+
+    /**
+     * 格式化订餐备注信息数据(  去掉-、去掉#N#  )
+     * @param menuDetailInfo
+     * @return
+     */
+    public static String formatMenuDetailInfo3(String menuDetailInfo){
+        if(ComFun.strNull(menuDetailInfo)){
+            if(menuDetailInfo.startsWith("-")){
+                menuDetailInfo = menuDetailInfo.replaceFirst("-", "");
+            }
+            if(menuDetailInfo.endsWith("-")){
+                menuDetailInfo = menuDetailInfo.substring(0, menuDetailInfo.length() - 1);
+            }
+            menuDetailInfo = menuDetailInfo.replaceAll("#N#-", "");
+            menuDetailInfo = menuDetailInfo.replaceAll("-#N#", "");
+            menuDetailInfo = menuDetailInfo.replaceAll("#N#", "");
+            menuDetailInfo = menuDetailInfo.replaceAll("-", "、");
             return menuDetailInfo;
         }
         return "";

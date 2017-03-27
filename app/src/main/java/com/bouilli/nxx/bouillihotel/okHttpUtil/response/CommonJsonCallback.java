@@ -60,6 +60,7 @@ public class CommonJsonCallback implements Callback {
                     // 返回数据超时
                     mListener.onFailure(new OkHttpException(Constants.HTTP_OUT_TIME_ERROR, "返回数据超时"));
                 }else{
+                    L.d(Constants.OVERALL_TAG, "访问异常：" + ioexception.getMessage());
                     mListener.onFailure(new OkHttpException(Constants.HTTP_NETWORK_ERROR, ioexception));
                 }
             }
@@ -73,7 +74,7 @@ public class CommonJsonCallback implements Callback {
         mDeliveryHandler.post(new Runnable() {
             @Override
             public void run() {
-                handleResponse(result, response.request().url().encodedPath(), response.request().url().queryParameterNames());
+                handleResponse(result, response.request().url().encodedPath());
                 /**
                  * handle the cookie
                  */
@@ -94,14 +95,11 @@ public class CommonJsonCallback implements Callback {
         return tempList;
     }
 
-    private void handleResponse(Object responseObj, String url, Set<String> params) {
+    private void handleResponse(Object responseObj, String url) {
         mListener.onFinish();
         if (responseObj == null) {
             L.d(Constants.OVERALL_TAG, "访问地址：" + url
                     + "，该HTTP访问服务器无返回JSON值，或者返回值异常");
-            if(ComFun.strNull(params) && params.size() > 0){
-                L.d(Constants.OVERALL_TAG, "访问参数："+ params.toString() +"=========访问地址：" + url);
-            }
             mListener.onFailure(new OkHttpException(Constants.HTTP_REQUEST_FAIL_ERROR, EMPTY_MSG));
             return;
         }
