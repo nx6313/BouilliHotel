@@ -44,16 +44,15 @@ public class PollingService extends Service {
         public void run() {
             while(true){
                 try {
-                    sleep(20 * 1000);
+                    sleep(10 * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 // 检测网络连接是否可用
                 boolean isNetworkAvailable = ComFun.isNetworkAvailable(PollingService.this);
                 if(isNetworkAvailable){
-                    // 每3秒执行一次数据请求
-                    AllRequestUtil.InitBaseData(PollingService.this, null, true);
-                    AllRequestUtil.InitOrderData(PollingService.this, null);
+                    //AllRequestUtil.InitBaseData(PollingService.this, null, true);
+                    //AllRequestUtil.InitOrderData(PollingService.this, null);
                 }else{
                     // 发送全局广播，说明网络异常
                     Intent intent = new Intent();
