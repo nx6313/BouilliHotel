@@ -39,6 +39,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -105,6 +106,8 @@ public class MainActivity extends AppCompatActivity
     private ImageView chat_user_head;
     private TextView chat_user_name;
     private TextView chat_user_desc;
+    private EditText chat_input_content;
+    private Button chat_input_send;
 
     private LinearLayout mainTopTipLayout;
 
@@ -212,6 +215,19 @@ public class MainActivity extends AppCompatActivity
 
         chat_user_name = (TextView) findViewById(R.id.chat_user_name);
         chat_user_desc = (TextView) findViewById(R.id.chat_user_desc);
+
+        chat_input_content = (EditText) findViewById(R.id.chat_input_content);
+        chat_input_send = (Button) findViewById(R.id.chat_input_send);
+        chat_input_send.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                if(ComFun.strNull(chat_input_content.getText().toString().trim())){
+                    chat_input_content.setText("");
+                }else{
+                    ComFun.showToast(MainActivity.this, "发送内容不能为空", Toast.LENGTH_SHORT);
+                }
+            }
+        });
 
         String userLoginName = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "userLoginName");
         if(ComFun.strNull(userLoginName)){
