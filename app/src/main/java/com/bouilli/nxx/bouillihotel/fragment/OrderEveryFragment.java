@@ -71,6 +71,7 @@ public class OrderEveryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.order_fragment_pager, null);
         orderPage_mainLayout = (LinearLayout) view.findViewById(R.id.orderPage_mainLayout);
+        orderPage_mainLayout.setTag("order|" + mNum);
         initView();
         return view;
     }

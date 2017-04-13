@@ -21,7 +21,10 @@
 package com.bouilli.nxx.bouillihotel.push.org.jivesoftware.smack;
 
 import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.os.Message;
 
+import com.bouilli.nxx.bouillihotel.MainActivity;
 import com.bouilli.nxx.bouillihotel.push.org.apache.harmony.javax.security.auth.callback.Callback;
 import com.bouilli.nxx.bouillihotel.push.org.apache.harmony.javax.security.auth.callback.CallbackHandler;
 import com.bouilli.nxx.bouillihotel.push.org.apache.harmony.javax.security.auth.callback.PasswordCallback;
@@ -33,6 +36,7 @@ import com.bouilli.nxx.bouillihotel.push.org.jivesoftware.smack.packet.XMPPError
 import com.bouilli.nxx.bouillihotel.push.org.jivesoftware.smack.parsing.ParsingExceptionCallback;
 import com.bouilli.nxx.bouillihotel.push.org.jivesoftware.smack.util.StringUtils;
 import com.bouilli.nxx.bouillihotel.push.org.jivesoftware.smack.util.dns.HostAddress;
+import com.bouilli.nxx.bouillihotel.util.L;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -45,6 +49,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.Provider;
@@ -495,7 +500,7 @@ public class XMPPConnection extends Connection {
 		try {
 			socket.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			L.d("shutdown：" + e.getMessage());
 		}
 		// In most cases the close() should be successful, so set
 		// connected to false here.
@@ -625,8 +630,23 @@ public class XMPPConnection extends Connection {
 						+ port + ".";
 				exception = new XMPPException(errorMessage,
 						new XMPPError(
-								XMPPError.Condition.remote_server_timeout,
+								XMPPError.Condition.remote_server_not_found,
 								errorMessage), uhe);
+			} catch (SocketTimeoutException uhe) {
+				String errorMessage = "Could not connect to " + host + ":"
+						+ port + ".";
+				L.d("连接推送服务器超时：" + errorMessage);
+				// 发送首页广播，提示连接推送服务器中...
+				Message msg = new Message();
+				Bundle data = new Bundle();
+				msg.what = MainActivity.MSG_PUSH_CONNECTION_LOADING;
+				data.putString("pushConnectionType", "connectionPushTimeOut");
+				msg.setData(data);
+				MainActivity.mHandler.sendMessage(msg);
+				//exception = new XMPPException(errorMessage,
+				//		new XMPPError(
+				//				XMPPError.Condition.remote_server_timeout,
+				//				errorMessage), uhe);
 			} catch (IOException ioe) {
 				String errorMessage = "XMPPError connecting to " + host + ":"
 						+ port + ".";
@@ -659,7 +679,9 @@ public class XMPPConnection extends Connection {
 					xmppError = new XMPPError(
 							XMPPError.Condition.remote_server_timeout);
 				}
+
 				throw new XMPPException(sb.toString(), xmppError, exception);
+
 			}
 		}
 		socketClosed = false;
@@ -1151,8 +1173,16 @@ public class XMPPConnection extends Connection {
 	 */
 	synchronized void notifyConnectionError(Exception e) {
 		// Listeners were already notified of the exception, return right here.
-		if (packetReader.done && packetWriter.done)
+		if (packetReader.done && packetWriter.done){
+			// 发送首页广播，提示连接推送服务器中...
+			Message msg = new Message();
+			Bundle data = new Bundle();
+			msg.what = MainActivity.MSG_PUSH_CONNECTION_LOADING;
+			data.putString("pushConnectionType", "notifyConnectionError(Exception e) >> " + packetReader.done + " ||>> " + packetWriter.done);
+			msg.setData(data);
+			MainActivity.mHandler.sendMessage(msg);
 			return;
+		}
 
 		packetReader.done = true;
 		packetWriter.done = true;
@@ -1163,9 +1193,7 @@ public class XMPPConnection extends Connection {
 			try {
 				listener.connectionClosedOnError(e);
 			} catch (Exception e2) {
-				// Catch and print any exception so we can recover
-				// from a faulty listener
-				e2.printStackTrace();
+				L.d("出现异常：" + e2.getMessage());
 			}
 		}
 	}

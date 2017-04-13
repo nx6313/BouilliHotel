@@ -27,6 +27,8 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MotionEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -36,6 +38,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -82,6 +86,7 @@ public class MainActivity extends AppCompatActivity
     public static final int MSG_SEE_TABLE_INFO_LOADING = 3;
     public static final int REQUEST_READ_PHONE_STATE = 4;
     public static final int MSG_PUSH_CONNECTION_LOADING = 5;
+    public static final int MSG_INIT_DATA_ERROR = 6;
     private Toolbar toolbar;
     private FloatingActionButton new_order = null;// 添加新订单悬浮按钮
     private FloatingActionButton message_info = null;// 查看订单信息悬浮按钮
@@ -96,6 +101,10 @@ public class MainActivity extends AppCompatActivity
     private ImageView userHeadImgView;
     private TextView login_user_name;
     private TextView login_user_permission;
+
+    private ImageView chat_user_head;
+    private TextView chat_user_name;
+    private TextView chat_user_desc;
 
     private LinearLayout mainTopTipLayout;
 
@@ -201,26 +210,35 @@ public class MainActivity extends AppCompatActivity
         login_user_name = (TextView) navigationView.getHeaderView(0).findViewById(R.id.login_user_name);
         login_user_permission = (TextView) navigationView.getHeaderView(0).findViewById(R.id.login_user_permission);
 
+        chat_user_name = (TextView) findViewById(R.id.chat_user_name);
+        chat_user_desc = (TextView) findViewById(R.id.chat_user_desc);
+
         String userLoginName = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "userLoginName");
         if(ComFun.strNull(userLoginName)){
             login_user_name.setText(userLoginName);
+            chat_user_name.setText(userLoginName);
         }else{
             login_user_name.setText("蜜糖丶小妖");
+            chat_user_name.setText("蜜糖丶小妖");
         }
         if(ComFun.strNull(userPermission)){
             if(Integer.parseInt(userPermission) == 0){
                 login_user_permission.setText("系统管理员");
+                chat_user_desc.setText("系统管理员");
                 // 超级管理员
                 navigationView.inflateMenu(R.menu.activity_main_drawer_manager);
             }else if(Integer.parseInt(userPermission) == 1){
                 login_user_permission.setText("副管理员");
+                chat_user_desc.setText("副管理员");
                 // 普通管理员
                 navigationView.inflateMenu(R.menu.activity_main_drawer_transfer);
             }else if(Integer.parseInt(userPermission) == 2){
                 login_user_permission.setText("员工");
+                chat_user_desc.setText("员工");
                 navigationView.inflateMenu(R.menu.activity_main_drawer);
             }else if(Integer.parseInt(userPermission) == 3){
                 login_user_permission.setText("传菜员");
+                chat_user_desc.setText("传菜员");
                 navigationView.inflateMenu(R.menu.activity_main_printer);
                 // 判断打印设备是否开启,开启则为用户检测蓝牙连接是否正常
                 boolean printUseVol = SharedPreferencesTool.getBooleanFromShared(MainActivity.this, "BouilliSetInfo", "printUseVol");
@@ -267,6 +285,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }else if(Integer.parseInt(userPermission) == 4){
                 // login_user_permission.setText("后厨管理员");
+                // chat_user_desc.setText("后厨管理员");
                 // 直接跳转至订单流水页面，并释放该页面
                 Intent orderRecordDataIntent = new Intent(MainActivity.this, OrderRecordActivity.class);
                 MainActivity.this.startActivity(orderRecordDataIntent);
@@ -274,6 +293,7 @@ public class MainActivity extends AppCompatActivity
             }
         }else{
             login_user_permission.setText("测试账号");
+            chat_user_desc.setText("测试账号");
             navigationView.inflateMenu(R.menu.activity_main_drawer);
         }
         // 初始化显示版本号（在检查更新后面括弧显示）
@@ -296,10 +316,7 @@ public class MainActivity extends AppCompatActivity
 
         // 动态权限申请
         applyPermission();
-    }
 
-    @Override
-    protected void onResume() {
         // 开启轮询服务
         Intent refDataServiceIntent = new Intent(MainActivity.this, PollingService.class);
         refDataServiceIntent.setAction(PollingService.ACTION);
@@ -310,18 +327,17 @@ public class MainActivity extends AppCompatActivity
         // 开启推送服务
         if(openPushServer.equals("1") && !ComFun.isServiceRunning(MainActivity.this, "com.bouilli.nxx.bouillihotel.push." + NotificationService.SERVICE_NAME)){
             // 发送首页广播，提示连接推送服务器中...
-            Message msg = new Message();
-            Bundle data = new Bundle();
-            msg.what = MainActivity.MSG_PUSH_CONNECTION_LOADING;
-            data.putString("pushConnectionType", "loading");
-            msg.setData(data);
-            MainActivity.mHandler.sendMessage(msg);
+            //Message msg = new Message();
+            //Bundle data = new Bundle();
+            //msg.what = MainActivity.MSG_PUSH_CONNECTION_LOADING;
+            //data.putString("pushConnectionType", "loading");
+            //msg.setData(data);
+            //MainActivity.mHandler.sendMessage(msg);
 
             ServiceManager serviceManager = new ServiceManager(MainActivity.this);
             serviceManager.setNotificationIcon(R.drawable.cholesterol);
             serviceManager.startService();
         }
-        super.onResume();
     }
 
     private void applyPermission() {
@@ -416,9 +432,30 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (drawer.isDrawerOpen(GravityCompat.END)) {
+            drawer.closeDrawer(GravityCompat.END);
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            drawer.openDrawer(GravityCompat.END);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -564,10 +601,14 @@ public class MainActivity extends AppCompatActivity
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK
                 && event.getAction() == KeyEvent.ACTION_DOWN) {
-            if(navigationView != null && navigationView.isShown()){
-                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                drawer.closeDrawers();
-            }else{
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.closeDrawer(GravityCompat.START);
+            } else if (drawer.isDrawerOpen(GravityCompat.END)) {
+                drawer.closeDrawer(GravityCompat.END);
+            } else if(seeTableInfoSnackbar != null && seeTableInfoSnackbar.isShown()){
+                seeTableInfoSnackbar.dismiss();
+            } else {
                 if(viewPager != null){
                     // 记录当前点餐区域选项卡索引
                     int currentViewPagerIndex = viewPager.getCurrentItem();
@@ -578,10 +619,13 @@ public class MainActivity extends AppCompatActivity
                     exitTime = System.currentTimeMillis();
                 } else {
                     // 关闭推送服务
-                    ServiceManager serviceManager = new ServiceManager(MainActivity.this);
-                    serviceManager.stopService();
-
-                    System.exit(0);
+                    //ServiceManager serviceManager = new ServiceManager(MainActivity.this);
+                    //serviceManager.stopService();
+                    if(ComFun.isServiceRunning(MainActivity.this, "com.bouilli.nxx.bouillihotel.push." + NotificationService.SERVICE_NAME)){
+                        MainActivity.this.finish();
+                    }else{
+                        System.exit(0);
+                    }
                 }
             }
         }
@@ -686,7 +730,7 @@ public class MainActivity extends AppCompatActivity
 
                         tableInfoMap.put("餐桌【" + tableNum + "】", detailList);
                     }
-                    seeTableInfoSnackbar = SnackbarUtil.IndefiniteSnackbar(message_info, "", -2, Color.parseColor("#FAFAFA"), Color.parseColor("#FF6868"));
+                    seeTableInfoSnackbar = SnackbarUtil.IndefiniteSnackbar(message_info, "", -2, Color.parseColor("#FAFAFA"), Color.parseColor("#FFD3D3"));
                     View add_view = LayoutInflater.from(seeTableInfoSnackbar.getView().getContext()).inflate(R.layout.see_table_order_info, null);
                     LinearLayout tableDetailMainLayout = (LinearLayout) add_view.findViewById(R.id.tableDetailMainLayout);
                     tableDetailMainLayout.removeAllViews();
@@ -744,22 +788,42 @@ public class MainActivity extends AppCompatActivity
                     String pushConnectionType = b.getString("pushConnectionType");
                     if(pushConnectionType.equals("loading")){
                         if(pushConnectionDialog == null || !pushConnectionDialog.isShowing()){
+                            setChatOnlineState(false);
                             pushConnectionDialog = ComFun.showLoading(MainActivity.this, "正在连接推送服务...", true);
                         }
                     }else if(pushConnectionType.equals("connectionSuccess")){
                         if(pushConnectionDialog != null && pushConnectionDialog.isShowing()){
                             pushConnectionDialog.dismiss();
                         }
-                        ComFun.showToast(MainActivity.this, "推送服务连接成功", Toast.LENGTH_SHORT);
-                    }else if(pushConnectionType.equals("reconnection")){
-                        int reconnectionAfterTime = b.getInt("reconnectionAfterTime");
-                        L.toast(MainActivity.this, reconnectionAfterTime + " 秒后尝试重新连接推送服务", Toast.LENGTH_SHORT);
-                    }else if(pushConnectionType.equals("reconnectionErr")){
-                        L.toast(MainActivity.this, "已认证登录信息", Toast.LENGTH_SHORT);
+                        setChatOnlineState(true);
+                    }else if(pushConnectionType.equals("connectionPushTimeOut")){
+                        if(pushConnectionDialog != null && pushConnectionDialog.isShowing()){
+                            pushConnectionDialog.dismiss();
+                            setChatOnlineState(false);
+                            ComFun.showToast(MainActivity.this, "连接推送服务超时", Toast.LENGTH_SHORT);
+                        }
                     }
+                    break;
+                case MSG_INIT_DATA_ERROR:
+                    // 显示加载动画
+                    String okHttpE = b.getString("okHttpE");
+                    L.toast(MainActivity.this, okHttpE, Toast.LENGTH_SHORT);
                     break;
             }
             super.handleMessage(msg);
+        }
+    }
+
+    // 设置聊天窗在线状态
+    public void setChatOnlineState(boolean flag){
+        ImageView on_line_state = (ImageView) MainActivity.this.findViewById(R.id.on_line_state); // 在线状态
+        ImageView off_line_state = (ImageView) MainActivity.this.findViewById(R.id.off_line_state); // 离线状态
+        on_line_state.setVisibility(View.GONE);
+        off_line_state.setVisibility(View.GONE);
+        if(flag){
+            on_line_state.setVisibility(View.VISIBLE);
+        }else{
+            off_line_state.setVisibility(View.VISIBLE);
         }
     }
 
@@ -901,5 +965,49 @@ public class MainActivity extends AppCompatActivity
     synchronized private void updateProgress(int add){
         downloadTotal += add;
         downloadHandler.obtainMessage(0, downloadTotal, 0).sendToTarget();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (isShouldHideInput(v, ev)) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+            return super.dispatchTouchEvent(ev);
+        }
+        // 必不可少，否则所有的组件都不会有TouchEvent了
+        if (getWindow().superDispatchTouchEvent(ev)) {
+            return true;
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    public boolean isShouldHideInput(View v, MotionEvent event) {
+        if (v != null && (v instanceof EditText)) {
+            int[] leftTop = { 0, 0 };
+            //获取输入框当前的location位置
+            v.getLocationInWindow(leftTop);
+            int left = leftTop[0];
+            int top = leftTop[1];
+            int bottom = top + v.getHeight();
+            int right = left + v.getWidth();
+            if(v.getId() == R.id.chat_input_send){
+                // 点击的是发送消息按钮，保留点击EditText的事件
+                return false;
+            }
+            if (event.getX() > left && event.getX() < right
+                    && event.getY() > top && event.getY() < bottom) {
+                // 点击的是输入框区域，保留点击EditText的事件
+                return false;
+            } else {
+                v.clearFocus();
+                return true;
+            }
+        }
+        return false;
     }
 }

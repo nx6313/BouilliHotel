@@ -5,9 +5,13 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.bouilli.nxx.bouillihotel.asyncTask.InitBaseDataTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.InitOrderDataTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
+
+import java.util.concurrent.Executors;
 
 /**
  * Created by 18230 on 2016/10/29.
@@ -15,6 +19,7 @@ import com.bouilli.nxx.bouillihotel.util.ComFun;
 
 public class PollingService extends Service {
     public static final String ACTION = "com.bouilli.nxx.bouillihotel.service.PollingService";
+    public static boolean canInitFlag = true;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -43,21 +48,23 @@ public class PollingService extends Service {
         @Override
         public void run() {
             while(true){
-                try {
-                    sleep(10 * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                // 检测网络连接是否可用
-                boolean isNetworkAvailable = ComFun.isNetworkAvailable(PollingService.this);
-                if(isNetworkAvailable){
-                    //AllRequestUtil.InitBaseData(PollingService.this, null, true);
-                    //AllRequestUtil.InitOrderData(PollingService.this, null);
-                }else{
-                    // 发送全局广播，说明网络异常
-                    Intent intent = new Intent();
-                    intent.setAction(BouilliBroadcastReceiver.ACTION_NOT_NET);
-                    PollingService.this.sendBroadcast(intent);
+                if(canInitFlag){
+                    canInitFlag = false;
+                    try {
+                        sleep(2 * 1000);
+                    } catch (InterruptedException e) { }
+                    // 检测网络连接是否可用
+                    boolean isNetworkAvailable = ComFun.isNetworkAvailable(PollingService.this);
+                    if(isNetworkAvailable){
+                        //new InitBaseDataTask(PollingService.this, true).executeOnExecutor(Executors.newCachedThreadPool());
+                        //new InitOrderDataTask(PollingService.this).executeOnExecutor(Executors.newCachedThreadPool());
+                        AllRequestUtil.InitBaseData(PollingService.this, null, true);// 在完成后下一步执行获取订单的网络任务
+                    }else{
+                        // 发送全局广播，说明网络异常
+                        Intent intent = new Intent();
+                        intent.setAction(BouilliBroadcastReceiver.ACTION_NOT_NET);
+                        PollingService.this.sendBroadcast(intent);
+                    }
                 }
             }
         }

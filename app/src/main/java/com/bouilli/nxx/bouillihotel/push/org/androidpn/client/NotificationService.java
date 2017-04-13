@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2010 Moduad Co., Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.bouilli.nxx.bouillihotel.push.org.androidpn.client;
 
 import android.app.Notification;
@@ -32,6 +17,8 @@ import android.util.Log;
 
 import com.bouilli.nxx.bouillihotel.MainActivity;
 import com.bouilli.nxx.bouillihotel.R;
+import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
+import com.bouilli.nxx.bouillihotel.service.PollingService;
 
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -52,7 +39,7 @@ public class NotificationService extends Service {
 
     public static final String SERVICE_NAME = "org.androidpn.client.NotificationService";
 
-    public static final int NOTIFY_ID = 1823052143;
+    public static final int NOTIFY_ID = 0;
 
     private TelephonyManager telephonyManager;
 
@@ -136,7 +123,13 @@ public class NotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        useForeground("", "  推送服务运行中...");
+        useForeground("", "推送服务正在运行...");
+
+        // 发送全局广播，说明开启相同Id的状态栏通知并关闭，为了取消掉状态栏通知
+        Intent cancelNotificationIntent = new Intent();
+        intent.setAction(BouilliBroadcastReceiver.ACTION_CANCEL_NOTIFICATION);
+        NotificationService.this.sendBroadcast(cancelNotificationIntent);
+
         return Service.START_STICKY;
         //return super.onStartCommand(intent, flags, startId);
     }
@@ -170,6 +163,7 @@ public class NotificationService extends Service {
     @Override
     public void onDestroy() {
         Log.d(LOGTAG, "onDestroy()...");
+        // 关闭通知栏信息
         stopForeground(true);
         stop();
     }

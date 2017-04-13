@@ -515,7 +515,11 @@ public class WelcomeActivity extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK
                 && event.getAction() == KeyEvent.ACTION_DOWN) {
-            // 欢迎页面屏蔽后退键事件
+            if(login_layout != null && login_layout.getVisibility() == View.VISIBLE){
+                System.exit(0);
+            }else{
+                // 欢迎页面屏蔽后退键事件
+            }
         }
         return true;
     }

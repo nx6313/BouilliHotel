@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF6868"
     android:orientation="vertical"
     android:paddingTop="10dp"
     android:paddingBottom="10dp"
@@ -27,22 +26,6 @@
                     android:orientation="vertical"
                     android:paddingTop="5dp"
                     android:paddingBottom="60dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="2"
-                                    android:text="qwweweweew"/>
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:gravity="end"
-                                    android:text="qwweweweew"/>
-                        </LinearLayout>
                 </LinearLayout>
         </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
 </LinearLayout>

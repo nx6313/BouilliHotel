@@ -174,7 +174,7 @@ public class OutOrderActivity extends AppCompatActivity {
 
                         tableInfoMap.put("餐桌【" + tableNum + "】", detailList);
                     }
-                    Snackbar snackbar = SnackbarUtil.IndefiniteSnackbar(message_info, "", -2, Color.parseColor("#FAFAFA"), Color.parseColor("#FF6868"));
+                    Snackbar snackbar = SnackbarUtil.IndefiniteSnackbar(message_info, "", -2, Color.parseColor("#FAFAFA"), Color.parseColor("#FFD3D3"));
                     View add_view = LayoutInflater.from(snackbar.getView().getContext()).inflate(R.layout.see_table_order_info, null);
                     LinearLayout tableDetailMainLayout = (LinearLayout) add_view.findViewById(R.id.tableDetailMainLayout);
                     tableDetailMainLayout.removeAllViews();

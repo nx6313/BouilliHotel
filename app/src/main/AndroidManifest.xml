@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".MyApplication"
@@ -56,6 +57,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
+        <service android:name=".service.EmptyService">
+            <intent-filter>
+                <action android:name="com.bouilli.nxx.bouillihotel.service.EmptyService" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
 
         <service android:name=".push.org.androidpn.client.NotificationService"
             android:label="NotificationService">
@@ -68,6 +76,13 @@
             <intent-filter android:priority="100">
                 <action android:name="com.nxx.bouilli.broadcastReceiver.broadcast" />
                 <action android:name="com.nxx.bouilli.netNotFound" />
+                <action android:name="com.nxx.bouilli.cancelNotification" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".broadcastReceiver.BootCompletedReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
@@ -145,7 +160,7 @@
             android:name=".OutOrderActivity"
             android:label="@string/title_activity_out_order"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

@@ -360,6 +360,11 @@ public class XmppManager {
                     xmppManager.runTask();
 
                     xmppManager.startReconnectionThread();
+                } catch (Exception e) {
+                    xmppManager.dropTask(2);
+                    xmppManager.runTask();
+
+                    xmppManager.startReconnectionThread();
                 }
             } else {
                 Log.i(LOGTAG, "XMPP connected already");

@@ -17,6 +17,7 @@ import com.bouilli.nxx.bouillihotel.OrderRecordActivity;
 import com.bouilli.nxx.bouillihotel.OutOrderActivity;
 import com.bouilli.nxx.bouillihotel.PrintAreaActivity;
 import com.bouilli.nxx.bouillihotel.WelcomeActivity;
+import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
 import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
 import com.bouilli.nxx.bouillihotel.fragment.OutOrderFragment;
@@ -26,6 +27,7 @@ import com.bouilli.nxx.bouillihotel.okHttpUtil.listener.DisposeDataHandle;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.listener.DisposeDataListener;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.request.CommonRequest;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
+import com.bouilli.nxx.bouillihotel.service.PollingService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.Constants;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
@@ -108,7 +110,9 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_LOGIN_ERROR_ERROR){
+                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_LOGIN_ERROR_ERROR){
                     ComFun.showToast(context, "登录失败，用户名或密码错误", Toast.LENGTH_SHORT);
                 }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                     ComFun.showToast(context, "登录失败，请联系管理员", Toast.LENGTH_SHORT);
@@ -128,6 +132,10 @@ public class AllRequestUtil {
         CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.INIT_BASE_DATA_URI, params), new DisposeDataHandle(new DisposeDataListener() {
             @Override
             public void onFinish() {
+                if(forPollingServiceFlag){
+                    // PollingService,继续执行InitOrderData
+                    InitOrderData(context, null);
+                }
             }
 
             @Override
@@ -259,7 +267,9 @@ public class AllRequestUtil {
             @Override
             public void onFailure(OkHttpException okHttpE) {
                 if(!forPollingServiceFlag){
-                    if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                         ComFun.showToast(context, "初始化数据失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "初始化数据超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -289,6 +299,9 @@ public class AllRequestUtil {
         boolean forPrintFlag;
         if(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 3 && ComFun.strNull(hasExitLast) && hasExitLast.equals("false")){
             forPrintFlag = true;
+            params = new RequestParams();
+            String userId = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userId");
+            params.put("forPrintServiceUserId", userId);
         }else{
             forPrintFlag = false;
         }
@@ -296,6 +309,7 @@ public class AllRequestUtil {
         CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.INIT_ORDER_DATA_URI, params), new DisposeDataHandle(new DisposeDataListener() {
             @Override
             public void onFinish() {
+                PollingService.canInitFlag = true;
             }
 
             @Override
@@ -407,7 +421,12 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-
+                Message msg = new Message();
+                Bundle data = new Bundle();
+                msg.what = MainActivity.MSG_INIT_DATA_ERROR;
+                data.putString("okHttpE", "轮询获取数据异常：" + okHttpE.getEmsg().toString());
+                msg.setData(data);
+                MainActivity.mHandler.sendMessage(msg);
             }
         }));
     }
@@ -451,7 +470,9 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                     ComFun.showToast(context, "检查更新失败，请联系管理员", Toast.LENGTH_SHORT);
                 }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                     ComFun.showToast(context, "检查更新超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -496,7 +517,9 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                     ComFun.showToast(context, "初始化月报表数据失败，请联系管理员", Toast.LENGTH_SHORT);
                 }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                     ComFun.showToast(context, "初始化月报表数据超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -558,7 +581,9 @@ public class AllRequestUtil {
             @Override
             public void onFailure(OkHttpException okHttpE) {
                 if(!accountNeedFlag){
-                    if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                         ComFun.showToast(context, "初始化打票机数据失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "初始化打票机数据超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -635,13 +660,17 @@ public class AllRequestUtil {
             @Override
             public void onFailure(OkHttpException okHttpE) {
                 if(!seeFlag){
-                    if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                         ComFun.showToast(context, "初始化餐桌数据失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "初始化餐桌数据超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                 }else{
-                    if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                         ComFun.showToast(context, "获取餐桌信息失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "获取餐桌信息超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -684,7 +713,9 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                     ComFun.showToast(context, "结账操作失败，请联系管理员", Toast.LENGTH_SHORT);
                 }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                     ComFun.showToast(context, "结账操作超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -729,7 +760,9 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                     ComFun.showToast(context, "提交数据失败，请联系管理员", Toast.LENGTH_SHORT);
                 }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                     ComFun.showToast(context, "提交数据超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -785,13 +818,17 @@ public class AllRequestUtil {
             @Override
             public void onFailure(OkHttpException okHttpE) {
                 if(deleteType.equals("group")){
-                    if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                         ComFun.showToast(context, "删除菜品组失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "删除菜品组超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                 }else{
-                    if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                         ComFun.showToast(context, "删除菜品失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "删除菜品超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -842,7 +879,9 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                     ComFun.showToast(context, "修改菜品失败，请联系管理员", Toast.LENGTH_SHORT);
                 }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                     ComFun.showToast(context, "修改菜品超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -890,7 +929,9 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                     ComFun.showToast(context, "移动菜品失败，请联系管理员", Toast.LENGTH_SHORT);
                 }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                     ComFun.showToast(context, "移动菜品超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -948,7 +989,9 @@ public class AllRequestUtil {
             @Override
             public void onFailure(OkHttpException okHttpE) {
                 if(addType.equals("group")){
-                    if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                         ComFun.showToast(context, "添加新菜品组失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "添加新菜品组超时，请稍后重试", Toast.LENGTH_SHORT);
@@ -956,7 +999,9 @@ public class AllRequestUtil {
                         ComFun.showToast(context, "组【" + groupName + "已经存在，请重新添加", Toast.LENGTH_SHORT);
                     }
                 }else{
-                    if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
                         ComFun.showToast(context, "添加新菜品失败，请联系管理员", Toast.LENGTH_SHORT);
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "添加新菜品超时，请稍后重试", Toast.LENGTH_SHORT);

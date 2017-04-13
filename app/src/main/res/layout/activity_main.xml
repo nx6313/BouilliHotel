@@ -24,4 +24,10 @@
         app:itemBackground="@drawable/item_style"
         app:itemTextColor="#303030"/>
 
+    <include
+        layout="@layout/app_chat_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="end" />
+
 </android.support.v4.widget.DrawerLayout>

@@ -15,7 +15,10 @@ import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.MyApplication;
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
+import com.bouilli.nxx.bouillihotel.service.EmptyService;
+import com.bouilli.nxx.bouillihotel.service.PollingService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
+import com.bouilli.nxx.bouillihotel.util.L;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 
 import java.io.IOException;
@@ -27,6 +30,7 @@ import java.util.Map;
 
 public class BouilliBroadcastReceiver extends BroadcastReceiver {
     public static final String ACTION_NOT_NET = "com.nxx.bouilli.netNotFound";
+    public static final String ACTION_CANCEL_NOTIFICATION = "com.nxx.bouilli.cancelNotification";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -59,6 +63,15 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                     outUserName = intent.getStringExtra("outUserName");
                     outUserPhone = intent.getStringExtra("outUserPhone");
                     outUserAddress = intent.getStringExtra("outUserAddress");
+                    if(!ComFun.strNull(outUserName) || outUserName.equals("null")){
+                        outUserName = "-";
+                    }
+                    if(!ComFun.strNull(outUserPhone) || outUserPhone.equals("null")){
+                        outUserPhone = "-";
+                    }
+                    if(!ComFun.strNull(outUserAddress) || outUserAddress.equals("null")){
+                        outUserAddress = "-";
+                    }
                 }
                 if(ComFun.strNull(printRecordId) && ComFun.strNull(printMsg)){
                     if(printUseVol){
@@ -82,13 +95,19 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                     MyApplication.mOutputStream = MyApplication.mBluetoothSocket.getOutputStream();
                                     if(ComFun.strNull(printAboutTable)){
                                         if(printType.equals("1")){
-                                            MyApplication.mOutputStream.write(0x1c);
-                                            MyApplication.mOutputStream.write(0x21);
-                                            MyApplication.mOutputStream.write(12);
-                                            MyApplication.mOutputStream.write(("     后厨点菜单\n").getBytes("GBK"));
-                                            MyApplication.mOutputStream.write(0x1c);
-                                            MyApplication.mOutputStream.write(0x21);
-                                            MyApplication.mOutputStream.write(16);
+                                            // 选择倍宽
+                                            MyApplication.mOutputStream.write(new byte[]{0x1C,0x21,0x04});
+                                            // 选择倍高
+                                            MyApplication.mOutputStream.write(new byte[]{0x1C,0x21,0x08});
+                                            // 选择中间对齐
+                                            MyApplication.mOutputStream.write(new byte[]{0x1B,0x61,0x01});
+                                            MyApplication.mOutputStream.write(("后厨点菜单\n").getBytes("GBK"));
+                                            // 取消中间对齐
+                                            MyApplication.mOutputStream.write(new byte[]{0x1B,0x61,0x00});
+                                            // 取消倍宽
+                                            MyApplication.mOutputStream.write(new byte[]{0x1C,0x21,0x00});
+                                            // 取消倍高
+                                            MyApplication.mOutputStream.write(new byte[]{0x1C,0x21,0x00});
                                             MyApplication.mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});
                                             if(printAboutTable.contains(">>")){
                                                 if(printAboutTable.contains("DB")){
@@ -99,27 +118,35 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                             }else{
                                                 MyApplication.mOutputStream.write(("餐桌："+ printAboutTable +" 号\n").getBytes("GBK"));
                                             }
-                                            MyApplication.mOutputStream.write(0x1c);
-                                            MyApplication.mOutputStream.write(0x21);
-                                            MyApplication.mOutputStream.write(16);
-                                            MyApplication.mOutputStream.write(("*****************************\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("********************************\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("菜名\t\t购买数量\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("--------------------------------\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write((printMsg.replaceAll(" ", "\t\t")+"\n").getBytes("GBK"));
                                         }else{
-                                            MyApplication.mOutputStream.write(0x1c);
-                                            MyApplication.mOutputStream.write(0x21);
-                                            MyApplication.mOutputStream.write(12);
-                                            MyApplication.mOutputStream.write(("  红烧肉刀削面\n").getBytes("GBK"));
-                                            MyApplication.mOutputStream.write(0x1c);
-                                            MyApplication.mOutputStream.write(0x21);
-                                            MyApplication.mOutputStream.write(16);
+                                            // 选择倍宽
+                                            MyApplication.mOutputStream.write(new byte[]{0x1C,0x21,0x04});
+                                            // 选择倍高
+                                            MyApplication.mOutputStream.write(new byte[]{0x1C,0x21,0x08});
+                                            // 选择中间对齐
+                                            MyApplication.mOutputStream.write(new byte[]{0x1B,0x61,0x01});
+                                            MyApplication.mOutputStream.write(("红烧肉刀削面\n").getBytes("GBK"));
+                                            // 取消中间对齐
+                                            MyApplication.mOutputStream.write(new byte[]{0x1B,0x61,0x00});
+                                            // 取消倍宽
+                                            MyApplication.mOutputStream.write(new byte[]{0x1C,0x21,0x00});
+                                            // 取消倍高
+                                            MyApplication.mOutputStream.write(new byte[]{0x1C,0x21,0x00});
                                             MyApplication.mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});
-                                            MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("--------------------------------\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("菜名\t购买数量\t\t计费\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("--------------------------------\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write((printMsg.replaceAll(" ", "\t")+"\n").getBytes("GBK"));
                                         }
                                     }else{
-                                        MyApplication.mOutputStream.write(("**********  ###  **********\n").getBytes("GBK"));
+                                        MyApplication.mOutputStream.write(("********************************\n").getBytes("GBK"));
                                     }
-                                    MyApplication.mOutputStream.write((printMsg+"\n").getBytes("GBK"));
                                     if(printType.equals("1")){
-                                        MyApplication.mOutputStream.write(("*****************************\n").getBytes("GBK"));
+                                        MyApplication.mOutputStream.write(("********************************\n").getBytes("GBK"));
                                         if(!outUserPhone.equals("-") && !outUserAddress.equals("-")){
                                             if(outUserName.equals("-")){
                                                 MyApplication.mOutputStream.write(("外卖联系人姓名：匿名\n").getBytes("GBK"));
@@ -128,13 +155,13 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                             }
                                             MyApplication.mOutputStream.write(("外卖联系人电话："+ outUserPhone +"\n").getBytes("GBK"));
                                             MyApplication.mOutputStream.write(("外卖联系人地址："+ outUserAddress +"\n").getBytes("GBK"));
-                                            MyApplication.mOutputStream.write(("*****************************\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("********************************\n").getBytes("GBK"));
                                         }
                                         MyApplication.mOutputStream.write(("账单编号："+ printOrderNum +"\n").getBytes("GBK"));
                                         MyApplication.mOutputStream.write(("服务员："+ printFuWuYuan +"\n").getBytes("GBK"));
                                         MyApplication.mOutputStream.write(("下单时间："+ printOrderTime +"\n").getBytes("GBK"));
                                     }else{
-                                        MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
+                                        MyApplication.mOutputStream.write(("--------------------------------\n").getBytes("GBK"));
                                         if(!outUserPhone.equals("-") && !outUserAddress.equals("-")){
                                             if(outUserName.equals("-")){
                                                 MyApplication.mOutputStream.write(("外卖联系人姓名：匿名\n").getBytes("GBK"));
@@ -143,13 +170,17 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
                                             }
                                             MyApplication.mOutputStream.write(("外卖联系人电话："+ outUserPhone +"\n").getBytes("GBK"));
                                             MyApplication.mOutputStream.write(("外卖联系人地址："+ outUserAddress +"\n").getBytes("GBK"));
-                                            MyApplication.mOutputStream.write(("-----------------------------\n").getBytes("GBK"));
+                                            MyApplication.mOutputStream.write(("--------------------------------\n").getBytes("GBK"));
                                         }
                                         MyApplication.mOutputStream.write(("账单编号："+ printOrderNum +"\n").getBytes("GBK"));
                                         MyApplication.mOutputStream.write(("服务员："+ printFuWuYuan +"\n").getBytes("GBK"));
                                         MyApplication.mOutputStream.write(("下单时间："+ printOrderTime +"\n").getBytes("GBK"));
                                         MyApplication.mOutputStream.write(new byte[]{0x0a,0x0a,0x1d,0x56,0x01});
+                                        // 选择中间对齐
+                                        MyApplication.mOutputStream.write(new byte[]{0x1B,0x61,0x01});
                                         MyApplication.mOutputStream.write(("谢谢您的惠顾！欢迎下次再来！\n").getBytes("GBK"));
+                                        // 取消中间对齐
+                                        MyApplication.mOutputStream.write(new byte[]{0x1B,0x61,0x00});
                                         String userMobel = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userMobel");
                                         if(ComFun.strNull(userMobel) && !userMobel.equals("-")){
                                             MyApplication.mOutputStream.write(("联系电话： "+ userMobel +"\n").getBytes("GBK"));
@@ -303,6 +334,12 @@ public class BouilliBroadcastReceiver extends BroadcastReceiver {
         }else if(intent.getAction().equals(ACTION_NOT_NET)){
             //ComFun.showToast(context, "网络异常，请检查网络连接", Toast.LENGTH_SHORT);
             //ComFun.showNetErrorTip(context, "网络异常，请检查网络连接");
+        }else if(intent.getAction().equals(ACTION_CANCEL_NOTIFICATION)){
+            // 开启空白服务
+            Intent emptyServiceIntent = new Intent(context, EmptyService.class);
+            emptyServiceIntent.setAction(EmptyService.ACTION);
+            emptyServiceIntent.setPackage(context.getPackageName());
+            context.startService(emptyServiceIntent);
         }
     }
 

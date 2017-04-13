@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2010 Moduad Co., Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.bouilli.nxx.bouillihotel.push.org.androidpn.client;
 
 import android.app.Activity;
@@ -26,8 +11,6 @@ import java.util.Properties;
 
 /** 
  * This class is to manage the notificatin service and to load the configuration.
- *
- * @author Sehwan Noh (devnoh@gmail.com)
  */
 public final class ServiceManager {
 
@@ -61,13 +44,6 @@ public final class ServiceManager {
             callbackActivityPackageName = callbackActivity.getPackageName();
             callbackActivityClassName = callbackActivity.getClass().getName();
         }
-
-        //        apiKey = getMetaDataValue("ANDROIDPN_API_KEY");
-        //        Log.i(LOGTAG, "apiKey=" + apiKey);
-        //        //        if (apiKey == null) {
-        //        //            Log.e(LOGTAG, "Please set the androidpn api key in the manifest file.");
-        //        //            throw new RuntimeException();
-        //        //        }
 
         props = loadProperties();
         apiKey = props.getProperty("apiKey", "");
@@ -110,55 +86,7 @@ public final class ServiceManager {
         context.stopService(intent);
     }
 
-    //    private String getMetaDataValue(String name, String def) {
-    //        String value = getMetaDataValue(name);
-    //        return (value == null) ? def : value;
-    //    }
-    //
-    //    private String getMetaDataValue(String name) {
-    //        Object value = null;
-    //        PackageManager packageManager = context.getPackageManager();
-    //        ApplicationInfo applicationInfo;
-    //        try {
-    //            applicationInfo = packageManager.getApplicationInfo(context
-    //                    .getPackageName(), 128);
-    //            if (applicationInfo != null && applicationInfo.metaData != null) {
-    //                value = applicationInfo.metaData.get(name);
-    //            }
-    //        } catch (NameNotFoundException e) {
-    //            throw new RuntimeException(
-    //                    "Could not read the name in the manifest file.", e);
-    //        }
-    //        if (value == null) {
-    //            throw new RuntimeException("The name '" + name
-    //                    + "' is not defined in the manifest file's meta data.");
-    //        }
-    //        return value.toString();
-    //    }
-
     private Properties loadProperties() {
-        //        InputStream in = null;
-        //        Properties props = null;
-        //        try {
-        //            in = getClass().getResourceAsStream(
-        //                    "/org/androidpn/client/client.properties");
-        //            if (in != null) {
-        //                props = new Properties();
-        //                props.load(in);
-        //            } else {
-        //                Log.e(LOGTAG, "Could not find the properties file.");
-        //            }
-        //        } catch (IOException e) {
-        //            Log.e(LOGTAG, "Could not find the properties file.", e);
-        //        } finally {
-        //            if (in != null)
-        //                try {
-        //                    in.close();
-        //                } catch (Throwable ignore) {
-        //                }
-        //        }
-        //        return props;
-
         Properties props = new Properties();
         try {
             int id = context.getResources().getIdentifier("push", "raw",
@@ -171,25 +99,11 @@ public final class ServiceManager {
         return props;
     }
 
-    //    public String getVersion() {
-    //        return version;
-    //    }
-    //
-    //    public String getApiKey() {
-    //        return apiKey;
-    //    }
-
     public void setNotificationIcon(int iconId) {
         Editor editor = sharedPrefs.edit();
         editor.putInt(Constants.NOTIFICATION_ICON, iconId);
         editor.commit();
     }
-
-    //    public void viewNotificationSettings() {
-    //        Intent intent = new Intent().setClass(context,
-    //                NotificationSettingsActivity.class);
-    //        context.startActivity(intent);
-    //    }
 
     public static void viewNotificationSettings(Context context) {
         Intent intent = new Intent().setClass(context,

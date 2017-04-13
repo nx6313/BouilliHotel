@@ -9,7 +9,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
@@ -68,7 +70,7 @@ public class PrintService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        useForeground("红烧肉点餐打印服务已开启", "红烧肉点餐打印服务", "  打印服务运行中");
+        useForeground("红烧肉点餐打印服务已开启", "红烧肉点餐打印服务", "打印服务正在运行...");
         new PrintThread().start();
         return super.onStartCommand(intent, flags, startId);
     }
@@ -155,6 +157,7 @@ public class PrintService extends Service {
                 }
                 cursor_bill.close();
                 db.close();
+
                 if(ComFun.strNull(resultList) && resultList.size() > 0){
                     for(int i=0; i<resultList.size(); i++){
                         // 发送打印服务广播
