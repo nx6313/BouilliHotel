@@ -29,6 +29,8 @@ import com.bouilli.nxx.bouillihotel.customview.GifViewByMovie;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -476,5 +478,46 @@ public class ComFun {
         //执行的数据类型
         intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
         mContext.startActivity(intent);
+    }
+
+    /**
+     * 处理消息，根据时间，适当增加时间戳，去掉两天之前的消息；相邻时间之间相差大于4小时，则添加时间戳
+     * @param msgContentList
+     * @return
+     */
+    public static List<String> disposeMsgTime(List<String> msgContentList) {
+        if(strNull(msgContentList) && msgContentList.size() > 0){
+            List<String> result = new ArrayList<>();
+            String lastSendTime = null;
+            for(String msgContent : msgContentList){
+                // 发送人Id、发送人名称、发送时间、发送内容
+                String[] msgContentArr = msgContent.split("&\\|\\|&");
+                if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 2){
+                    // 消息在近两天内
+                    if(result.size() == 0){
+                        if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 1){
+                            result.add(DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
+                        }else if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 2){
+                            result.add("昨天 " + DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
+                        }
+                    }
+                    if(strNull(lastSendTime)){
+                        // 和上一个日期进行比较，相差是否大于4小时
+                        if(DateFormatUtil.differentHours(DateFormatUtil.strToDate(lastSendTime, DateFormatUtil.TYPE), DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE)) > 4){
+                            if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 1){
+                                result.add(DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
+                            }else if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 2){
+                                result.add("昨天 " + DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
+                            }
+                        }
+                    }else{
+                        lastSendTime = msgContentArr[2];
+                    }
+                    result.add(msgContent);
+                }
+            }
+            return result;
+        }
+        return null;
     }
 }

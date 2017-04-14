@@ -39,16 +39,19 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
+import com.bouilli.nxx.bouillihotel.customview.ElasticScrollView;
 import com.bouilli.nxx.bouillihotel.customview.HorizontalProgressbarWithProgress;
 import com.bouilli.nxx.bouillihotel.customview.NavigationTabBar;
 import com.bouilli.nxx.bouillihotel.customview.NoSlideViewPager;
@@ -59,6 +62,7 @@ import com.bouilli.nxx.bouillihotel.service.PollingService;
 import com.bouilli.nxx.bouillihotel.service.PrintService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.Constants;
+import com.bouilli.nxx.bouillihotel.util.DateFormatUtil;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.L;
 import com.bouilli.nxx.bouillihotel.util.MyTagHandler;
@@ -77,6 +81,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +116,7 @@ public class MainActivity extends AppCompatActivity
     private TextView chat_user_desc;
     private EditText chat_input_content;
     private Button chat_input_send;
+    private ImageView on_line_state;
 
     private LinearLayout mainTopTipLayout;
 
@@ -164,6 +170,7 @@ public class MainActivity extends AppCompatActivity
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Constants.MSG_GET_DATA_SUCCESS);
         intentFilter.addAction(Constants.MSG_GET_DATA_FAIL);
+        intentFilter.addAction(Constants.MSG_GET_NEW_CHAT_MSG);
         registerReceiver(getDataReceiver, intentFilter);
 
         new_order = (FloatingActionButton) findViewById(R.id.new_order);
@@ -226,6 +233,7 @@ public class MainActivity extends AppCompatActivity
         login_user_name = (TextView) navigationView.getHeaderView(0).findViewById(R.id.login_user_name);
         login_user_permission = (TextView) navigationView.getHeaderView(0).findViewById(R.id.login_user_permission);
 
+        updateChatContent();
         chat_user_name = (TextView) findViewById(R.id.chat_user_name);
         chat_user_desc = (TextView) findViewById(R.id.chat_user_desc);
 
@@ -234,11 +242,24 @@ public class MainActivity extends AppCompatActivity
         chat_input_send.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                if(ComFun.strNull(chat_input_content.getText().toString().trim())){
-                    chat_input_content.setText("");
-                }else{
-                    ComFun.showToast(MainActivity.this, "发送内容不能为空", Toast.LENGTH_SHORT);
-                }
+                on_line_state = (ImageView) MainActivity.this.findViewById(R.id.on_line_state); // 在线状态
+                //if(on_line_state.getVisibility() == View.VISIBLE){
+                    if(ComFun.strNull(chat_input_content.getText().toString().trim())){
+                        String userId = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "userId");
+                        SharedPreferencesTool.addOrUpdateChatPro(MainActivity.this, SharedPreferencesTool.CHAT_PRO_NAME, userId, userId + "&||&" + "name&||&" + DateFormatUtil.dateToStr(new Date(), DateFormatUtil.TYPE) + "&||&" + chat_input_content.getText().toString().trim());
+
+                        Intent getNewMsgIntent = new Intent();
+                        getNewMsgIntent.setAction(Constants.MSG_GET_NEW_CHAT_MSG);
+                        MyApplication.getInstance().sendBroadcast(getNewMsgIntent);
+
+                        chat_input_content.setText("");
+                    }else{
+                        ComFun.showToast(MainActivity.this, "发送内容不能为空", Toast.LENGTH_SHORT);
+                    }
+                //}else{
+                    // 已掉线
+                //    ComFun.showToast(MainActivity.this, "与服务器连接中断，请稍后", Toast.LENGTH_SHORT);
+                //}
             }
         });
 
@@ -851,10 +872,116 @@ public class MainActivity extends AppCompatActivity
         ImageView off_line_state = (ImageView) MainActivity.this.findViewById(R.id.off_line_state); // 离线状态
         on_line_state.setVisibility(View.GONE);
         off_line_state.setVisibility(View.GONE);
+        EditText chat_input_content = (EditText) MainActivity.this.findViewById(R.id.chat_input_content);
         if(flag){
             on_line_state.setVisibility(View.VISIBLE);
+            //chat_input_content.setEnabled(true);
+            chat_input_content.setHint("输入聊天消息");
         }else{
             off_line_state.setVisibility(View.VISIBLE);
+            //chat_input_content.setEnabled(false);
+            chat_input_content.setHint("当前已掉线");
+        }
+    }
+
+    // 更新聊天区域内容
+    public void updateChatContent(){
+        final ElasticScrollView chatScrollView = (ElasticScrollView) MainActivity.this.findViewById(R.id.chatScrollView);
+        LinearLayout chatScrollViewMain = (LinearLayout) MainActivity.this.findViewById(R.id.chatScrollViewMain);
+        chatScrollViewMain.removeAllViews();
+        String userId = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "userId");
+        List<String> msgContentList = SharedPreferencesTool.getMsgListFromShared(MainActivity.this, SharedPreferencesTool.CHAT_PRO_NAME, userId);
+        msgContentList = ComFun.disposeMsgTime(msgContentList);
+        if(ComFun.strNull(msgContentList) && msgContentList.size() > 0){
+            for(String msgContent : msgContentList){
+                // 发送人Id、发送人名称、发送时间、发送内容
+                String[] msgContentArr = msgContent.split("&\\|\\|&");
+                if(msgContentArr.length > 1){
+                    if(msgContentArr[0].equals(userId)){
+                        // 本人消息
+                        createMsgLayout(msgContentArr[1], msgContentArr[2], msgContentArr[3], 1);
+                    }else{
+                        createMsgLayout(msgContentArr[1], msgContentArr[2], msgContentArr[3], 2);
+                    }
+                }else{
+                    createMsgLayout(null, null, msgContentArr[0], 3);
+                }
+            }
+            // 滚动聊天区域内容至最下
+            Handler msgContentHandler = new Handler();
+            msgContentHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    chatScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                }
+            });
+        }
+    }
+
+    public void createMsgLayout(String sendUserName, String sendTime, String msgContent, int type){
+        LinearLayout chatScrollViewMain = (LinearLayout) MainActivity.this.findViewById(R.id.chatScrollViewMain);
+        View addViewLayout = null;
+        if(type == 1){
+            // 本人消息
+            addViewLayout = new LinearLayout(MainActivity.this);
+            ((LinearLayout) addViewLayout).setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams addViewLayoutLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            addViewLayoutLp.gravity = Gravity.RIGHT;
+            addViewLayoutLp.setMargins(DisplayUtil.dip2px(MainActivity.this, 50), DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 8));
+            addViewLayout.setLayoutParams(addViewLayoutLp);
+
+            TextView msgContentTv = new TextView(MainActivity.this);
+            LinearLayout.LayoutParams msgContentTvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            msgContentTv.setLayoutParams(msgContentTvLp);
+            msgContentTv.setBackgroundResource(R.drawable.bg_round_key_boxes_focus);
+            msgContentTv.setPadding(DisplayUtil.dip2px(MainActivity.this, 10), DisplayUtil.dip2px(MainActivity.this, 10), DisplayUtil.dip2px(MainActivity.this, 10), DisplayUtil.dip2px(MainActivity.this, 10));
+            msgContentTv.setTextColor(Color.parseColor("#262626"));
+            msgContentTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            msgContentTv.setText(msgContent);
+
+            ((LinearLayout) addViewLayout).addView(msgContentTv);
+        }else if(type == 2){
+            // 别人消息
+            addViewLayout = new LinearLayout(MainActivity.this);
+            ((LinearLayout) addViewLayout).setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams addViewLayoutLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            addViewLayoutLp.gravity = Gravity.LEFT;
+            addViewLayoutLp.setMargins(DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 50), DisplayUtil.dip2px(MainActivity.this, 8));
+            addViewLayout.setLayoutParams(addViewLayoutLp);
+
+            TextView msgSendFromTv = new TextView(MainActivity.this);
+            LinearLayout.LayoutParams msgSendFromTvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            msgSendFromTvLp.setMargins(DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 3));
+            msgSendFromTv.setLayoutParams(msgSendFromTvLp);
+            msgSendFromTv.setText(sendUserName + "：");
+
+            ((LinearLayout) addViewLayout).addView(msgSendFromTv);
+
+            TextView msgContentTv = new TextView(MainActivity.this);
+            LinearLayout.LayoutParams msgContentTvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            msgContentTv.setLayoutParams(msgContentTvLp);
+            msgContentTv.setBackgroundResource(R.drawable.bg_round_key_boxes_del_focus);
+            msgContentTv.setPadding(DisplayUtil.dip2px(MainActivity.this, 10), DisplayUtil.dip2px(MainActivity.this, 10), DisplayUtil.dip2px(MainActivity.this, 10), DisplayUtil.dip2px(MainActivity.this, 10));
+            msgContentTv.setTextColor(Color.parseColor("#262626"));
+            msgContentTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            msgContentTv.setText(msgContent);
+
+            ((LinearLayout) addViewLayout).addView(msgContentTv);
+        }else if(type == 3){
+            // 时间戳
+            addViewLayout = new TextView(MainActivity.this);
+            LinearLayout.LayoutParams addViewLayoutLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            addViewLayoutLp.gravity = Gravity.CENTER;
+            addViewLayoutLp.setMargins(DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 10), DisplayUtil.dip2px(MainActivity.this, 0), DisplayUtil.dip2px(MainActivity.this, 10));
+            addViewLayout.setLayoutParams(addViewLayoutLp);
+            addViewLayout.setBackgroundResource(R.drawable.bg_msg_time_round_circle);
+            addViewLayout.setPadding(DisplayUtil.dip2px(MainActivity.this, 4), DisplayUtil.dip2px(MainActivity.this, 4), DisplayUtil.dip2px(MainActivity.this, 4), DisplayUtil.dip2px(MainActivity.this, 4));
+            ((TextView) addViewLayout).setTextColor(Color.parseColor("#dedede"));
+            ((TextView) addViewLayout).setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+            ((TextView) addViewLayout).setText(msgContent);
+        }
+        if(addViewLayout != null){
+            chatScrollViewMain.addView(addViewLayout);
         }
     }
 
@@ -1049,6 +1176,9 @@ public class MainActivity extends AppCompatActivity
                 setChatOnlineState(true);
             }else if(intent.getAction().equals(Constants.MSG_GET_DATA_FAIL)){
                 setChatOnlineState(false);
+            }else if(intent.getAction().equals(Constants.MSG_GET_NEW_CHAT_MSG)){
+                // 解析缓存中所有消息
+                updateChatContent();
             }
         }
     }

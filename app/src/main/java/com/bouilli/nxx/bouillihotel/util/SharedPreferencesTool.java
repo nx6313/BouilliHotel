@@ -4,6 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -11,6 +17,11 @@ import java.util.Map;
  */
 
 public class SharedPreferencesTool {
+    /**
+     * 缓存：保存聊天内容
+     */
+    public static final String CHAT_PRO_NAME = "chatMessageProInfo";
+
     public static void addOrUpdate(Context context, String sharedName,
                                    String key, String value) {
         SharedPreferences mySharedPreferences = context.getSharedPreferences(
@@ -36,6 +47,51 @@ public class SharedPreferencesTool {
         SharedPreferences.Editor editor = mySharedPreferences.edit();
         editor.putBoolean(key, value);
         editor.commit();
+    }
+
+    public static void addOrUpdateChatPro(Context context, String sharedName,
+                                   String key, String... value) {
+        if(ComFun.strNull(value) && value.length > 0){
+            List<String> msgList = getMsgListFromShared(context, sharedName, key);
+            if(msgList == null){
+                msgList = new ArrayList<>();
+            }
+            for(String str : value){
+                msgList.add(str);
+            }
+            JSONArray jsonArray = new JSONArray();
+            for(String str : msgList){
+                jsonArray.put(str);
+            }
+            SharedPreferences mySharedPreferences = context.getSharedPreferences(
+                    sharedName, Activity.MODE_PRIVATE);
+            SharedPreferences.Editor editor = mySharedPreferences.edit();
+            editor.putString(key, jsonArray.toString());
+            editor.commit();
+        }
+    }
+
+    public static List<String> getMsgListFromShared(Context context, String sharedName,
+                                               String key) {
+        SharedPreferences mySharedPreferences = context.getSharedPreferences(
+                sharedName, Activity.MODE_PRIVATE);
+        String getVal = mySharedPreferences.getString(key, null);
+        if(ComFun.strNull(getVal)){
+            try {
+                List<String> msgContentList = new ArrayList<>();
+                //JSONObject jsonObject = new JSONObject(getVal);
+                JSONArray jsonArray = new JSONArray(getVal);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    String chatMsgContent = (String) jsonArray.get(i);
+                    msgContentList.add(chatMsgContent);
+                }
+                return msgContentList;
+            } catch (JSONException e) {
+                L.e("getMsgListFromShared异常：" + e.getMessage());
+                return null;
+            }
+        }
+        return null;
     }
 
     public static Boolean getBooleanFromShared(Context context, String sharedName,

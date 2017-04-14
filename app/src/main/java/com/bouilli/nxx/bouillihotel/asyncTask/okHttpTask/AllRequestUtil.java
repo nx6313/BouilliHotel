@@ -15,6 +15,7 @@ import com.bouilli.nxx.bouillihotel.MainActivity;
 import com.bouilli.nxx.bouillihotel.MenuEditActivity;
 import com.bouilli.nxx.bouillihotel.OrderRecordActivity;
 import com.bouilli.nxx.bouillihotel.OutOrderActivity;
+import com.bouilli.nxx.bouillihotel.PerformanceAssessActivity;
 import com.bouilli.nxx.bouillihotel.PrintAreaActivity;
 import com.bouilli.nxx.bouillihotel.WelcomeActivity;
 import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
@@ -1001,6 +1002,52 @@ public class AllRequestUtil {
                     }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                         ComFun.showToast(context, "添加新菜品超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
+                }
+            }
+        }));
+    }
+
+    /**
+     * 初始化用户营业额
+     */
+    public static void InitUserTurnover(final Context context, RequestParams params) {
+        CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.GET_USER_TURNOVER_URI, params), new DisposeDataHandle(new DisposeDataListener() {
+            @Override
+            public void onFinish() {
+
+            }
+
+            @Override
+            public void onSuccess(Object responseObj) {
+                // 发送Handler通知页面更新UI
+                Message msg = new Message();
+                Bundle data = new Bundle();
+                msg.what = PerformanceAssessActivity.MSG_INIT_USER_TURNOVER;
+
+                try {
+                    JSONObject jsob = (JSONObject) responseObj;
+
+                    if(jsob.has("weakUserDataJson")){
+                        data.putString("weakUserDataJson", jsob.getString("weakUserDataJson"));
+                    }
+                    if(jsob.has("monthUserDataJson")){
+                        data.putString("monthUserDataJson", jsob.getString("monthUserDataJson"));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                msg.setData(data);
+                PerformanceAssessActivity.mHandler.sendMessage(msg);
+            }
+
+            @Override
+            public void onFailure(OkHttpException okHttpE) {
+                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    ComFun.showToast(context, "初始化员工个人业绩数据失败，请联系管理员", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    ComFun.showToast(context, "初始化员工个人业绩数据超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
             }
         }));

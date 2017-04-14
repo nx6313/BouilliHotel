@@ -11,12 +11,17 @@ public class Constants {
     /**
      * 广播Action：获取网络数据成功
      */
-    public static final String MSG_GET_DATA_SUCCESS = "MSG_GET_DATA_SUCCESS";
+    public static final String MSG_GET_DATA_SUCCESS = "com.nxx.bouilli.getDataSuccess";
 
     /**
      * 广播Action：获取网络数据失败
      */
-    public static final String MSG_GET_DATA_FAIL = "MSG_GET_DATA_FAIL";
+    public static final String MSG_GET_DATA_FAIL = "com.nxx.bouilli.getDataFail";
+
+    /**
+     * 广播Action：获取到新的聊天消息
+     */
+    public static final String MSG_GET_NEW_CHAT_MSG = "com.nxx.bouilli.getNewChatMsg";
 
 
     /**

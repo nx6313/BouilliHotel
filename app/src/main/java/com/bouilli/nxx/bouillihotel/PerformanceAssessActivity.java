@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.asyncTask.InitMonthTurnoverTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.InitUserTurnoverTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 
 import org.json.JSONException;
@@ -82,7 +83,7 @@ public class PerformanceAssessActivity extends AppCompatActivity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            new InitUserTurnoverTask(PerformanceAssessActivity.this).executeOnExecutor(Executors.newCachedThreadPool());
+            AllRequestUtil.InitUserTurnover(PerformanceAssessActivity.this, null);
         }
     }
 
@@ -99,33 +100,25 @@ public class PerformanceAssessActivity extends AppCompatActivity {
             Bundle b = msg.getData();
             switch (msg.what) {
                 case MSG_INIT_USER_TURNOVER:
-                    // 隐藏加载动画
-                    String initUserTurnoverResult = b.getString("initUserTurnoverResult");
-                    if (initUserTurnoverResult.equals("true")) {
-                        // 周的数据
-                        if(b.containsKey("weakUserDataJson")){
-                            String weakUserDataJson = b.getString("weakUserDataJson");
-                            try {
-                                JSONObject js = new JSONObject(weakUserDataJson);
-                                wbPerformanceWeekReport.loadUrl("javascript:setData("+js.get("lineRoot")+");");
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
+                    // 周的数据
+                    if(b.containsKey("weakUserDataJson")){
+                        String weakUserDataJson = b.getString("weakUserDataJson");
+                        try {
+                            JSONObject js = new JSONObject(weakUserDataJson);
+                            wbPerformanceWeekReport.loadUrl("javascript:setData("+js.get("lineRoot")+");");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                        // 月的数据
-                        if(b.containsKey("monthUserDataJson")){
-                            String monthUserDataJson = b.getString("monthUserDataJson");
-                            try {
-                                JSONObject js = new JSONObject(monthUserDataJson);
-                                wbPerformanceMonthReport.loadUrl("javascript:setData("+js.get("lineRoot")+");");
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
+                    }
+                    // 月的数据
+                    if(b.containsKey("monthUserDataJson")){
+                        String monthUserDataJson = b.getString("monthUserDataJson");
+                        try {
+                            JSONObject js = new JSONObject(monthUserDataJson);
+                            wbPerformanceMonthReport.loadUrl("javascript:setData("+js.get("lineRoot")+");");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    }else if (initUserTurnoverResult.equals("false")) {
-                        ComFun.showToast(PerformanceAssessActivity.this, "初始化员工个人业绩数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (initUserTurnoverResult.equals("time_out")) {
-                        ComFun.showToast(PerformanceAssessActivity.this, "初始化员工个人业绩数据超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                     break;
             }

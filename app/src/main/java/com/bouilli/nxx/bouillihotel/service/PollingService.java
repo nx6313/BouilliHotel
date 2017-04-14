@@ -57,7 +57,7 @@ public class PollingService extends Service {
                     if(isNetworkAvailable){
                         //new InitBaseDataTask(PollingService.this, true).executeOnExecutor(Executors.newCachedThreadPool());
                         //new InitOrderDataTask(PollingService.this).executeOnExecutor(Executors.newCachedThreadPool());
-                        AllRequestUtil.InitBaseData(PollingService.this, null, true);// 在完成后下一步执行获取订单的网络任务
+                        AllRequestUtil.InitBaseData(PollingService.this, null, true);// 在每一步完成后执行下一步
                     }else{
                         // 发送全局广播，说明网络异常
                         Intent intent = new Intent();
