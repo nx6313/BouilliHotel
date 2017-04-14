@@ -16,6 +16,12 @@ import java.util.UUID;
  */
 
 public class MyApplication extends Application {
+    private static MyApplication instance;
+
+    public static MyApplication getInstance() {
+        return instance;
+    }
+
     public static OutputStream mOutputStream = null;
 
     public static List<String> mpairedDeviceList = new ArrayList<>();// 设备已配对的蓝牙对象列表
@@ -29,6 +35,7 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }

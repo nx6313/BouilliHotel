@@ -10,6 +10,7 @@ import com.bouilli.nxx.bouillihotel.asyncTask.InitOrderDataTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
+import com.bouilli.nxx.bouillihotel.util.L;
 
 import java.util.concurrent.Executors;
 
@@ -19,7 +20,6 @@ import java.util.concurrent.Executors;
 
 public class PollingService extends Service {
     public static final String ACTION = "com.bouilli.nxx.bouillihotel.service.PollingService";
-    public static boolean canInitFlag = true;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -48,8 +48,7 @@ public class PollingService extends Service {
         @Override
         public void run() {
             while(true){
-                if(canInitFlag){
-                    canInitFlag = false;
+                synchronized (PollingService.this) {
                     try {
                         sleep(2 * 1000);
                     } catch (InterruptedException e) { }

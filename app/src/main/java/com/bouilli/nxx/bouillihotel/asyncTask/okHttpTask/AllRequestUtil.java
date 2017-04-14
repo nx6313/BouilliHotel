@@ -309,7 +309,7 @@ public class AllRequestUtil {
         CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.INIT_ORDER_DATA_URI, params), new DisposeDataHandle(new DisposeDataListener() {
             @Override
             public void onFinish() {
-                PollingService.canInitFlag = true;
+
             }
 
             @Override
@@ -421,12 +421,7 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                Message msg = new Message();
-                Bundle data = new Bundle();
-                msg.what = MainActivity.MSG_INIT_DATA_ERROR;
-                data.putString("okHttpE", "轮询获取数据异常：" + okHttpE.getEmsg().toString());
-                msg.setData(data);
-                MainActivity.mHandler.sendMessage(msg);
+
             }
         }));
     }

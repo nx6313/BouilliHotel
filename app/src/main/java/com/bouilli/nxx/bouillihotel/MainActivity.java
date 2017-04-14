@@ -3,9 +3,11 @@ package com.bouilli.nxx.bouillihotel;
 import android.Manifest;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -56,6 +58,7 @@ import com.bouilli.nxx.bouillihotel.push.org.androidpn.client.ServiceManager;
 import com.bouilli.nxx.bouillihotel.service.PollingService;
 import com.bouilli.nxx.bouillihotel.service.PrintService;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
+import com.bouilli.nxx.bouillihotel.util.Constants;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.L;
 import com.bouilli.nxx.bouillihotel.util.MyTagHandler;
@@ -140,6 +143,9 @@ public class MainActivity extends AppCompatActivity
         }
     });
 
+    // 网络请求广播
+    private GetDataReceiver getDataReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,6 +158,13 @@ public class MainActivity extends AppCompatActivity
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // 动态注册请求数据广播
+        getDataReceiver = new GetDataReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Constants.MSG_GET_DATA_SUCCESS);
+        intentFilter.addAction(Constants.MSG_GET_DATA_FAIL);
+        registerReceiver(getDataReceiver, intentFilter);
 
         new_order = (FloatingActionButton) findViewById(R.id.new_order);
         message_info = (FloatingActionButton) findViewById(R.id.message_info);
@@ -611,6 +624,8 @@ public class MainActivity extends AppCompatActivity
         refDataServiceIntent.setAction(PollingService.ACTION);
         refDataServiceIntent.setPackage(getPackageName());
         MainActivity.this.stopService(refDataServiceIntent);
+        // 解注册数据请求广播
+        unregisterReceiver(getDataReceiver);
     }
 
     @Override
@@ -1025,5 +1040,16 @@ public class MainActivity extends AppCompatActivity
             }
         }
         return false;
+    }
+
+    public class GetDataReceiver extends BroadcastReceiver {
+        public void onReceive(Context context, Intent intent) {
+            //Bundle bundle = intent.getExtras();
+            if(intent.getAction().equals(Constants.MSG_GET_DATA_SUCCESS)){
+                setChatOnlineState(true);
+            }else if(intent.getAction().equals(Constants.MSG_GET_DATA_FAIL)){
+                setChatOnlineState(false);
+            }
+        }
     }
 }

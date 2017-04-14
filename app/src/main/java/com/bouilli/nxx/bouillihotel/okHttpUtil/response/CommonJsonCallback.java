@@ -1,8 +1,10 @@
 package com.bouilli.nxx.bouillihotel.okHttpUtil.response;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.bouilli.nxx.bouillihotel.MyApplication;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.commonhttp.ResponseEntityToModule;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.exception.OkHttpException;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.listener.DisposeDataHandle;
@@ -63,6 +65,10 @@ public class CommonJsonCallback implements Callback {
                     L.d(Constants.OVERALL_TAG, "访问异常：" + ioexception.getMessage());
                     mListener.onFailure(new OkHttpException(Constants.HTTP_NETWORK_ERROR, ioexception));
                 }
+                // 发送获取数据失败广播
+                Intent getDataFailIntent = new Intent();
+                getDataFailIntent.setAction(Constants.MSG_GET_DATA_FAIL);
+                MyApplication.getInstance().sendBroadcast(getDataFailIntent);
             }
         });
     }
@@ -101,6 +107,10 @@ public class CommonJsonCallback implements Callback {
             L.d(Constants.OVERALL_TAG, "访问地址：" + url
                     + "，该HTTP访问服务器无返回JSON值，或者返回值异常");
             mListener.onFailure(new OkHttpException(Constants.HTTP_REQUEST_FAIL_ERROR, EMPTY_MSG));
+            // 发送获取数据失败广播
+            Intent getDataFailIntent = new Intent();
+            getDataFailIntent.setAction(Constants.MSG_GET_DATA_FAIL);
+            MyApplication.getInstance().sendBroadcast(getDataFailIntent);
             return;
         }
 
@@ -136,8 +146,16 @@ public class CommonJsonCallback implements Callback {
                 // 未知错误
                 mListener.onFailure(new OkHttpException(Constants.HTTP_OTHER_ERROR, ComFun.strNull(result.optString(ERROR_MSG)) ? result.optString(ERROR_MSG) : "发生未知错误"));
             }
+            // 发送获取数据成功广播
+            Intent getDataSuccessIntent = new Intent();
+            getDataSuccessIntent.setAction(Constants.MSG_GET_DATA_SUCCESS);
+            MyApplication.getInstance().sendBroadcast(getDataSuccessIntent);
         } catch (Exception e) {
             mListener.onFailure(new OkHttpException(Constants.HTTP_OTHER_ERROR, e.getMessage()));
+            // 发送获取数据失败广播
+            Intent getDataFailIntent = new Intent();
+            getDataFailIntent.setAction(Constants.MSG_GET_DATA_FAIL);
+            MyApplication.getInstance().sendBroadcast(getDataFailIntent);
         }
     }
 }

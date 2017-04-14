@@ -9,6 +9,17 @@ public class Constants {
     public static final int REQUEST_TIMEOUT = 10000;
 
     /**
+     * 广播Action：获取网络数据成功
+     */
+    public static final String MSG_GET_DATA_SUCCESS = "MSG_GET_DATA_SUCCESS";
+
+    /**
+     * 广播Action：获取网络数据失败
+     */
+    public static final String MSG_GET_DATA_FAIL = "MSG_GET_DATA_FAIL";
+
+
+    /**
      * 返回数据成功
      */
     public static final String HTTP_REQUEST_SUCCESS_CODE = "HTTP_REQUEST_SUCCESS_CODE";
