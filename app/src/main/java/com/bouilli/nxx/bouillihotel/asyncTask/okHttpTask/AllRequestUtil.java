@@ -13,6 +13,7 @@ import com.bouilli.nxx.bouillihotel.BusinessActivity;
 import com.bouilli.nxx.bouillihotel.EditOrderActivity;
 import com.bouilli.nxx.bouillihotel.MainActivity;
 import com.bouilli.nxx.bouillihotel.MenuEditActivity;
+import com.bouilli.nxx.bouillihotel.MyApplication;
 import com.bouilli.nxx.bouillihotel.OrderRecordActivity;
 import com.bouilli.nxx.bouillihotel.OutOrderActivity;
 import com.bouilli.nxx.bouillihotel.PerformanceAssessActivity;
@@ -310,7 +311,11 @@ public class AllRequestUtil {
         CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.INIT_ORDER_DATA_URI, params), new DisposeDataHandle(new DisposeDataListener() {
             @Override
             public void onFinish() {
-
+                // PollingService,继续执行InitChatData
+                String userId = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userId");
+                RequestParams getChatDataParams = new RequestParams();
+                getChatDataParams.put("userId", userId);
+                InitChatData(context, getChatDataParams);
             }
 
             @Override
@@ -415,6 +420,56 @@ public class AllRequestUtil {
                             }
                         }
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(OkHttpException okHttpE) {
+
+            }
+        }));
+    }
+
+    /**
+     * 初始化聊天信息数据
+     * @param context
+     * @param params
+     */
+    public static void InitChatData(final Context context, RequestParams params) {
+        CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.INIT_CHAT_DATA_URI, params), new DisposeDataHandle(new DisposeDataListener() {
+            @Override
+            public void onFinish() {
+
+            }
+
+            @Override
+            public void onSuccess(Object responseObj) {
+                try {
+                    JSONObject jsob = (JSONObject) responseObj;
+
+                    if(jsob.has("hasNewChat")){
+                        String hasNewChat = jsob.getString("hasNewChat");
+                        if(hasNewChat.equals("true")){
+                            // 有新数据
+                            // 保存数据至缓存
+                            if(jsob.has("userId") && jsob.has("chatList")){
+                                String userId = jsob.getString("userId");
+                                JSONArray chatList = jsob.getJSONArray("chatList");
+                                for (int i = 0; i < chatList.length(); i++) {
+                                    String chatMsg = (String) chatList.get(i);// 聊天消息
+                                    SharedPreferencesTool.addOrUpdateChatPro(context, SharedPreferencesTool.CHAT_PRO_NAME, userId, chatMsg);
+                                }
+                            }
+
+                            // 发送广播，说明获取到新的聊天数据
+                            Intent getNewMsgIntent = new Intent();
+                            getNewMsgIntent.setAction(Constants.MSG_GET_NEW_CHAT_MSG);
+                            MyApplication.getInstance().sendBroadcast(getNewMsgIntent);
+                        }
+                    }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -1049,6 +1104,60 @@ public class AllRequestUtil {
                 }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
                     ComFun.showToast(context, "初始化员工个人业绩数据超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
+            }
+        }));
+    }
+
+    /**
+     * 发送聊天消息
+     */
+    public static void SendChatMsg(final Context context, RequestParams params, final String sendingRandomId) {
+        CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.SEND_CHAT_MSG_URI, params), new DisposeDataHandle(new DisposeDataListener() {
+            @Override
+            public void onFinish() {
+
+            }
+
+            @Override
+            public void onSuccess(Object responseObj) {
+                // 发送Handler通知页面更新UI
+                /*Message msg = new Message();
+                Bundle data = new Bundle();
+                msg.what = MainActivity.MSG_SEND_CHAT_SUCCESS;
+
+                try {
+                    JSONObject jsob = (JSONObject) responseObj;
+
+                    if(jsob.has("userName")){
+                        data.putString("userName", jsob.getString("userName"));
+                    }
+                    if(jsob.has("sendDateTime")){
+                        data.putString("sendDateTime", jsob.getString("sendDateTime"));
+                    }
+                    if(jsob.has("sendMsgContent")){
+                        data.putString("sendMsgContent", jsob.getString("sendMsgContent"));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                msg.setData(data);
+                MainActivity.mHandler.sendMessage(msg);*/
+            }
+
+            @Override
+            public void onFailure(OkHttpException okHttpE) {
+                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    ComFun.showToast(context, "发送聊天消息失败，点击重新发送", Toast.LENGTH_SHORT);
+                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    ComFun.showToast(context, "发送聊天消息超时，点击重新发送", Toast.LENGTH_SHORT);
+                }
+                // 发送消息发送失败广播
+                Intent sendChatFailIntent = new Intent();
+                sendChatFailIntent.putExtra("sendingRandomId", sendingRandomId);
+                sendChatFailIntent.setAction(Constants.MSG_SEND_CHAT_FAIL);
+                MyApplication.getInstance().sendBroadcast(sendChatFailIntent);
             }
         }));
     }

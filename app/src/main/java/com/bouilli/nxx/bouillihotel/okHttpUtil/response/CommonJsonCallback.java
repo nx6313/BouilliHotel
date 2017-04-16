@@ -59,10 +59,11 @@ public class CommonJsonCallback implements Callback {
             public void run() {
                 mListener.onFinish();
                 if(ioexception instanceof SocketTimeoutException){
+                    L.d("请求超时");
                     // 返回数据超时
                     mListener.onFailure(new OkHttpException(Constants.HTTP_OUT_TIME_ERROR, "返回数据超时"));
                 }else{
-                    L.d(Constants.OVERALL_TAG, "访问异常：" + ioexception.getMessage());
+                    L.d("请求异常：" + ioexception.getMessage());
                     mListener.onFailure(new OkHttpException(Constants.HTTP_NETWORK_ERROR, ioexception));
                 }
                 // 发送获取数据失败广播
@@ -152,6 +153,7 @@ public class CommonJsonCallback implements Callback {
             MyApplication.getInstance().sendBroadcast(getDataSuccessIntent);
         } catch (Exception e) {
             mListener.onFailure(new OkHttpException(Constants.HTTP_OTHER_ERROR, e.getMessage()));
+            L.d("获取数据失败：" + e.getMessage());
             // 发送获取数据失败广播
             Intent getDataFailIntent = new Intent();
             getDataFailIntent.setAction(Constants.MSG_GET_DATA_FAIL);

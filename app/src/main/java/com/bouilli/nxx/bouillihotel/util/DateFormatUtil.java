@@ -2,6 +2,7 @@ package com.bouilli.nxx.bouillihotel.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -46,6 +47,11 @@ public class DateFormatUtil {
      * "yyyy-MM-dd HH:mm:ss"
      */
     public static final String TYPE = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * "yyyy-MM-dd HH:mm:ss:hm"
+     */
+    public static final String TYPE_ = "yyyy-MM-dd HH:mm:ss:SSS";
 
     /**
      * "HH:mm"
@@ -146,14 +152,44 @@ public class DateFormatUtil {
     }
 
     /**
+     * 日期转换为字符串格式
+     *
+     * @param date
+     *            日期
+     * @return
+     */
+    public static String dateToStr(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat(NUM_TYPE);
+        return sdf.format(date);
+    }
+
+    /**
+     * new Date()转换为指定日期格式
+     *
+     * @param dateType
+     *            要转化的格式
+     * @return
+     */
+    public static Date dateToDate(String dateType) {
+        SimpleDateFormat sdf = new SimpleDateFormat(TYPE_);
+        String dat = sdf.format(new Date());
+        return strToDate(dat, dateType);
+    }
+
+    /**
      * date2比date1多的天数
      * @param date1
      * @param date2
      * @return
      */
     public static int differentDays(Date date1, Date date2){
-        int days = (int) ((date2.getTime() - date1.getTime()) / (1000*3600*24));
-        return days;
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date1);
+        long time1 = cal.getTimeInMillis();
+        cal.setTime(date2);
+        long time2 = cal.getTimeInMillis();
+        long between_days = (time2-time1) / (1000*3600*24);
+        return Integer.parseInt(String.valueOf(between_days));
     }
 
     /**
@@ -163,7 +199,12 @@ public class DateFormatUtil {
      * @return
      */
     public static int differentHours(Date date1, Date date2){
-        int hours = (int) ((date2.getTime() - date1.getTime()) / (1000*3600));
-        return hours;
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date1);
+        long time1 = cal.getTimeInMillis();
+        cal.setTime(date2);
+        long time2 = cal.getTimeInMillis();
+        long between_hours = (time2-time1) / (1000*3600);
+        return Integer.parseInt(String.valueOf(between_hours));
     }
 }

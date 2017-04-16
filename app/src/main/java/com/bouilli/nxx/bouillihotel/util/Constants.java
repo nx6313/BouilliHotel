@@ -23,6 +23,16 @@ public class Constants {
      */
     public static final String MSG_GET_NEW_CHAT_MSG = "com.nxx.bouilli.getNewChatMsg";
 
+    /**
+     * 广播Action：获取到新的聊天顶部信息
+     */
+    public static final String MSG_GET_NEW_CHAT_TIP = "com.nxx.bouilli.getNewChatTip";
+
+    /**
+     * 广播Action：发送聊天消息失败
+     */
+    public static final String MSG_SEND_CHAT_FAIL = "com.nxx.bouilli.sendChatFail";
+
 
     /**
      * 返回数据成功

@@ -50,7 +50,7 @@ public class SharedPreferencesTool {
     }
 
     public static void addOrUpdateChatPro(Context context, String sharedName,
-                                   String key, String... value) {
+                                          String key, String... value) {
         if(ComFun.strNull(value) && value.length > 0){
             List<String> msgList = getMsgListFromShared(context, sharedName, key);
             if(msgList == null){
@@ -67,6 +67,37 @@ public class SharedPreferencesTool {
                     sharedName, Activity.MODE_PRIVATE);
             SharedPreferences.Editor editor = mySharedPreferences.edit();
             editor.putString(key, jsonArray.toString());
+            editor.commit();
+        }
+    }
+
+    public static void deleteErrorChatPro(Context context, String sharedName,
+                                          String key, String errorChatRandomId) {
+        List<String> msgDeleteAfterList = new ArrayList<>();
+        List<String> msgList = getMsgListFromShared(context, sharedName, key);
+        if(ComFun.strNull(msgList) && msgList.size() > 0){
+            for(String msg : msgList){
+                String[] msgArr = msg.split("&\\|\\|&");
+                if(msgArr.length == 5){
+                    if(!msgArr[4].equals(errorChatRandomId)){
+                        msgDeleteAfterList.add(msg);
+                    }
+                }else{
+                    msgDeleteAfterList.add(msg);
+                }
+            }
+            SharedPreferences mySharedPreferences = context.getSharedPreferences(
+                    sharedName, Activity.MODE_PRIVATE);
+            SharedPreferences.Editor editor = mySharedPreferences.edit();
+            JSONArray jsonArray = new JSONArray();
+            if(msgDeleteAfterList.size() > 0){
+                for(String str : msgDeleteAfterList){
+                    jsonArray.put(str);
+                }
+                editor.putString(key, jsonArray.toString());
+            }else{
+                editor.putString(key, "");
+            }
             editor.commit();
         }
     }

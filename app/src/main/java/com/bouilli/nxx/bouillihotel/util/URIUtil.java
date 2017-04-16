@@ -22,6 +22,11 @@ public class URIUtil {
     public static final String INIT_ORDER_DATA_URI = "initOrderData.action";
 
     /**
+     * 初始化聊天信息数据
+     */
+    public static final String INIT_CHAT_DATA_URI = "initChatData.action";
+
+    /**
      * 添加新餐桌
      */
     public static final String ADD_NEW_TABLE_URI = "addNewTable.action";
@@ -119,4 +124,9 @@ public class URIUtil {
      * 检查更新任务
      */
     public static final String CHECK_VERSION_URI = "checkVersion.action";
+
+    /**
+     * 发送聊天消息任务
+     */
+    public static final String SEND_CHAT_MSG_URI = "sendChatMsg.action";
 }

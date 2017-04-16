@@ -26,14 +26,15 @@
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
 
             <LinearLayout
+                android:id="@+id/userHeadLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:orientation="horizontal">
 
                 <ImageView
@@ -63,7 +64,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="25dp"
-                android:layout_gravity="center"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/userHeadLayout"
                 android:orientation="vertical">
 
                 <TextView
@@ -83,136 +85,183 @@
                     android:textSize="13sp"
                     android:text="系统管理员" />
             </LinearLayout>
-        </LinearLayout>
+
+            <Button
+                android:id="@+id/clearChatHistory"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:padding="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:background="@drawable/chat_clear_selector"
+                android:textStyle="bold"
+                android:text="清空聊天窗口"/>
+        </RelativeLayout>
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:paddingBottom="10dp">
-
-        <Button
-            android:id="@+id/chat_need_to_do"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="4dp"
-            android:layout_marginBottom="5dp"
-            android:textSize="16sp"
-            android:text="暂无待办事宜"
-            android:background="@drawable/select_menu_item_style_1" />
-
-        <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
-            android:id="@+id/chatScrollView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginBottom="4dp"
-            android:scrollbars="vertical"
-            android:scrollbarThumbVertical="@color/colorScroll"
-            android:overScrollMode="never"
-            android:scrollbarSize="2dp"
-            android:gravity="center|top">
-
-            <LinearLayout
-                android:id="@+id/chatScrollViewMain"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="left"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginRight="50dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="3dp"
-                        android:text="张三丰："/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_round_key_boxes_del_focus"
-                        android:padding="10dp"
-                        android:textColor="#262626"
-                        android:textSize="16sp"
-                        android:text="你好呀你好呀你好呀你好呀你好呀"/>
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_msg_time_round_circle"
-                    android:padding="4dp"
-                    android:textColor="#dedede"
-                    android:textSize="12sp"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:text="昨天 21:33"/>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="right"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginLeft="50dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_round_key_boxes_focus"
-                        android:padding="10dp"
-                        android:textColor="#262626"
-                        android:textSize="16sp"
-                        android:text="你好，吃饭了没有呢"/>
-                </LinearLayout>
-            </LinearLayout>
-        </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+        android:layout_weight="1">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:orientation="horizontal">
+            android:layout_height="match_parent"
+            android:paddingTop="5dp"
+            android:orientation="vertical">
 
-            <EditText
-                android:id="@+id/chat_input_content"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:padding="6dp"
-                android:background="@drawable/bg_round_circle"
-                android:textColor="#161616"
-                android:textSize="16sp"
-                android:focusable="true"
-                android:hint="输入聊天消息"
-                android:textColorHint="#5b5b5b"
-                android:maxLines="5"
-                android:layout_weight="3"/>
-
-            <Button
-                android:id="@+id/chat_input_send"
-                android:layout_width="0dp"
-                android:layout_height="35dp"
+            <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
+                android:id="@+id/chatScrollView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginLeft="10dp"
-                android:text="发  送"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#f4f4f4"
-                android:layout_gravity="bottom"
-                android:background="@drawable/edit_table_btn_style"/>
+                android:scrollbars="vertical"
+                android:scrollbarThumbVertical="@color/colorScroll"
+                android:overScrollMode="never"
+                android:scrollbarSize="2dp"
+                android:gravity="center|top">
+
+                <LinearLayout
+                    android:id="@+id/chatScrollViewMain"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginRight="50dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="3dp"
+                            android:text="张三丰："/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_round_key_boxes_del_focus"
+                            android:padding="10dp"
+                            android:textColor="#262626"
+                            android:textSize="16sp"
+                            android:text="你好呀你好呀你好呀你好呀你好呀"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_msg_time_round_circle"
+                        android:padding="4dp"
+                        android:textColor="#dedede"
+                        android:textSize="12sp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:text="昨天 21:33"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginLeft="50dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_round_key_boxes_focus"
+                            android:padding="10dp"
+                            android:textColor="#262626"
+                            android:textSize="16sp"
+                            android:text="你好，吃饭了没有呢"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginLeft="50dp"
+                        android:orientation="horizontal">
+
+                        <com.ant.liao.GifView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginRight="4dp"
+                            android:visibility="gone"/>
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:layout_marginRight="4dp"
+                            android:src="@drawable/send_error"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_round_key_boxes_focus"
+                            android:padding="10dp"
+                            android:textColor="#262626"
+                            android:textSize="16sp"
+                            android:text="你好，吃饭了没有呢"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
+
+            <LinearLayout
+                android:id="@+id/chatDoLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="10dp"
+                android:background="#34ffffff"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/chat_input_content"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="6dp"
+                    android:background="@drawable/bg_round_circle"
+                    android:textColor="#161616"
+                    android:textSize="16sp"
+                    android:hint="输入聊天消息"
+                    android:textColorHint="#5b5b5b"
+                    android:maxLines="5"
+                    android:layout_weight="3"/>
+
+                <Button
+                    android:id="@+id/chat_input_send"
+                    android:layout_width="0dp"
+                    android:layout_height="35dp"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="10dp"
+                    android:text="发  送"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="#f4f4f4"
+                    android:layout_gravity="bottom"
+                    android:background="@drawable/edit_table_btn_style"/>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/msgTipLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+        </LinearLayout>
+    </RelativeLayout>
 </LinearLayout>

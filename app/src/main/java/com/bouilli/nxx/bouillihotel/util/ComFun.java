@@ -195,6 +195,14 @@ public class ComFun {
     }
 
     /**
+     * 根据当前时间获取随机数值
+     * @return
+     */
+    public static String getRandomIntByTime() {
+        return DateFormatUtil.dateToStr(new Date());
+    }
+
+    /**
      * 显示加载框
      * @param activity
      * @param loadingTipValue
@@ -481,7 +489,7 @@ public class ComFun {
     }
 
     /**
-     * 处理消息，根据时间，适当增加时间戳，去掉两天之前的消息；相邻时间之间相差大于4小时，则添加时间戳
+     * 处理消息，根据时间，适当增加时间戳，去掉两天之前的消息；相邻时间之间相差大于1小时，则添加时间戳
      * @param msgContentList
      * @return
      */
@@ -492,27 +500,26 @@ public class ComFun {
             for(String msgContent : msgContentList){
                 // 发送人Id、发送人名称、发送时间、发送内容
                 String[] msgContentArr = msgContent.split("&\\|\\|&");
-                if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 2){
+                if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 2){
                     // 消息在近两天内
                     if(result.size() == 0){
-                        if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 1){
+                        if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 1){
                             result.add(DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
-                        }else if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 2){
+                        }else if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 2){
                             result.add("昨天 " + DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
                         }
                     }
                     if(strNull(lastSendTime)){
-                        // 和上一个日期进行比较，相差是否大于4小时
-                        if(DateFormatUtil.differentHours(DateFormatUtil.strToDate(lastSendTime, DateFormatUtil.TYPE), DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE)) > 4){
-                            if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 1){
+                        // 和上一个日期进行比较，相差是否大于1小时
+                        if(DateFormatUtil.differentHours(DateFormatUtil.strToDate(lastSendTime, DateFormatUtil.TYPE), DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE)) > 1){
+                            if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 1){
                                 result.add(DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
-                            }else if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), new Date()) < 2){
+                            }else if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 2){
                                 result.add("昨天 " + DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
                             }
                         }
-                    }else{
-                        lastSendTime = msgContentArr[2];
                     }
+                    lastSendTime = msgContentArr[2];
                     result.add(msgContent);
                 }
             }

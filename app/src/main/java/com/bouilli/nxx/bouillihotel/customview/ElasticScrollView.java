@@ -120,4 +120,65 @@ public class ElasticScrollView extends ScrollView {
         }
         return false;
     }
+
+    /**
+     * Runnable延迟执行的时间
+     */
+    private long delayMillis = 100;
+
+    /**
+     * 上次滑动的时间
+     */
+    private long lastScrollUpdate = -1;
+
+    private OnScrollListener listener;
+
+    /**
+     * 设置滑动开始结束监听器
+     * @param listener
+     */
+    public void setOnScrollListener(OnScrollListener listener){
+        this.listener = listener;
+    }
+
+    // 滑动距离监听器
+    public interface OnScrollListener{
+        /**
+         * 在滑动开始的时候调用
+         */
+        void onScrollStart();
+        /**
+         * 在滑动开始的时候调用
+         */
+        void onScrollEnd();
+    }
+
+    @Override
+    public void computeScroll() {
+        if(lastScrollUpdate == -1){
+            if(listener != null){
+                listener.onScrollStart();
+            }
+            postDelayed(scrollerTask, delayMillis);
+        }
+        // 更新ScrollView的滑动时间
+        lastScrollUpdate = System.currentTimeMillis();
+
+        super.computeScroll();
+    }
+
+    private Runnable scrollerTask = new Runnable() {
+        @Override
+        public void run() {
+            long currentTime = System.currentTimeMillis();
+            if ((currentTime - lastScrollUpdate) > 100) {
+                lastScrollUpdate = -1;
+                if(listener != null){
+                    listener.onScrollEnd();
+                }
+            } else {
+                postDelayed(this, delayMillis);
+            }
+        }
+    };
 }
