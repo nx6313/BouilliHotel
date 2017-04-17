@@ -145,14 +145,14 @@ public class CommonJsonCallback implements Callback {
                 mListener.onFailure(new OkHttpException(Constants.HTTP_LAST_VERSION_IS_NULL, ComFun.strNull(result.optString(ERROR_MSG)) ? result.optString(ERROR_MSG) : "检查新版本，新版本对象为NULL，客户端默认该情况为 当前为最新版本"));
             } else {
                 // 未知错误
-                mListener.onFailure(new OkHttpException(Constants.HTTP_OTHER_ERROR, ComFun.strNull(result.optString(ERROR_MSG)) ? result.optString(ERROR_MSG) : "发生未知错误"));
+                mListener.onFailure(new OkHttpException(Constants.HTTP_REQUEST_FAIL_ERROR, ComFun.strNull(result.optString(ERROR_MSG)) ? result.optString(ERROR_MSG) : "发生未知错误"));
             }
             // 发送获取数据成功广播
             Intent getDataSuccessIntent = new Intent();
             getDataSuccessIntent.setAction(Constants.MSG_GET_DATA_SUCCESS);
             MyApplication.getInstance().sendBroadcast(getDataSuccessIntent);
         } catch (Exception e) {
-            mListener.onFailure(new OkHttpException(Constants.HTTP_OTHER_ERROR, e.getMessage()));
+            mListener.onFailure(new OkHttpException(Constants.HTTP_REQUEST_FAIL_ERROR, e.getMessage()));
             L.d("获取数据失败：" + e.getMessage());
             // 发送获取数据失败广播
             Intent getDataFailIntent = new Intent();
