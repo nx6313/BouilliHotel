@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity
         intentFilter.addAction(Constants.MSG_GET_DATA_FAIL);
         intentFilter.addAction(Constants.MSG_GET_NEW_CHAT_MSG);
         intentFilter.addAction(Constants.MSG_GET_NEW_CHAT_TIP);
+        intentFilter.addAction(Constants.MSG_SEND_CHAT_SUCCESS);
         intentFilter.addAction(Constants.MSG_SEND_CHAT_FAIL);
         registerReceiver(getDataReceiver, intentFilter);
 
@@ -281,7 +282,7 @@ public class MainActivity extends AppCompatActivity
                         if(on_line_state.getVisibility() != View.VISIBLE){
                             // 已掉线
                             ComFun.showToast(MainActivity.this, "当前已掉线，请稍后重试", Toast.LENGTH_SHORT);
-                            SharedPreferencesTool.addOrUpdateChatPro(MainActivity.this, SharedPreferencesTool.CHAT_PRO_NAME, userId, userId + "&||&" + sendUserName + "&||&" + DateFormatUtil.dateToStr(new Date(), DateFormatUtil.TYPE_) + "&||&" + chat_input_content.getText().toString().trim() + "&||&" + sendingRandomId);
+                            SharedPreferencesTool.addOrUpdateChatPro(MainActivity.this, SharedPreferencesTool.CHAT_PRO_NAME, userId, userId + "&||&" + sendUserName + "&||&" + DateFormatUtil.dateToStr(new Date(), DateFormatUtil.TYPE_) + "&||&" + chat_input_content.getText().toString().trim() + "&||&" + sendingRandomId + "&||&error");
                             // 发送消息发送失败广播
                             Intent sendChatFailIntent = new Intent();
                             sendChatFailIntent.putExtra("sendingRandomId", sendingRandomId);
@@ -302,6 +303,7 @@ public class MainActivity extends AppCompatActivity
                             RequestParams requestParams = new RequestParams();
                             requestParams.put("userId", userId);
                             requestParams.put("messageContent", chat_input_content.getText().toString().trim());
+                            requestParams.put("sendingRandomId", sendingRandomId);
                             AllRequestUtil.SendChatMsg(MainActivity.this, requestParams, sendingRandomId);
                         }
                         chat_input_content.setText("");
@@ -940,15 +942,16 @@ public class MainActivity extends AppCompatActivity
                     String okHttpE = b.getString("okHttpE");
                     L.toast(MainActivity.this, okHttpE, Toast.LENGTH_SHORT);
                     break;
-                case MSG_SEND_CHAT_SUCCESS: // 弃用
+                case MSG_SEND_CHAT_SUCCESS:
                     String userId = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "userId");
                     String userName = b.getString("userName");
                     String sendDateTime = b.getString("sendDateTime");
                     String sendMsgContent = b.getString("sendMsgContent");
-                    SharedPreferencesTool.addOrUpdateChatPro(MainActivity.this, SharedPreferencesTool.CHAT_PRO_NAME, userId, userId + "&||&" + userName + "&||&" + sendDateTime + "&||&" + sendMsgContent);
+                    String sendingRandomId = b.getString("sendingRandomId");
+                    SharedPreferencesTool.addOrUpdateChatPro(MainActivity.this, SharedPreferencesTool.CHAT_PRO_NAME, userId, userId + "&||&" + userName + "&||&" + sendDateTime + "&||&" + sendMsgContent + "&||&" + sendingRandomId + "&||&success");
 
                     Intent getNewMsgIntent = new Intent();
-                    getNewMsgIntent.setAction(Constants.MSG_GET_NEW_CHAT_MSG);
+                    getNewMsgIntent.setAction(Constants.MSG_SEND_CHAT_SUCCESS);
                     MyApplication.getInstance().sendBroadcast(getNewMsgIntent);
                     break;
             }
@@ -988,7 +991,7 @@ public class MainActivity extends AppCompatActivity
                 // 发送人Id、发送人名称、发送时间、发送内容
                 String[] msgContentArr = msgContent.split("&\\|\\|&");
                 if(msgContentArr.length > 1){
-                    if(msgContentArr.length == 5){
+                    if(msgContentArr[5].equals("error")){
                         // 发送错误的消息，也是本人消息
                         createMsgLayout(msgContentArr[1], msgContentArr[2], msgContentArr[3], 5, msgContentArr[4]);
                     }else{
@@ -1264,6 +1267,7 @@ public class MainActivity extends AppCompatActivity
                         RequestParams requestParams = new RequestParams();
                         requestParams.put("userId", userId);
                         requestParams.put("messageContent", sendErrorContent);
+                        requestParams.put("sendingRandomId", sendingRandomId);
                         AllRequestUtil.SendChatMsg(MainActivity.this, requestParams, sendingRandomId);
                     }
                 }
@@ -1469,6 +1473,9 @@ public class MainActivity extends AppCompatActivity
                 updateChatContent();
             }else if(intent.getAction().equals(Constants.MSG_GET_NEW_CHAT_TIP)){
                 //updateChatTopTip(chat_input_content.getText().toString().trim(), 6000);
+            }else if(intent.getAction().equals(Constants.MSG_SEND_CHAT_SUCCESS)){
+                // 解析缓存中所有消息
+                updateChatContent();
             }else if(intent.getAction().equals(Constants.MSG_SEND_CHAT_FAIL)){
                 final String sendingRandomId = bundle.getString("sendingRandomId");
                 final LinearLayout chatScrollViewMain = (LinearLayout) MainActivity.this.findViewById(R.id.chatScrollViewMain);
@@ -1486,7 +1493,7 @@ public class MainActivity extends AppCompatActivity
                     final String sendContent = ((TextView) errorChatLayout.getChildAt(2)).getText().toString();
                     final String userId = SharedPreferencesTool.getFromShared(MainActivity.this, "BouilliProInfo", "userId");
                     final String sendUserNameFin = sendUserName;
-                    SharedPreferencesTool.addOrUpdateChatPro(MainActivity.this, SharedPreferencesTool.CHAT_PRO_NAME, userId, userId + "&||&" + sendUserName + "&||&" + DateFormatUtil.dateToStr(new Date(), DateFormatUtil.TYPE_) + "&||&" + sendContent + "&||&" + sendingRandomId);
+                    SharedPreferencesTool.addOrUpdateChatPro(MainActivity.this, SharedPreferencesTool.CHAT_PRO_NAME, userId, userId + "&||&" + sendUserName + "&||&" + DateFormatUtil.dateToStr(new Date(), DateFormatUtil.TYPE_) + "&||&" + sendContent + "&||&" + sendingRandomId + "&||&error");
 
                     errorChatLayout.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -1515,6 +1522,7 @@ public class MainActivity extends AppCompatActivity
                                 RequestParams requestParams = new RequestParams();
                                 requestParams.put("userId", userId);
                                 requestParams.put("messageContent", sendContent);
+                                requestParams.put("sendingRandomId", sendingRandomId);
                                 AllRequestUtil.SendChatMsg(MainActivity.this, requestParams, sendingRandomId);
                             }
                         }

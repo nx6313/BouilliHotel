@@ -1121,7 +1121,7 @@ public class AllRequestUtil {
             @Override
             public void onSuccess(Object responseObj) {
                 // 发送Handler通知页面更新UI
-                /*Message msg = new Message();
+                Message msg = new Message();
                 Bundle data = new Bundle();
                 msg.what = MainActivity.MSG_SEND_CHAT_SUCCESS;
 
@@ -1137,11 +1137,14 @@ public class AllRequestUtil {
                     if(jsob.has("sendMsgContent")){
                         data.putString("sendMsgContent", jsob.getString("sendMsgContent"));
                     }
+                    if(jsob.has("sendingRandomId")){
+                        data.putString("sendingRandomId", jsob.getString("sendingRandomId"));
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 msg.setData(data);
-                MainActivity.mHandler.sendMessage(msg);*/
+                MainActivity.mHandler.sendMessage(msg);
             }
 
             @Override

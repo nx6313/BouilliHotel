@@ -57,7 +57,17 @@ public class SharedPreferencesTool {
                 msgList = new ArrayList<>();
             }
             for(String str : value){
-                msgList.add(str);
+                boolean canAddFlag = true;
+                for(String msg : msgList){
+                    String hasMsgRandomId = msg.split("&\\|\\|&")[4];
+                    String newMsgRandomId = str.split("&\\|\\|&")[4];
+                    if(hasMsgRandomId.equals(newMsgRandomId)){
+                        canAddFlag = false;
+                    }
+                }
+                if(canAddFlag){
+                    msgList.add(str);
+                }
             }
             JSONArray jsonArray = new JSONArray();
             for(String str : msgList){
@@ -78,7 +88,7 @@ public class SharedPreferencesTool {
         if(ComFun.strNull(msgList) && msgList.size() > 0){
             for(String msg : msgList){
                 String[] msgArr = msg.split("&\\|\\|&");
-                if(msgArr.length == 5){
+                if(msgArr[5].equals("error")){
                     if(!msgArr[4].equals(errorChatRandomId)){
                         msgDeleteAfterList.add(msg);
                     }

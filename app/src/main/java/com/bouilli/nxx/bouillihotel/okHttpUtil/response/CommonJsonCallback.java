@@ -93,7 +93,7 @@ public class CommonJsonCallback implements Callback {
     }
 
     private ArrayList<String> handleCookie(Headers headers) {
-        ArrayList<String> tempList = new ArrayList<String>();
+        ArrayList<String> tempList = new ArrayList<>();
         for (int i = 0; i < headers.size(); i++) {
             if (headers.name(i).equalsIgnoreCase(COOKIE_STORE)) {
                 tempList.add(headers.value(i));
