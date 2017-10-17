@@ -164,7 +164,7 @@ public class OrderRecordActivity extends AppCompatActivity {
                     snackbarLayout.addView(add_view, 1, p);
 
                     skPrintSet.show();
-                    snackbarLayout.setOrientation(LinearLayout.VERTICAL);
+                    //snackbarLayout.setOrientation(LinearLayout.VERTICAL);
                     ObjectAnimator.ofFloat(v, "alpha", 1).setDuration(200).start();
                 }
             }
