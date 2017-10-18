@@ -25,6 +25,18 @@ android {
             res.srcDirs = ['src/main/res', 'src/main/asmack']
         }
     }
+    // 解决签名错误
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}
+
+apply plugin: 'org.greenrobot.greendao'
+greendao {
+    schemaVersion 1
+    daoPackage 'com.bouilli.nxx.bouillihotel.entity.build'
+    targetGenDir 'src/main/java'
 }
 
 dependencies {
@@ -40,4 +52,5 @@ dependencies {
     compile 'com.android.support:support-vector-drawable:25.3.1'
     testCompile 'junit:junit:4.12'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'org.greenrobot:greendao:3.2.0'
 }

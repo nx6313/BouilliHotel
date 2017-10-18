@@ -61,11 +61,13 @@
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="25dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="25dp"
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@+id/userHeadLayout"
+                android:layout_toLeftOf="@+id/clearChatHistory"
                 android:orientation="vertical">
 
                 <TextView
@@ -75,6 +77,12 @@
                     android:text="Admin"
                     android:textColor="#151515"
                     android:textSize="16sp"
+                    android:singleLine="true"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:ellipsize="marquee"
+                    android:scrollHorizontally="true"
+                    android:focusableInTouchMode="true"
+                    android:focusable="true"
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
                 <TextView
@@ -92,7 +100,7 @@
                 android:layout_height="40dp"
                 android:padding="10dp"
                 android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"
+                android:layout_centerVertical="true"
                 android:background="@drawable/chat_clear_selector"
                 android:textStyle="bold"
                 android:text="清空聊天窗口"/>

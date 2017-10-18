@@ -87,7 +87,7 @@ public class AllRequestUtil {
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userSex", userSex);
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userBirthday", userBirthday);
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userMobel", userMobel);
-                        // 打票机相关
+                        // 打票机相关(终端机参数--关联打票机)
                         if(jsob.has("loginUserPrintSetAbout")){
                             String loginUserPrintSetAbout = jsob.getString("loginUserPrintSetAbout");
                             String printAreaId = loginUserPrintSetAbout.split("#&#")[0];

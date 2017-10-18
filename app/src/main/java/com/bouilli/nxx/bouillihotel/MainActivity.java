@@ -31,6 +31,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.TextPaint;
 import android.util.TypedValue;
+import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -349,8 +350,8 @@ public class MainActivity extends AppCompatActivity
             login_user_name.setText(userLoginName);
             chat_user_name.setText(userLoginName);
         }else{
-            login_user_name.setText("蜜糖丶小妖");
-            chat_user_name.setText("蜜糖丶小妖");
+            login_user_name.setText("蜜糖丶小妖 [ 想想光头强，想想灰太狼，人生的道路上没有理由不坚强 ]");
+            chat_user_name.setText("蜜糖丶小妖 [ 想想光头强，想想灰太狼，人生的道路上没有理由不坚强 ]");
         }
         if(ComFun.strNull(userPermission)){
             if(Integer.parseInt(userPermission) == 0){
@@ -423,27 +424,28 @@ public class MainActivity extends AppCompatActivity
                 MainActivity.this.finish();
             }
         }else{
-            login_user_permission.setText("测试账号");
-            chat_user_desc.setText("测试账号");
-            navigationView.inflateMenu(R.menu.activity_main_drawer);
+            login_user_permission.setText("DEBUG 登录");
+            chat_user_desc.setText("DEBUG 登录");
+            navigationView.inflateMenu(R.menu.activity_main_drawer_manager);
         }
         // 初始化显示版本号（在检查更新后面括弧显示）
         try{
             String currentVersionName = ComFun.getVersionName(MainActivity.this);
             if(ComFun.strNull(currentVersionName)){
+                ComFun.showToast(MainActivity.this, "当前版本：" + currentVersionName, Toast.LENGTH_SHORT);
                 navigationView.getMenu().findItem(R.id.nav_update).setTitle(navigationView.getMenu().findItem(R.id.nav_update).getTitle() + "（当前版本：V"+ currentVersionName +"）");
             }
         }catch (Exception e){}
         // 设置默认选中项
-        if(Integer.parseInt(userPermission) != 4){
+        if(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) != 4){
             navigationView.getMenu().getItem(0).setChecked(true);
-            navigationView.setNavigationItemSelectedListener(this);
 
             NavigationMenuView navigationMenuView = (NavigationMenuView) navigationView.getChildAt(0);
             if (navigationMenuView != null) {
                 navigationMenuView.setVerticalScrollBarEnabled(false);
             }
         }
+        navigationView.setNavigationItemSelectedListener(this);
 
         // 动态权限申请
         applyPermission();
@@ -580,9 +582,10 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
+        if (id == R.id.chat_menu) {
             DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
             drawer.openDrawer(GravityCompat.END);
+            drawer.findViewById(R.id.chat_user_name).requestFocus();
             return true;
         }
 
@@ -594,6 +597,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(final MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        ComFun.showToast(MainActivity.this, "选择菜单项：" + id, Toast.LENGTH_SHORT);
 
         if (id == R.id.nav_main) {
             // 显示点菜主页

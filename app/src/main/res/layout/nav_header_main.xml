@@ -20,13 +20,22 @@
 
     <TextView
         android:id="@+id/login_user_name"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:layout_marginLeft="18dp"
+        android:layout_marginRight="18dp"
         android:text="Admin"
         android:textSize="18sp"
         android:textColor="#dfdfdf"
         android:textStyle="bold"
+        android:singleLine="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:ellipsize="marquee"
+        android:scrollHorizontally="true"
+        android:focusableInTouchMode="true"
+        android:focusable="true"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
     <TextView

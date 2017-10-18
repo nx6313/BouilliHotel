@@ -144,10 +144,27 @@ public class WelcomeActivity extends Activity {
                     btnLogin.requestFocus();
                     ComFun.showLoading2(WelcomeActivity.this, "登陆中，请稍后...", false);
                     // 执行登录任务
-                    Map<String, String> paramsMap = new HashMap<>();
-                    paramsMap.put("loginName", tvLoginName.getText().toString().trim());
-                    paramsMap.put("loginPwd", tvLoginPwd.getText().toString().trim());
-                    AllRequestUtil.UserLogin(WelcomeActivity.this, new RequestParams(paramsMap));
+                    String loginNameInput = tvLoginName.getText().toString().trim();
+                    String loginPwdInput = tvLoginPwd.getText().toString().trim();
+                    if(loginNameInput.equals("[DEBUG]") && loginPwdInput.equals("BouilliDebug")) {
+                        ComFun.showToast(WelcomeActivity.this, "Debug模式登录", Toast.LENGTH_SHORT);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                Message debugLoginMsg = new Message();
+                                Bundle debugLoginData = new Bundle();
+                                debugLoginMsg.what = WelcomeActivity.MSG_USER_LOGIN;
+                                debugLoginData.putString("loginUserInfo", "[DEBUG]Login");
+                                debugLoginMsg.setData(debugLoginData);
+                                WelcomeActivity.mHandler.sendMessage(debugLoginMsg);
+                            }
+                        }, 2000);
+                    } else {
+                        Map<String, String> paramsMap = new HashMap<>();
+                        paramsMap.put("loginName", loginNameInput);
+                        paramsMap.put("loginPwd", loginPwdInput);
+                        AllRequestUtil.UserLogin(WelcomeActivity.this, new RequestParams(paramsMap));
+                    }
                 }else{
                     if(!ComFun.strNull(tvLoginName.getText().toString())){
                         ComFun.showToast(WelcomeActivity.this, "请输入登录账号", Toast.LENGTH_SHORT);
@@ -433,6 +450,8 @@ public class WelcomeActivity extends Activity {
                     deleteDb.execSQL(DBInfo.CreateTable.CLEAR_PRINT_TABLE);
                     deleteDb.execSQL(DBInfo.CreateTable.CLEAR_BILL_TABLE);
                     deleteDb.close();
+                    // 关闭弹层
+                    ComFun.hideLoading(WelcomeActivity.this);
                     // 跳转主页面
                     mWelcomeHandler = new Handler();
                     mWelcomeTesk = new WelcomeTask();

@@ -14,6 +14,7 @@ import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.Constants;
 import com.bouilli.nxx.bouillihotel.util.L;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -116,7 +117,18 @@ public class CommonJsonCallback implements Callback {
         }
 
         try {
-            JSONObject result = new JSONObject(responseObj.toString());
+            JSONObject result;
+            if(ComFun.getJSONType(responseObj.toString()).equals(ComFun.JSON_TYPE.JSON_TYPE_OBJECT)) {
+                result = new JSONObject(responseObj.toString());
+            }else if(ComFun.getJSONType(responseObj.toString()).equals(ComFun.JSON_TYPE.JSON_TYPE_ARRAY)) {
+                result = new JSONObject();
+                JSONArray dataJsonArr = new JSONArray(responseObj.toString());
+                result.put("dataList", dataJsonArr);
+            }else {
+                L.d(Constants.OVERALL_TAG, "返回JSON数据格式错误，访问地址：" + url + "，返回值为：" + responseObj.toString());
+                mListener.onFailure(new OkHttpException(Constants.HTTP_JSON_ERROR, EMPTY_MSG));
+                return;
+            }
             if (!result.has(RESULT_CODE)) {
                 // 如果返回JSON中没有 RESULT_CODE 值，则默认是返回成功状态，未返回JSON中添加上该参数值
                 result.put(RESULT_CODE, Constants.HTTP_REQUEST_SUCCESS_CODE);
