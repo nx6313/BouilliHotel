@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#ca4256</color>
-    <color name="colorPrimaryDark">#ca4256</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#c68949</color>
+    <color name="colorPrimaryDark">#B5824B</color>
+    <color name="colorAccent">#b6924b</color>
     <color name="colorScroll">#a6d79fb2</color>
 
     <color name="editTableSaveBtnPressed">#ac6969</color>
     <color name="editTableSaveBtnPressed2">#6e4040</color>
-    <color name="editTableSaveBtnFocus">#832f2f</color>
+    <color name="editTableSaveBtnFocus">#83562f</color>
     <color name="editTableSaveBtnNormal">#a74a4a</color>
 
     <color name="editTableSaveBtnPressed_">#ac6969</color>
