@@ -15,6 +15,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -108,6 +109,7 @@ public class MainActivity extends AppCompatActivity
     public static final int MSG_PUSH_CONNECTION_LOADING = 5;
     public static final int MSG_INIT_DATA_ERROR = 6;
     public static final int MSG_SEND_CHAT_SUCCESS = 7;
+    public static final int MSG_ADD_NEW_TABLES = 8;
     private Toolbar toolbar;
     private FloatingActionButton new_order = null;// 添加新订单悬浮按钮
     private FloatingActionButton message_info = null;// 查看订单信息悬浮按钮
@@ -238,7 +240,7 @@ public class MainActivity extends AppCompatActivity
                 super.onDrawerOpened(drawerView);
             }
         };
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -436,12 +438,11 @@ public class MainActivity extends AppCompatActivity
             chat_user_desc.setText("DEBUG 登录");
             navigationView.inflateMenu(R.menu.activity_main_drawer_manager);
         }
-        // 初始化显示版本号（在检查更新后面括弧显示）
+        // 初始化显示版本号
         try{
             String currentVersionName = ComFun.getVersionName(MainActivity.this);
             if(ComFun.strNull(currentVersionName)){
-                ComFun.showToast(MainActivity.this, "当前版本：" + currentVersionName, Toast.LENGTH_SHORT);
-                navigationView.getMenu().findItem(R.id.nav_update).setTitle(navigationView.getMenu().findItem(R.id.nav_update).getTitle() + "（当前版本：V"+ currentVersionName +"）");
+                navigationView.getMenu().findItem(R.id.nav_update).setTitle(navigationView.getMenu().findItem(R.id.nav_update).getTitle() + "『 V"+ currentVersionName +" 』");
             }
         }catch (Exception e){}
         // 设置默认选中项
@@ -536,14 +537,15 @@ public class MainActivity extends AppCompatActivity
         final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
         if(ComFun.strNull(tableGroupNames)){
             for(int i=0; i<tableGroupNames.split(",").length; i++){
-                NavigationTabBar.Model itemModel = new NavigationTabBar.Model.Builder(getResources().getDrawable(R.drawable.none), Color.parseColor(colors[i]))
+                NavigationTabBar.Model itemModel = new NavigationTabBar.Model.Builder(ContextCompat.getDrawable(MainActivity.this, R.drawable.none), Color.parseColor(colors[i]))
                         .title(tableGroupNames.split(",")[i]).build();
                 models.add(itemModel);
             }
         }else{
-            NavigationTabBar.Model itemModel = new NavigationTabBar.Model.Builder(getResources().getDrawable(R.drawable.none), Color.parseColor(colors[0]))
+            NavigationTabBar.Model itemModel = new NavigationTabBar.Model.Builder(ContextCompat.getDrawable(MainActivity.this, R.drawable.none), Color.parseColor(colors[0]))
                     .title("暂无餐桌（请先添加餐桌数据）").build();
             models.add(itemModel);
+            navigationTabBar.setVisibility(View.GONE);
         }
         navigationTabBar.setModels(models);
         navigationTabBar.setViewPager(viewPager, 0);
@@ -605,7 +607,6 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(final MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        ComFun.showToast(MainActivity.this, "选择菜单项：" + id, Toast.LENGTH_SHORT);
 
         if (id == R.id.nav_main) {
             // 显示点菜主页
@@ -965,6 +966,11 @@ public class MainActivity extends AppCompatActivity
                     Intent getNewMsgIntent = new Intent();
                     getNewMsgIntent.setAction(Constants.MSG_SEND_CHAT_SUCCESS);
                     MyApplication.getInstance().sendBroadcast(getNewMsgIntent);
+                    break;
+                case MSG_ADD_NEW_TABLES:
+                    // 跳转到编辑餐桌页面
+                    Intent editTableIntent = new Intent(MainActivity.this, TableEditActivity.class);
+                    startActivity(editTableIntent);
                     break;
             }
             super.handleMessage(msg);

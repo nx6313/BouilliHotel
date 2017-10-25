@@ -45,10 +45,14 @@ public class MainFragment extends Fragment {
     public static String MSG_REFDATA = "requestNewDataBouilliHotel";
     private FlowLayout dining_table_layout;// 存放所有桌子的容器实例
 
-    public static MainFragment newInstance(int num){
+    public static MainFragment newInstance(int num, boolean nullFlag) {
         MainFragment fragment = new MainFragment();
         Bundle args = new Bundle();
-        args.putInt("num", num);
+        if (!nullFlag) {
+            args.putInt("num", num);
+        } else {
+            args.putInt("num", -1);
+        }
         fragment.setArguments(args);
         return fragment;
     }
@@ -70,18 +74,55 @@ public class MainFragment extends Fragment {
         View view = inflater.inflate(R.layout.main_fragment_pager, null);
         dining_table_layout = (FlowLayout) view.findViewById(R.id.dining_table_layout);
         String tableGroupNames = SharedPreferencesTool.getFromShared(getActivity(), "BouilliTableInfo", "tableGroupNames");
-        if(ComFun.strNull(tableGroupNames)){
+        if (ComFun.strNull(tableGroupNames)) {
             String thisGroupTableInfo = SharedPreferencesTool.getFromShared(getActivity(), "BouilliTableInfo", "tableInfo" + tableGroupNames.split(",")[mNum]);
             addTableView(thisGroupTableInfo.split(","));
+        } else {
+            addTableViewForNull();
         }
         return view;
     }
 
+    // 添加没有餐桌的标识
+    private void addTableViewForNull() {
+        LinearLayout tableObject = new LinearLayout(getContext());
+        tableObject.setGravity(Gravity.CENTER);
+        tableObject.setOrientation(LinearLayout.VERTICAL);
+        tableObject.setFocusable(true);
+        tableObject.setPadding(0, DisplayUtil.dip2px(getContext(), 140), 0, 0);
+        LinearLayout.LayoutParams tableObjLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        tableObject.setLayoutParams(tableObjLp);
+
+        ImageView noTableImg = new ImageView(getContext());
+        ViewGroup.LayoutParams noTableImgLp = new ViewGroup.LayoutParams(DisplayUtil.dip2px(getContext(), 120), DisplayUtil.dip2px(getContext(), 120));
+        noTableImg.setLayoutParams(noTableImgLp);
+        noTableImg.setImageResource(R.drawable.msg_noitem);
+        tableObject.addView(noTableImg);
+
+        TextView noTableDes = new TextView(getContext());
+        ViewGroup.LayoutParams noTableDesLp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        noTableDes.setLayoutParams(noTableDesLp);
+        noTableDes.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        noTableDes.setText("暂无餐桌，请先添加");
+        tableObject.addView(noTableDes);
+
+        tableObject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message msg = new Message();
+                msg.what = MainActivity.MSG_ADD_NEW_TABLES;
+                MainActivity.mHandler.sendMessage(msg);
+            }
+        });
+
+        dining_table_layout.addView(tableObject);
+    }
+
     // 添加餐桌布局
-    private void addTableView(String[] thisGroupTableInfoArr){
-        for(int i=0; i<thisGroupTableInfoArr.length; i++){
+    private void addTableView(String[] thisGroupTableInfoArr) {
+        for (int i = 0; i < thisGroupTableInfoArr.length; i++) {
             LinearLayout tableObject = new LinearLayout(getContext());
-            tableObject.setTag("tableInfo"+thisGroupTableInfoArr[i].split("\\|")[0]);
+            tableObject.setTag("tableInfo" + thisGroupTableInfoArr[i].split("\\|")[0]);
             tableObject.setGravity(Gravity.CENTER);
             tableObject.setOrientation(LinearLayout.VERTICAL);
             tableObject.setFocusable(true);
@@ -90,22 +131,22 @@ public class MainFragment extends Fragment {
             tableObject.setLayoutParams(tableObjLp);
             // ImageView
             ImageView tableImg = new ImageView(getContext());
-            tableImg.setTag("tableImg"+thisGroupTableInfoArr[i].split("\\|")[0]);
+            tableImg.setTag("tableImg" + thisGroupTableInfoArr[i].split("\\|")[0]);
             tableImg.setTag(R.id.tag_table_state, thisGroupTableInfoArr[i].split("\\|")[1]);
             ViewGroup.LayoutParams tableImgLp = new ViewGroup.LayoutParams(DisplayUtil.dip2px(getContext(), 70), DisplayUtil.dip2px(getContext(), 70));
             tableImg.setLayoutParams(tableImgLp);
-            if(Integer.parseInt(thisGroupTableInfoArr[i].split("\\|")[1]) == 1){// 空闲
+            if (Integer.parseInt(thisGroupTableInfoArr[i].split("\\|")[1]) == 1) {// 空闲
                 tableImg.setImageResource(R.drawable.desk_0);
-            }else if(Integer.parseInt(thisGroupTableInfoArr[i].split("\\|")[1]) == 2){// 编辑
+            } else if (Integer.parseInt(thisGroupTableInfoArr[i].split("\\|")[1]) == 2) {// 编辑
                 tableImg.setImageResource(R.drawable.desk_2);
                 // 闪烁显示动画
-                AlphaAnimation aa1 = new AlphaAnimation(1.0f,0.4f);
+                AlphaAnimation aa1 = new AlphaAnimation(1.0f, 0.4f);
                 aa1.setRepeatCount(-1);//设置重复次数
                 aa1.setRepeatMode(Animation.REVERSE);//设置反方向执行
                 aa1.setDuration(2300);
                 aa1.setFillAfter(true);
                 tableImg.startAnimation(aa1);
-            }else{// 占用
+            } else {// 占用
                 tableImg.setTag(R.id.tag_table_order_id, thisGroupTableInfoArr[i].split("\\|")[2]);
                 tableImg.setImageResource(R.drawable.desk_1);
             }
@@ -117,82 +158,82 @@ public class MainFragment extends Fragment {
             tableDes.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
             tableDes.setText(thisGroupTableInfoArr[i].split("\\|")[0]);
             tableDes.setTag("tableTxtInfo");
-            tableDes.setTag(R.id.tag_table_txt_no, "tableTxtInfo_"+thisGroupTableInfoArr[i].split("\\|")[0]);
+            tableDes.setTag(R.id.tag_table_txt_no, "tableTxtInfo_" + thisGroupTableInfoArr[i].split("\\|")[0]);
             TextPaint tableDesTp = tableDes.getPaint();
             tableDesTp.setFakeBoldText(true);
             tableObject.addView(tableDes);
             dining_table_layout.addView(tableObject);
             // 只有员工可以进行点餐
-            tableObject.setOnClickListener(new View.OnClickListener(){
+            tableObject.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                int tableState = Integer.parseInt(((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_state).toString());
-                // 判断权限
-                String userPermission = SharedPreferencesTool.getFromShared(getActivity(), "BouilliProInfo", "userPermission");
-                if(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 2) {
-                    String tableDesInfo = ((TextView) ((LinearLayout) v).getChildAt(1)).getText().toString();
-                    if (tableState == 2) {// 编辑中
-                        ComFun.showToast(getActivity(), "该餐桌正在编辑中，选择别的餐桌吧", Toast.LENGTH_SHORT);
-                    } else {
-                        final ImageView clickTableImgView = (ImageView) ((LinearLayout) v).getChildAt(0);
-                        changeLight(clickTableImgView, -80);
-                        Handler tableImgHandler = new Handler();
-                        tableImgHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                changeLight(clickTableImgView, 0);
+                    int tableState = Integer.parseInt(((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_state).toString());
+                    // 判断权限
+                    String userPermission = SharedPreferencesTool.getFromShared(getActivity(), "BouilliProInfo", "userPermission");
+                    if (ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 2) {
+                        String tableDesInfo = ((TextView) ((LinearLayout) v).getChildAt(1)).getText().toString();
+                        if (tableState == 2) {// 编辑中
+                            ComFun.showToast(getActivity(), "该餐桌正在编辑中，选择别的餐桌吧", Toast.LENGTH_SHORT);
+                        } else {
+                            final ImageView clickTableImgView = (ImageView) ((LinearLayout) v).getChildAt(0);
+                            changeLight(clickTableImgView, -80);
+                            Handler tableImgHandler = new Handler();
+                            tableImgHandler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    changeLight(clickTableImgView, 0);
+                                }
+                            }, 80);
+                            if (tableState == 1) {// 空闲
+                                Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
+                                intentKongXian.putExtra("showType", 1);
+                                intentKongXian.putExtra("tableNum", tableDesInfo);
+                                startActivity(intentKongXian);
+                            } else if (tableState == -1) {// 编辑中(本地状态)
+                                SerializableMap tableHasNewOrderMap = new SerializableMap();
+                                tableHasNewOrderMap.setMap(MainActivity.editBookMap.get(tableDesInfo));
+                                Intent intentEdit = new Intent(getActivity(), EditOrderActivity.class);
+                                intentEdit.putExtra("showType", -1);
+                                intentEdit.putExtra("tableNum", tableDesInfo);
+                                intentEdit.putExtra("hasOrderInEditBook", tableHasNewOrderMap);
+                                startActivity(intentEdit);
+                            } else {// 占用
+                                String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
+                                Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
+                                intentKongXian.putExtra("showType", 3);
+                                intentKongXian.putExtra("tableNum", tableDesInfo);
+                                intentKongXian.putExtra("tableOrderId", tag_table_order_id);
+                                startActivity(intentKongXian);
                             }
-                        }, 80);
-                        if (tableState == 1) {// 空闲
-                            Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
-                            intentKongXian.putExtra("showType", 1);
-                            intentKongXian.putExtra("tableNum", tableDesInfo);
-                            startActivity(intentKongXian);
-                        } else if (tableState == -1) {// 编辑中(本地状态)
-                            SerializableMap tableHasNewOrderMap = new SerializableMap();
-                            tableHasNewOrderMap.setMap(MainActivity.editBookMap.get(tableDesInfo));
-                            Intent intentEdit = new Intent(getActivity(), EditOrderActivity.class);
-                            intentEdit.putExtra("showType", -1);
-                            intentEdit.putExtra("tableNum", tableDesInfo);
-                            intentEdit.putExtra("hasOrderInEditBook", tableHasNewOrderMap);
-                            startActivity(intentEdit);
-                        } else {// 占用
+                        }
+                    } else {
+                        // 显示预览信息
+                        if (tableState == 2) {
+                            ComFun.showToast(getActivity(), "该餐桌正在点餐哦", Toast.LENGTH_SHORT);
+                        } else if (tableState == 1 || tableState == -1) {
+                            // 通知首页显示加载动画
+                            Message msg = new Message();
+                            Bundle data = new Bundle();
+                            data.putString("seeTableInfoType", "none");
+                            msg.setData(data);
+                            msg.what = MainActivity.MSG_SEE_TABLE_INFO_LOADING;
+                            MainActivity.mHandler.sendMessage(msg);
+                        } else {
+                            String tableDesInfo = ((TextView) ((LinearLayout) v).getChildAt(1)).getText().toString();
                             String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
-                            Intent intentKongXian = new Intent(getActivity(), EditOrderActivity.class);
-                            intentKongXian.putExtra("showType", 3);
-                            intentKongXian.putExtra("tableNum", tableDesInfo);
-                            intentKongXian.putExtra("tableOrderId", tag_table_order_id);
-                            startActivity(intentKongXian);
+                            // 通知首页显示加载动画
+                            Message msg = new Message();
+                            Bundle data = new Bundle();
+                            data.putString("seeTableInfoType", "loading");
+                            msg.setData(data);
+                            msg.what = MainActivity.MSG_SEE_TABLE_INFO_LOADING;
+                            MainActivity.mHandler.sendMessage(msg);
+                            // 调用任务根据餐桌号获取该餐桌就餐信息数据
+                            RequestParams params = new RequestParams();
+                            params.put("tableOrderId", tag_table_order_id);
+                            AllRequestUtil.GetMenuInThisTable(getActivity(), params, true, false, tag_table_order_id, tableDesInfo);
                         }
                     }
-                }else{
-                    // 显示预览信息
-                    if (tableState == 2) {
-                        ComFun.showToast(getActivity(), "该餐桌正在点餐哦", Toast.LENGTH_SHORT);
-                    }else if(tableState == 1 || tableState == -1){
-                        // 通知首页显示加载动画
-                        Message msg = new Message();
-                        Bundle data = new Bundle();
-                        data.putString("seeTableInfoType", "none");
-                        msg.setData(data);
-                        msg.what = MainActivity.MSG_SEE_TABLE_INFO_LOADING;
-                        MainActivity.mHandler.sendMessage(msg);
-                    }else{
-                        String tableDesInfo = ((TextView) ((LinearLayout) v).getChildAt(1)).getText().toString();
-                        String tag_table_order_id = ((LinearLayout) v).getChildAt(0).getTag(R.id.tag_table_order_id).toString();
-                        // 通知首页显示加载动画
-                        Message msg = new Message();
-                        Bundle data = new Bundle();
-                        data.putString("seeTableInfoType", "loading");
-                        msg.setData(data);
-                        msg.what = MainActivity.MSG_SEE_TABLE_INFO_LOADING;
-                        MainActivity.mHandler.sendMessage(msg);
-                        // 调用任务根据餐桌号获取该餐桌就餐信息数据
-                        RequestParams params = new RequestParams();
-                        params.put("tableOrderId", tag_table_order_id);
-                        AllRequestUtil.GetMenuInThisTable(getActivity(), params, true, false, tag_table_order_id, tableDesInfo);
-                    }
-                }
                 }
             });
         }
@@ -201,8 +242,8 @@ public class MainFragment extends Fragment {
     // 为图片添加滤镜
     private void changeLight(ImageView imageview, int brightness) {
         ColorMatrix matrix = new ColorMatrix();
-        matrix.set(new float[] { 1, 0, 0, 0, brightness, 0, 1, 0, 0,
-                brightness, 0, 0, 1, 0, brightness, 0, 0, 0, 1, 0 });
+        matrix.set(new float[]{1, 0, 0, 0, brightness, 0, 1, 0, 0,
+                brightness, 0, 0, 1, 0, brightness, 0, 0, 0, 1, 0});
         imageview.setColorFilter(new ColorMatrixColorFilter(matrix));
 
     }
@@ -217,44 +258,44 @@ public class MainFragment extends Fragment {
     public class RefDataBroadCastReceive extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals(MSG_REFDATA)){
+            if (intent.getAction().equals(MSG_REFDATA)) {
                 boolean newDataFlag = intent.getExtras().getBoolean("newData");
                 // 更新餐桌信息
-                if(newDataFlag){
+                if (newDataFlag) {
                     String tableFullInfo = SharedPreferencesTool.getFromShared(context, "BouilliTableInfo", "tableFullInfo");
-                    if(ComFun.strNull(tableFullInfo)){
+                    if (ComFun.strNull(tableFullInfo)) {
                         String[] tableFullInfoArr = tableFullInfo.split(",");
-                        for(String tableInfo : tableFullInfoArr){
-                            if(ComFun.strNull(tableInfo)){
-                                if(dining_table_layout != null){
-                                    ImageView tableImg = (ImageView) dining_table_layout.findViewWithTag("tableImg"+tableInfo.split("\\|")[0]);
-                                    if(tableImg != null){
+                        for (String tableInfo : tableFullInfoArr) {
+                            if (ComFun.strNull(tableInfo)) {
+                                if (dining_table_layout != null) {
+                                    ImageView tableImg = (ImageView) dining_table_layout.findViewWithTag("tableImg" + tableInfo.split("\\|")[0]);
+                                    if (tableImg != null) {
                                         tableImg.clearAnimation();
-                                        if(MainActivity.editBookMap.containsKey(tableInfo.split("\\|")[0])){
-                                            if(Integer.parseInt(tableInfo.split("\\|")[1]) == 3){// 占用
+                                        if (MainActivity.editBookMap.containsKey(tableInfo.split("\\|")[0])) {
+                                            if (Integer.parseInt(tableInfo.split("\\|")[1]) == 3) {// 占用
                                                 tableImg.setTag(R.id.tag_table_state, 3);
                                                 tableImg.setTag(R.id.tag_table_order_id, tableInfo.split("\\|")[2]);
                                                 tableImg.setImageResource(R.drawable.desk_1);
-                                            }else{
+                                            } else {
                                                 // 更新为草稿餐单状态
                                                 tableImg.setTag(R.id.tag_table_state, -1);
                                                 tableImg.setImageResource(R.drawable.desk_2);
                                             }
-                                        }else{
-                                            if(Integer.parseInt(tableInfo.split("\\|")[1]) == 1){// 空闲
+                                        } else {
+                                            if (Integer.parseInt(tableInfo.split("\\|")[1]) == 1) {// 空闲
                                                 tableImg.setTag(R.id.tag_table_state, 1);
                                                 tableImg.setImageResource(R.drawable.desk_0);
-                                            }else if(Integer.parseInt(tableInfo.split("\\|")[1]) == 2){// 编辑
+                                            } else if (Integer.parseInt(tableInfo.split("\\|")[1]) == 2) {// 编辑
                                                 tableImg.setTag(R.id.tag_table_state, 2);
                                                 tableImg.setImageResource(R.drawable.desk_2);
                                                 // 闪烁显示动画
-                                                AlphaAnimation aa1 = new AlphaAnimation(1.0f,0.6f);
+                                                AlphaAnimation aa1 = new AlphaAnimation(1.0f, 0.6f);
                                                 aa1.setRepeatCount(-1);//设置重复次数
                                                 aa1.setRepeatMode(Animation.REVERSE);//设置反方向执行
                                                 aa1.setDuration(2000);
                                                 aa1.setFillAfter(true);
                                                 tableImg.startAnimation(aa1);
-                                            }else{// 占用
+                                            } else {// 占用
                                                 tableImg.setTag(R.id.tag_table_state, 3);
                                                 tableImg.setTag(R.id.tag_table_order_id, tableInfo.split("\\|")[2]);
                                                 tableImg.setImageResource(R.drawable.desk_1);

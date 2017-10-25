@@ -11,11 +11,17 @@ import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
  */
 
 public class FragmentPageAdapter extends FragmentPagerAdapter {
+    private boolean nullFlag = false;
     private int fragmentCount = 0;
 
     public FragmentPageAdapter(FragmentManager fm, int fragmentCount) {
         super(fm);
-        this.fragmentCount = fragmentCount;
+        if (fragmentCount == 0) {
+            nullFlag = true;
+            this.fragmentCount = 1;
+        } else {
+            this.fragmentCount = fragmentCount;
+        }
     }
 
     @Override
@@ -25,6 +31,6 @@ public class FragmentPageAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        return MainFragment.newInstance(position);
+        return MainFragment.newInstance(position, nullFlag);
     }
 }

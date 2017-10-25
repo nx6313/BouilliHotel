@@ -14,7 +14,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#844a5a"
+        android:background="#946636"
         android:focusable="true"
         android:focusableInTouchMode="true">
 
@@ -62,7 +62,7 @@
                 android:id="@+id/selectMenuLayout"
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
-                android:background="#844a5a"
+                android:background="#946636"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:clickable="true"
@@ -107,7 +107,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:focusable="true"
-            android:background="#30cc8c8c"
+            android:background="#30cc9e8c"
             android:gravity="center|top"
             android:orientation="vertical"
             android:visibility="gone">
@@ -162,7 +162,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="4dp"
-        android:background="#844a5a">
+        android:background="#946636">
 
         <Button
             android:id="@+id/btnToAllOrder"

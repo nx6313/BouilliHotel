@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#b69b9b"
+    android:background="#e2c4a8"
     android:paddingBottom="10dp"
     android:gravity="center|top"
     android:orientation="vertical">
@@ -11,7 +11,7 @@
         android:id="@+id/etTableGroupName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:singleLine="true"
+        android:maxLines="1"
         android:gravity="center"
         android:textSize="13sp"
         android:hint="输入组名称（创建一个新的组来管理桌号）"/>
@@ -20,7 +20,7 @@
         android:id="@+id/etTableGroupNo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:singleLine="true"
+        android:maxLines="1"
         android:gravity="center"
         android:textSize="13sp"
         android:layout_marginTop="-6dp"
@@ -46,7 +46,7 @@
             android:inputType="number"
             android:gravity="center"
             android:textSize="13sp"
-            android:singleLine="true"
+            android:maxLines="1"
             android:hint=""/>
 
         <TextView
@@ -62,7 +62,7 @@
             android:inputType="number"
             android:gravity="center"
             android:textSize="13sp"
-            android:singleLine="true"
+            android:maxLines="1"
             android:hint=""/>
 
         <TextView
@@ -92,7 +92,7 @@
             android:inputType="number|text"
             android:gravity="center"
             android:textSize="13sp"
-            android:singleLine="true"
+            android:maxLines="1"
             android:hint="当桌号顺序比较乱时，填写这里，用“-”分割桌号"/>
     </LinearLayout>
 

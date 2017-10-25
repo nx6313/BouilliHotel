@@ -4,7 +4,7 @@
     android:id="@+id/orderRecordMainPage"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#9b5353"
+    android:background="#a97039"
     tools:context="com.bouilli.nxx.bouillihotel.OrderRecordActivity">
 
     <LinearLayout
@@ -19,8 +19,8 @@
             android:gravity="center"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="#a8e4c0"
-            android:background="#834545"
+            android:textColor="#a2d2b6"
+            android:background="#7e5329"
             android:text="当前(今日)共有订单数：- 个"
             android:clickable="true"/>
 
@@ -28,7 +28,7 @@
             android:id="@+id/orderMenuLine"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#539b8f"/>
+            android:background="#9aefe1"/>
 
         <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
             android:id="@+id/orderRecordData"
@@ -59,7 +59,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginRight="@dimen/fab_margin"
         android:layout_marginBottom="15dp"
-        app:backgroundTint="#50e6151f"
+        app:backgroundTint="#50dfa02b"
         app:backgroundTintMode="src_over"
         app:fabSize="mini"
         app:srcCompat="@drawable/print_set"

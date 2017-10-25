@@ -96,7 +96,7 @@
                 android:paddingBottom="5dp"
                 android:background="#74ace9"
                 android:textColor="#01151b"
-                android:singleLine="true"
+                android:maxLines="1"
                 android:marqueeRepeatLimit="marquee_forever"
                 android:ellipsize="marquee"
                 android:scrollHorizontally="true"

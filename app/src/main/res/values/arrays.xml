@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="default_preview">
-        <item>#df5a55</item>
-        <item>#f9bb72</item>
-        <item>#76afcf</item>
-        <item>#dd6495</item>
-        <item>#72d3b4</item>
-        <item>#937534</item>
-        <item>#3d963c</item>
-        <item>#5f98b9</item>
-        <item>#efaeae</item>
-        <item>#72d3b4</item>
-        <item>#df5a55</item>
-        <item>#f9bb72</item>
-        <item>#76afcf</item>
+        <item>#ca9f6e</item>
+        <item>#7fadc7</item>
+        <item>#b46f8b</item>
+        <item>#7cbea8</item>
+        <item>#966e19</item>
+        <item>#6b9f6b</item>
+        <item>#678799</item>
+        <item>#9b6d6d</item>
+        <item>#74ab99</item>
+        <item>#ac7776</item>
+        <item>#ac8c76</item>
+        <item>#7798a9</item>
         <item>#dd6495</item>
         <item>#72d3b4</item>
         <item>#df5a55</item>
