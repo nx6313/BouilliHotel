@@ -62,6 +62,14 @@ public class RequestParams {
         }
     }
 
+    public String get(String key) {
+        String returnS = null;
+        if (key != null) {
+            returnS = urlParams.get(key);
+        }
+        return returnS;
+    }
+
     public void put(String key, Object object) throws FileNotFoundException {
 
         if (key != null) {

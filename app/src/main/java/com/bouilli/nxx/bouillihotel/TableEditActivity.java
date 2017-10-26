@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +15,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.util.TypedValue;
@@ -32,14 +34,20 @@ import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.asyncTask.AddNewTableTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.DeleteTableTask;
+import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.customview.FlowLayout;
+import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
+
+import okhttp3.Call;
 
 public class TableEditActivity extends AppCompatActivity {
     public static Handler mHandler = null;
@@ -57,7 +65,7 @@ public class TableEditActivity extends AppCompatActivity {
     private EditText etTableGroupNo;
     private EditText etTableNumStart;
     private EditText etTableNumEnd;
-    private EditText etTableNums;
+    private FlowLayout tableNumsWrap;
     private Button btn_save_table_group;
 
     private boolean[] flags = null;//初始复选情况
@@ -162,12 +170,13 @@ public class TableEditActivity extends AppCompatActivity {
                 etTableGroupNo = (EditText) editTablePopup.findViewById(R.id.etTableGroupNo);
                 etTableNumStart = (EditText) editTablePopup.findViewById(R.id.etTableNumStart);
                 etTableNumEnd = (EditText) editTablePopup.findViewById(R.id.etTableNumEnd);
-                etTableNums = (EditText) editTablePopup.findViewById(R.id.etTableNums);
+                tableNumsWrap = (FlowLayout) editTablePopup.findViewById(R.id.tableNumsWrap);
                 btn_save_table_group = (Button) editTablePopup.findViewById(R.id.btn_save_table_group);
                 etTableGroupName.setText("组名："+tableGroupName);
                 etTableGroupNo.setText("组代号："+thisGroupTableInfoArr[0].split("\\.")[0]);
                 etTableGroupName.setEnabled(false);
                 etTableGroupNo.setEnabled(false);
+                resetTableWrap(2, true);
                 // 打开输入法
                 etTableGroupName.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
                     @Override
@@ -184,7 +193,7 @@ public class TableEditActivity extends AppCompatActivity {
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         if(!s.toString().equals("")){
-                            etTableNums.setText("");
+                            resetTableWrap(2, true);
                         }
                     }
 
@@ -202,7 +211,7 @@ public class TableEditActivity extends AppCompatActivity {
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         if(!s.toString().equals("")){
-                            etTableNums.setText("");
+                            resetTableWrap(2, true);
                         }
                     }
 
@@ -211,25 +220,8 @@ public class TableEditActivity extends AppCompatActivity {
 
                     }
                 });
-                etTableNums.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        if(!s.toString().equals("")){
-                            etTableNumStart.setText("");
-                            etTableNumEnd.setText("");
-                        }
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-
-                    }
-                });
+                bindTableNumsWrapItemEvent();
 
                 btn_save_table_group.setOnClickListener(new View.OnClickListener(){
                     @Override
@@ -245,10 +237,8 @@ public class TableEditActivity extends AppCompatActivity {
                                 && Integer.parseInt(etTableNumStart.getText().toString()) > Integer.parseInt(etTableNumEnd.getText().toString())){
                             ComFun.showToast(TableEditActivity.this, "桌号起始值不能大于结束值", Toast.LENGTH_SHORT);
                         }else if((etTableNumStart.getText().toString().equals("") && etTableNumEnd.getText().toString().equals(""))
-                                && etTableNums.getText().toString().equals("")){
+                                && getTableNumsItemVals().equals("")){
                             ComFun.showToast(TableEditActivity.this, "桌号不能为空", Toast.LENGTH_SHORT);
-                        }else if(!etTableNums.getText().toString().equals("") && !etTableNums.getText().toString().replaceAll("[^0-9^\\-]", "").equals(etTableNums.getText().toString())){
-                            ComFun.showToast(TableEditActivity.this, "桌号中只能包含数字和符号“-”", Toast.LENGTH_SHORT);
                         }else{
                             // 验证成功，提交数据到服务器
                             if(editTablePupopWindow.isShowing()){
@@ -260,7 +250,7 @@ public class TableEditActivity extends AppCompatActivity {
                             ComFun.showLoading(TableEditActivity.this, "餐桌数据提交中，请稍后");
                             // 异步任务提交数据
                             new AddNewTableTask(TableEditActivity.this, tableGroupName, thisGroupTableInfoArr[0].split("\\.")[0],
-                                    etTableNumStart.getText().toString(), etTableNumEnd.getText().toString(), etTableNums.getText().toString(), false).executeOnExecutor(Executors.newCachedThreadPool());
+                                    etTableNumStart.getText().toString(), etTableNumEnd.getText().toString(), getTableNumsItemVals(), false).executeOnExecutor(Executors.newCachedThreadPool());
                         }
                     }
                 });
@@ -313,6 +303,111 @@ public class TableEditActivity extends AppCompatActivity {
         }
     }
 
+    // 清空重置餐桌号文本输入队列内容
+    private void resetTableWrap(int addCount, boolean clearFlag) {
+        if(clearFlag) {
+            tableNumsWrap.removeAllViews();
+        }
+        for(int ct = 0; ct < addCount; ct++) {
+            EditText tableAdd = new EditText(TableEditActivity.this);
+            tableAdd.setInputType(InputType.TYPE_CLASS_NUMBER);
+            tableAdd.setGravity(Gravity.CENTER);
+            tableAdd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+            tableAdd.setMaxLines(1);
+            tableAdd.setBackgroundResource(R.drawable.table_num_edit_line_default);
+            LinearLayout.LayoutParams tableAddLp = new LinearLayout.LayoutParams(DisplayUtil.dip2px(TableEditActivity.this, 70), ViewGroup.LayoutParams.WRAP_CONTENT);
+            tableAddLp.setMargins(DisplayUtil.dip2px(TableEditActivity.this, 10), DisplayUtil.dip2px(TableEditActivity.this, 4), DisplayUtil.dip2px(TableEditActivity.this, 10), 0);
+            tableAdd.setLayoutParams(tableAddLp);
+            tableNumsWrap.addView(tableAdd);
+        }
+        bindTableNumsWrapItemEvent();
+    }
+
+    // 判断餐桌号文本输入队列有没有存在未输入的
+    private boolean checkTableWrapItems() {
+        boolean notHasNullItem = false;
+        int tableNumCount = tableNumsWrap.getChildCount();
+        for(int tn = 0; tn < tableNumCount; tn++) {
+            EditText tableNumItem = (EditText) tableNumsWrap.getChildAt(tn);
+            if(!ComFun.strNull(tableNumItem.getText().toString())) {
+                notHasNullItem = true;
+                break;
+            }
+        }
+        return notHasNullItem;
+    }
+
+    // 判断餐桌号文本输入队列有没有存在重复的
+    private boolean checkTableWrapItemsRepet(EditText etTable, String s) {
+        boolean notHasRepetItem = false;
+        int tableNumCount = tableNumsWrap.getChildCount();
+        for(int tn = 0; tn < tableNumCount; tn++) {
+            EditText tableNumItem = (EditText) tableNumsWrap.getChildAt(tn);
+            if(ComFun.strNull(tableNumItem.getText().toString()) && !etTable.equals(tableNumItem) && tableNumItem.getText().toString().equals(s)) {
+                notHasRepetItem = true;
+                break;
+            }
+        }
+        return notHasRepetItem;
+    }
+
+    // 绑定餐桌号输入队列事件
+    private void bindTableNumsWrapItemEvent() {
+        int tableNumCount = tableNumsWrap.getChildCount();
+        for(int tn = 0; tn < tableNumCount; tn++) {
+            final EditText tableNumItem = (EditText) tableNumsWrap.getChildAt(tn);
+            tableNumItem.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if(!s.toString().equals("")){
+                        if(checkTableWrapItemsRepet(tableNumItem, s.toString())) {
+                            tableNumItem.setTextColor(Color.parseColor("#C11E23"));
+                            tableNumItem.setBackgroundResource(R.drawable.edit_line_warn);
+                            ComFun.showToast(TableEditActivity.this, "存在重复的", Toast.LENGTH_SHORT);
+                        } else {
+                            tableNumItem.setTextColor(Color.parseColor("#393D49"));
+                            tableNumItem.setBackgroundResource(R.drawable.edit_line_normal);
+                        }
+                        etTableNumStart.setText("");
+                        etTableNumEnd.setText("");
+                    } else {
+                        tableNumItem.setTextColor(Color.parseColor("#393D49"));
+                        tableNumItem.setBackgroundResource(R.drawable.table_num_edit_line_default);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if(!checkTableWrapItems()) {
+                        resetTableWrap(1, false);
+                    }
+                }
+            });
+        }
+    }
+
+    // 获取餐桌号文本队列数据
+    private String getTableNumsItemVals() {
+        String tableNumsItemVals = "";
+        int tableNumCount = tableNumsWrap.getChildCount();
+        for(int tn = 0; tn < tableNumCount; tn++) {
+            EditText tableNumItem = (EditText) tableNumsWrap.getChildAt(tn);
+            String itemVal = tableNumItem.getText().toString();
+            if(ComFun.strNull(itemVal)) {
+                tableNumsItemVals += itemVal + "-";
+            }
+        }
+        if(ComFun.strNull(tableNumsItemVals) && tableNumsItemVals != "") {
+            tableNumsItemVals = tableNumsItemVals.substring(0, tableNumsItemVals.length() - 1);
+        }
+        return tableNumsItemVals;
+    }
+
     // 初始化添加新桌组悬浮按钮及事件
     public void initAddNewTableGroup(){
         add_new_table_info = (FloatingActionButton) findViewById(R.id.add_new_table_info);
@@ -331,8 +426,9 @@ public class TableEditActivity extends AppCompatActivity {
                 etTableGroupNo = (EditText) editTablePopup.findViewById(R.id.etTableGroupNo);
                 etTableNumStart = (EditText) editTablePopup.findViewById(R.id.etTableNumStart);
                 etTableNumEnd = (EditText) editTablePopup.findViewById(R.id.etTableNumEnd);
-                etTableNums = (EditText) editTablePopup.findViewById(R.id.etTableNums);
+                tableNumsWrap = (FlowLayout) editTablePopup.findViewById(R.id.tableNumsWrap);
                 btn_save_table_group = (Button) editTablePopup.findViewById(R.id.btn_save_table_group);
+                resetTableWrap(2, true);
                 // 打开输入法
                 etTableGroupName.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
                     @Override
@@ -349,7 +445,7 @@ public class TableEditActivity extends AppCompatActivity {
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         if(!s.toString().equals("")){
-                            etTableNums.setText("");
+                            resetTableWrap(2, true);
                         }
                     }
 
@@ -367,7 +463,7 @@ public class TableEditActivity extends AppCompatActivity {
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         if(!s.toString().equals("")){
-                            etTableNums.setText("");
+                            resetTableWrap(2, true);
                         }
                     }
 
@@ -376,25 +472,8 @@ public class TableEditActivity extends AppCompatActivity {
 
                     }
                 });
-                etTableNums.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        if(!s.toString().equals("")){
-                            etTableNumStart.setText("");
-                            etTableNumEnd.setText("");
-                        }
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-
-                    }
-                });
+                bindTableNumsWrapItemEvent();
 
                 btn_save_table_group.setOnClickListener(new View.OnClickListener(){
                     @Override
@@ -414,10 +493,8 @@ public class TableEditActivity extends AppCompatActivity {
                                 && Integer.parseInt(etTableNumStart.getText().toString()) > Integer.parseInt(etTableNumEnd.getText().toString())){
                             ComFun.showToast(TableEditActivity.this, "桌号起始值不能大于结束值", Toast.LENGTH_SHORT);
                         }else if((etTableNumStart.getText().toString().equals("") && etTableNumEnd.getText().toString().equals(""))
-                                && etTableNums.getText().toString().equals("")){
+                                && getTableNumsItemVals().equals("")){
                             ComFun.showToast(TableEditActivity.this, "桌号不能为空", Toast.LENGTH_SHORT);
-                        }else if(!etTableNums.getText().toString().equals("") && !etTableNums.getText().toString().replaceAll("[^0-9^\\-]", "").equals(etTableNums.getText().toString())){
-                            ComFun.showToast(TableEditActivity.this, "桌号中只能包含数字和符号“-”", Toast.LENGTH_SHORT);
                         }else{
                             // 验证成功，提交数据到服务器
                             if(editTablePupopWindow.isShowing()){
@@ -426,10 +503,17 @@ public class TableEditActivity extends AppCompatActivity {
                             // 关闭输入法键盘
                             ComFun.closeIME(TableEditActivity.this, etTableGroupName);
                             // 显示加载动画
-                            ComFun.showLoading(TableEditActivity.this, "餐桌数据提交中，请稍后");
+                            ComFun.AlertDialogWrap tableEdit = ComFun.showLoading(TableEditActivity.this, "餐桌数据提交中，请稍后", true, "餐桌数据提交操作已取消");
                             // 异步任务提交数据
-                            new AddNewTableTask(TableEditActivity.this, etTableGroupName.getText().toString(), etTableGroupNo.getText().toString(),
-                                    etTableNumStart.getText().toString(), etTableNumEnd.getText().toString(), etTableNums.getText().toString(), true).executeOnExecutor(Executors.newCachedThreadPool());
+                            Map<String, String> paramsMap = new HashMap<>();
+                            paramsMap.put("groupName", etTableGroupName.getText().toString());
+                            paramsMap.put("groupNo", etTableGroupNo.getText().toString());
+                            paramsMap.put("startNum", etTableNumStart.getText().toString());
+                            paramsMap.put("endNum", etTableNumEnd.getText().toString());
+                            paramsMap.put("tableNums", getTableNumsItemVals());
+                            paramsMap.put("addType", "newAdd");
+                            Call tableEditCall = AllRequestUtil.addNewTableGroupTableNums(TableEditActivity.this, new RequestParams(paramsMap), true);
+                            tableEdit.setHttpCall(tableEditCall);
                         }
                     }
                 });
@@ -550,10 +634,6 @@ public class TableEditActivity extends AppCompatActivity {
                         }
                         // 更新该页面餐桌布局(添加了新桌组)
                         initTableView();
-                    }else if (addNewTableResult.equals("false")) {
-                        ComFun.showToast(TableEditActivity.this, "添加新餐桌失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (addNewTableResult.equals("time_out")) {
-                        ComFun.showToast(TableEditActivity.this, "添加新餐桌超时，请稍后重试", Toast.LENGTH_SHORT);
                     }else if (addNewTableResult.equals("has_table_group")) {
                         ComFun.showToast(TableEditActivity.this, "组【"+ groupName +"】或组代号【"+ groupNo +"】已经存在，请重新添加", Toast.LENGTH_SHORT);
                     }
@@ -604,10 +684,6 @@ public class TableEditActivity extends AppCompatActivity {
                         }
                         // 更新该页面餐桌布局(添加了新桌组)
                         initTableView();
-                    }else if (addNewTableToComResult.equals("false")) {
-                        ComFun.showToast(TableEditActivity.this, "在组【"+ groupNameToCom +"】中补充餐桌失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if (addNewTableToComResult.equals("time_out")) {
-                        ComFun.showToast(TableEditActivity.this, "在组【"+ groupNameToCom +"】中补充餐桌超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                     break;
                 case MSG_DELETE_GROUP:

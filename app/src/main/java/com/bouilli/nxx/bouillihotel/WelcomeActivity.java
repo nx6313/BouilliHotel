@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import okhttp3.Call;
+
 public class WelcomeActivity extends Activity {
     private View view;
     public static Handler mHandler = null;
@@ -142,7 +144,7 @@ public class WelcomeActivity extends Activity {
             public void onClick(View v) {
                 if(ComFun.strNull(tvLoginName.getText().toString()) && ComFun.strNull(tvLoginPwd.getText().toString())){
                     btnLogin.requestFocus();
-                    ComFun.showLoading2(WelcomeActivity.this, "登陆中，请稍后...", false);
+                    ComFun.AlertDialogWrap loginLoading = ComFun.showLoading2(WelcomeActivity.this, "登陆中，请稍后...", true, "登录操作已取消");
                     // 执行登录任务
                     String loginNameInput = tvLoginName.getText().toString().trim();
                     String loginPwdInput = tvLoginPwd.getText().toString().trim();
@@ -163,7 +165,8 @@ public class WelcomeActivity extends Activity {
                         Map<String, String> paramsMap = new HashMap<>();
                         paramsMap.put("loginName", loginNameInput);
                         paramsMap.put("loginPwd", loginPwdInput);
-                        AllRequestUtil.UserLogin(WelcomeActivity.this, new RequestParams(paramsMap));
+                        Call loginCall = AllRequestUtil.UserLogin(WelcomeActivity.this, new RequestParams(paramsMap));
+                        loginLoading.setHttpCall(loginCall);
                     }
                 }else{
                     if(!ComFun.strNull(tvLoginName.getText().toString())){

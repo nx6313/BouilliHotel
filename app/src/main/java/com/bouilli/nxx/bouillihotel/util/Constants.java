@@ -78,4 +78,5 @@ public class Constants {
     public static final int HTTP_OTHER_ERROR = -7;
     public static final int HTTP_IO_ERROR = -8;
     public static final int HTTP_LAST_VERSION_IS_NULL = -9;
+    public static final int HTTP_REQUEST_CANCEL = -10;
 }

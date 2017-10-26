@@ -18,9 +18,12 @@ import com.bouilli.nxx.bouillihotel.OrderRecordActivity;
 import com.bouilli.nxx.bouillihotel.OutOrderActivity;
 import com.bouilli.nxx.bouillihotel.PerformanceAssessActivity;
 import com.bouilli.nxx.bouillihotel.PrintAreaActivity;
+import com.bouilli.nxx.bouillihotel.TableEditActivity;
 import com.bouilli.nxx.bouillihotel.WelcomeActivity;
 import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
+import com.bouilli.nxx.bouillihotel.entity.TableGroup;
+import com.bouilli.nxx.bouillihotel.entity.build.TableGroupDao;
 import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
 import com.bouilli.nxx.bouillihotel.fragment.OutOrderFragment;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.CommonOkHttpClient;
@@ -41,6 +44,8 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+import okhttp3.Call;
+
 /**
  * Created by 18230 on 2017/3/26.
  */
@@ -49,11 +54,12 @@ public class AllRequestUtil {
 
     /**
      * 用户登录
+     *
      * @param context
      * @param params
      */
-    public static void UserLogin(final Context context, RequestParams params) {
-        CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.USER_LOGIN_URI, params), new DisposeDataHandle(new DisposeDataListener() {
+    public static Call UserLogin(final Context context, RequestParams params) {
+        Call loginCall = CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.USER_LOGIN_URI, params), new DisposeDataHandle(new DisposeDataListener() {
             @Override
             public void onFinish() {
                 ComFun.hideLoading((Activity) context);
@@ -68,7 +74,7 @@ public class AllRequestUtil {
                 try {
                     JSONObject jsob = (JSONObject) responseObj;
 
-                    if(jsob.has("loginUserInfo")){
+                    if (jsob.has("loginUserInfo")) {
                         String loginUserInfo = jsob.getString("loginUserInfo");
                         data.putString("loginUserInfo", loginUserInfo);
                         String userId = loginUserInfo.split("#&#")[0];
@@ -88,7 +94,7 @@ public class AllRequestUtil {
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userBirthday", userBirthday);
                         SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "userMobel", userMobel);
                         // 打票机相关(终端机参数--关联打票机)
-                        if(jsob.has("loginUserPrintSetAbout")){
+                        if (jsob.has("loginUserPrintSetAbout")) {
                             String loginUserPrintSetAbout = jsob.getString("loginUserPrintSetAbout");
                             String printAreaId = loginUserPrintSetAbout.split("#&#")[0];
                             String printAddress = loginUserPrintSetAbout.split("#&#")[1];
@@ -112,29 +118,31 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                     ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_LOGIN_ERROR_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_LOGIN_ERROR_ERROR) {
                     ComFun.showToast(context, "登录失败，用户名或密码错误", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                     ComFun.showToast(context, "登录失败，请联系管理员", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                     ComFun.showToast(context, "登录超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
             }
         }));
+        return loginCall;
     }
 
     /**
      * 初始化系统基本参数
+     *
      * @param context
      * @param params
      */
-    public static void InitBaseData(final Context context, RequestParams params, final boolean forPollingServiceFlag){
+    public static void InitBaseData(final Context context, RequestParams params, final boolean forPollingServiceFlag) {
         CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.INIT_BASE_DATA_URI, params), new DisposeDataHandle(new DisposeDataListener() {
             @Override
             public void onFinish() {
-                if(forPollingServiceFlag){
+                if (forPollingServiceFlag) {
                     // PollingService,继续执行InitOrderData
                     InitOrderData(context, null);
                 }
@@ -148,9 +156,9 @@ public class AllRequestUtil {
                 try {
                     JSONObject jsob = (JSONObject) responseObj;
 
-                    if(!forPollingServiceFlag){
+                    if (!forPollingServiceFlag) {
                         // 当是启动程序时，并且成功获取到程序基本数据时，清除已经保存的所有的SharedPreferences文件
-                        SharedPreferencesTool.clearShared(context, new String[]{ "BouilliTableInfo", "BouilliMenuInfo" });
+                        SharedPreferencesTool.clearShared(context, new String[]{"BouilliTableInfo", "BouilliMenuInfo"});
                     }
                     data.putString("initBaseDataResult", "true");
                     // 保存基本数据至本地
@@ -158,7 +166,7 @@ public class AllRequestUtil {
                     StringBuilder tableGroupNameSb = new StringBuilder("");
                     StringBuilder tableNumSimpleSb;
                     StringBuilder tableNumSb;
-                    if(jsob.has("groupNameList") && jsob.has("tableInfoMap")){
+                    if (jsob.has("groupNameList") && jsob.has("tableInfoMap")) {
                         JSONArray groupNameList = jsob.getJSONArray("groupNameList");
                         JSONObject tableInfoMap = jsob.getJSONObject("tableInfoMap");
                         StringBuilder tableFullNumSb = new StringBuilder("");
@@ -173,32 +181,32 @@ public class AllRequestUtil {
                                 tableNumSb.append(thisGroupTableNum + ",");// 记录每个餐桌组内的餐桌信息（组代号.餐桌号|餐桌状态|餐桌当前就餐信息id）
                                 tableFullNumSb.append(thisGroupTableNum + ",");// 记录所有餐桌组内的餐桌信息（组代号.餐桌号|餐桌状态|餐桌当前就餐信息id）
                             }
-                            if(ComFun.strNull(tableNumSb.toString())){
+                            if (ComFun.strNull(tableNumSb.toString())) {
                                 SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableInfoSimple" + groupName, tableNumSimpleSb.toString().substring(0, tableNumSimpleSb.toString().length() - 1));
                                 SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableInfo" + groupName, tableNumSb.toString().substring(0, tableNumSb.toString().length() - 1));
-                            }else{
+                            } else {
                                 SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableInfoSimple" + groupName, "");
                                 SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableInfo" + groupName, "");
                             }
                         }
-                        if(ComFun.strNull(tableGroupNameSb.toString())){
+                        if (ComFun.strNull(tableGroupNameSb.toString())) {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableGroupNames", tableGroupNameSb.toString().substring(0, tableGroupNameSb.toString().length() - 1));
-                        }else{
+                        } else {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableGroupNames", "");
                         }
 
-                        if(ComFun.strNull(tableFullNumSb.toString())){
+                        if (ComFun.strNull(tableFullNumSb.toString())) {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableFullInfo", tableFullNumSb.toString().substring(0, tableFullNumSb.toString().length() - 1));
-                        }else{
+                        } else {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableFullInfo", "");
                         }
-                    }else{
+                    } else {
                         // 数据集为空
                         SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableGroupNames", "");
                         SharedPreferencesTool.addOrUpdate(context, "BouilliTableInfo", "tableFullInfo", "");
                     }
                     // 菜单数据
-                    if(jsob.has("menuGroupNameList") && jsob.has("menuInfoMap")){
+                    if (jsob.has("menuGroupNameList") && jsob.has("menuInfoMap")) {
                         JSONArray menuGroupNameList = jsob.getJSONArray("menuGroupNameList");
                         JSONObject menuInfoMap = jsob.getJSONObject("menuInfoMap");
                         StringBuilder menuGroupNamesFullSb = new StringBuilder("");
@@ -211,44 +219,44 @@ public class AllRequestUtil {
                             for (int j = 0; j < menuInfoMap.getJSONArray(groupName.split("#&#")[0]).length(); j++) {
                                 String thisGroupMenuInfo = (String) menuInfoMap.getJSONArray(groupName.split("#&#")[0]).get(j);
                                 // Id&GroupId&MenuName&MenuDes&Price&UseCount
-                                if(!thisGroupMenuInfo.equals("-")){
+                                if (!thisGroupMenuInfo.equals("-")) {
                                     menuAllGroupChildFullSb.append(thisGroupMenuInfo + ",");
                                     menuGroupChildFullSb.append(thisGroupMenuInfo + ",");
                                     SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", thisGroupMenuInfo.split("#&#")[0], thisGroupMenuInfo);
                                 }
                             }
-                            if(ComFun.strNull(menuGroupChildFullSb.toString())){
-                                SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuItemChild"+groupName.split("#&#")[0], menuGroupChildFullSb.toString().substring(0, menuGroupChildFullSb.toString().length() - 1));
+                            if (ComFun.strNull(menuGroupChildFullSb.toString())) {
+                                SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuItemChild" + groupName.split("#&#")[0], menuGroupChildFullSb.toString().substring(0, menuGroupChildFullSb.toString().length() - 1));
                             }
                         }
-                        if(ComFun.strNull(menuGroupNamesFullSb.toString())){
+                        if (ComFun.strNull(menuGroupNamesFullSb.toString())) {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuGroupNames", menuGroupNamesFullSb.toString().substring(0, menuGroupNamesFullSb.toString().length() - 1));
-                        }else{
+                        } else {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuGroupNames", "");
                         }
-                        if(ComFun.strNull(menuAllGroupChildFullSb.toString())){
+                        if (ComFun.strNull(menuAllGroupChildFullSb.toString())) {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuAllItemChild", menuAllGroupChildFullSb.toString().substring(0, menuAllGroupChildFullSb.toString().length() - 1));
-                        }else{
+                        } else {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuAllItemChild", "");
                         }
-                    }else{
+                    } else {
                         // 数据集为空
                         SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "menuGroupNames", "");
                     }
                     // 常用菜品数据
-                    if(jsob.has("ofenUseMenuInfoList")){
+                    if (jsob.has("ofenUseMenuInfoList")) {
                         JSONArray ofenUseMenuInfoList = jsob.getJSONArray("ofenUseMenuInfoList");
                         StringBuilder oftenUseMenuSb = new StringBuilder("");
                         for (int i = 0; i < ofenUseMenuInfoList.length(); i++) {
                             oftenUseMenuSb.append(ofenUseMenuInfoList.get(i));
                             oftenUseMenuSb.append(",");
                         }
-                        if(ComFun.strNull(oftenUseMenuSb.toString())){
+                        if (ComFun.strNull(oftenUseMenuSb.toString())) {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "oftenUseMenus", oftenUseMenuSb.toString().substring(0, oftenUseMenuSb.toString().length() - 1));
                         }
                     }
                     // 当前程序版本数据(在程序欢迎页面初始化数据时更改该相关数据)
-                    if(!forPollingServiceFlag) {
+                    if (!forPollingServiceFlag) {
                         if (jsob.has("lastVersionNo") && jsob.has("lastVersionName") && jsob.has("lastVersionContent")) {
                             // 将更新内容存入配置文件BouilliProInfo
                             SharedPreferencesTool.addOrUpdate(context, "BouilliProInfo", "newVersionNo", jsob.getInt("lastVersionNo"));
@@ -259,7 +267,7 @@ public class AllRequestUtil {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                if(!forPollingServiceFlag){
+                if (!forPollingServiceFlag) {
                     msg.what = WelcomeActivity.MSG_INIT_BASE_DATA;
                     msg.setData(data);
                     WelcomeActivity.mHandler.sendMessage(msg);
@@ -268,12 +276,12 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(!forPollingServiceFlag){
-                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (!forPollingServiceFlag) {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                         ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                         ComFun.showToast(context, "初始化数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                         ComFun.showToast(context, "初始化数据超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
 
@@ -291,6 +299,7 @@ public class AllRequestUtil {
 
     /**
      * 初始化订单数据
+     *
      * @param context
      * @param params
      */
@@ -299,12 +308,12 @@ public class AllRequestUtil {
         String userPermission = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userPermission");
         String hasExitLast = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "hasExitLast");
         boolean forPrintFlag;
-        if(ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 3 && ComFun.strNull(hasExitLast) && hasExitLast.equals("false")){
+        if (ComFun.strNull(userPermission) && Integer.parseInt(userPermission) == 3 && ComFun.strNull(hasExitLast) && hasExitLast.equals("false")) {
             forPrintFlag = true;
             params = new RequestParams();
             String userId = SharedPreferencesTool.getFromShared(context, "BouilliProInfo", "userId");
             params.put("forPrintServiceUserId", userId);
-        }else{
+        } else {
             forPrintFlag = false;
         }
         final boolean forPrintServiceFlag = forPrintFlag;
@@ -324,7 +333,7 @@ public class AllRequestUtil {
                     JSONObject jsob = (JSONObject) responseObj;
 
                     // 保存订单数据至本地
-                    if(jsob.has("orderRecordList")){
+                    if (jsob.has("orderRecordList")) {
                         JSONArray orderRecordList = jsob.getJSONArray("orderRecordList");
                         StringBuilder orderRecordFullSb = new StringBuilder("");
                         for (int i = 0; i < orderRecordList.length(); i++) {
@@ -333,12 +342,12 @@ public class AllRequestUtil {
                             orderRecordFullSb.append(",");
                         }
                         // 发送流水信息页面更新广播
-                        if(ComFun.strNull(orderRecordFullSb.toString())){
+                        if (ComFun.strNull(orderRecordFullSb.toString())) {
                             Intent intentRecord = new Intent();
                             intentRecord.putExtra("orderRecordFull", orderRecordFullSb.toString().substring(0, orderRecordFullSb.toString().length() - 1));
                             intentRecord.setAction(OrderRecordActivity.MSG_REFDATA);
                             context.sendBroadcast(intentRecord);
-                        }else{// 发送空数据广播
+                        } else {// 发送空数据广播
                             Intent intentRecord = new Intent();
                             intentRecord.putExtra("orderRecordFull", "");
                             intentRecord.setAction(OrderRecordActivity.MSG_REFDATA);
@@ -347,40 +356,40 @@ public class AllRequestUtil {
                     }
                     // 打包、外卖数据
                     StringBuilder wmRefSb = new StringBuilder("");
-                    if(jsob.has("wmList")){
+                    if (jsob.has("wmList")) {
                         JSONArray wmList = jsob.getJSONArray("wmList");
                         StringBuilder wmInfoSb = new StringBuilder("");
                         for (int i = 0; i < wmList.length(); i++) {
                             String wmDetailInfo = (String) wmList.get(i);
                             wmInfoSb.append(wmDetailInfo);
                             wmRefSb.append("No." + ((wmDetailInfo.split("#&&#")[0]).split("#&#")[1].split(">>")[1]).substring(2, ((wmDetailInfo.split("#&&#")[0]).split("#&#")[1].split(">>")[1]).length()));
-                            if(i < wmList.length()){
+                            if (i < wmList.length()) {
                                 wmInfoSb.append("#@#,#");
                                 wmRefSb.append("#@#,#");
                             }
                         }
-                        if(ComFun.strNull(wmInfoSb.toString())){
+                        if (ComFun.strNull(wmInfoSb.toString())) {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "wmInfos", wmInfoSb.toString());
                         }
                     }
                     StringBuilder dbRefSb = new StringBuilder("");
-                    if(jsob.has("dbList")){
+                    if (jsob.has("dbList")) {
                         JSONArray dbList = jsob.getJSONArray("dbList");
                         StringBuilder dbInfoSb = new StringBuilder("");
                         for (int i = 0; i < dbList.length(); i++) {
                             String dbDetailInfo = (String) dbList.get(i);
                             dbInfoSb.append(dbDetailInfo);
                             dbRefSb.append("No." + ((dbDetailInfo.split("#&&#")[0]).split("#&#")[1].split(">>")[1]).substring(2, ((dbDetailInfo.split("#&&#")[0]).split("#&#")[1].split(">>")[1]).length()));
-                            if(i < dbList.length()){
+                            if (i < dbList.length()) {
                                 dbInfoSb.append("#@#,#");
                                 dbRefSb.append("#@#,#");
                             }
                         }
-                        if(ComFun.strNull(dbInfoSb.toString())){
+                        if (ComFun.strNull(dbInfoSb.toString())) {
                             SharedPreferencesTool.addOrUpdate(context, "BouilliMenuInfo", "dbInfos", dbInfoSb.toString());
                         }
                     }
-                    if(jsob.has("wmList") || jsob.has("dbList")){
+                    if (jsob.has("wmList") || jsob.has("dbList")) {
                         // 发送主页面更新广播
                         Intent intent = new Intent();
                         intent.putExtra("wmDataRef", wmRefSb.toString());
@@ -394,8 +403,8 @@ public class AllRequestUtil {
                     intent.setAction(MainFragment.MSG_REFDATA);
                     context.sendBroadcast(intent);
                     // 获取打票机数据（根据登录用户及其设置的相关打印菜品类型）
-                    if(forPrintServiceFlag){
-                        if(jsob.has("orderPrintList")){
+                    if (forPrintServiceFlag) {
+                        if (jsob.has("orderPrintList")) {
                             JSONArray orderPrintList = jsob.getJSONArray("orderPrintList");
                             for (int i = 0; i < orderPrintList.length(); i++) {
                                 String orderPrint = (String) orderPrintList.get(i);// 订单流水信息
@@ -403,11 +412,11 @@ public class AllRequestUtil {
                                 SQLiteOpenHelper sqlite = new DBHelper(context);
                                 SQLiteDatabase db = sqlite.getWritableDatabase();
                                 db.execSQL("insert into printinfo(record_id, table_id, table_no, print_context, current_state, create_date, create_user, order_num, print_date, print_count, out_user_name, out_user_phone, out_user_address, tip_count) " +
-                                        "values('"+ orderPrint.split("#&#")[0] +"', '"+ orderPrint.split("#&#")[1] +"', '"+ orderPrint.split("#&#")[2] +"', '"+ orderPrint.split("#&#")[3] +"', "+ Integer.valueOf(orderPrint.split("#&#")[4]) +", '"+ orderPrint.split("#&#")[5] +"', '"+ orderPrint.split("#&#")[8] +"', '"+ orderPrint.split("#&#")[9] +"', '"+ orderPrint.split("#&#")[6] +"', "+ Integer.valueOf(orderPrint.split("#&#")[7]) +", '"+ orderPrint.split("#&#")[10] +"', '"+ orderPrint.split("#&#")[11] +"', '"+ orderPrint.split("#&#")[12] +"', 0)");
+                                        "values('" + orderPrint.split("#&#")[0] + "', '" + orderPrint.split("#&#")[1] + "', '" + orderPrint.split("#&#")[2] + "', '" + orderPrint.split("#&#")[3] + "', " + Integer.valueOf(orderPrint.split("#&#")[4]) + ", '" + orderPrint.split("#&#")[5] + "', '" + orderPrint.split("#&#")[8] + "', '" + orderPrint.split("#&#")[9] + "', '" + orderPrint.split("#&#")[6] + "', " + Integer.valueOf(orderPrint.split("#&#")[7]) + ", '" + orderPrint.split("#&#")[10] + "', '" + orderPrint.split("#&#")[11] + "', '" + orderPrint.split("#&#")[12] + "', 0)");
                                 db.close();
                             }
                         }
-                        if(jsob.has("accountBillList")){
+                        if (jsob.has("accountBillList")) {
                             JSONArray accountBillList = jsob.getJSONArray("accountBillList");
                             for (int i = 0; i < accountBillList.length(); i++) {
                                 String accountBillPrint = (String) accountBillList.get(i);// 小票信息
@@ -415,7 +424,7 @@ public class AllRequestUtil {
                                 SQLiteOpenHelper sqlite = new DBHelper(context);
                                 SQLiteDatabase db = sqlite.getWritableDatabase();
                                 db.execSQL("insert into billinfo(bill_id, table_no, print_context, order_num, order_waiter, order_date, out_user_name, out_user_phone, out_user_address, current_state, tip_count) " +
-                                        "values('"+ accountBillPrint.split("#&#")[0] +"', '"+ accountBillPrint.split("#&#")[1] +"', '"+ accountBillPrint.split("#&#")[2] +"', '"+ accountBillPrint.split("#&#")[3] +"', '"+ accountBillPrint.split("#&#")[4] +"', '"+ accountBillPrint.split("#&#")[5] +"', '"+ accountBillPrint.split("#&#")[6] +"', '"+ accountBillPrint.split("#&#")[7] +"', '"+ accountBillPrint.split("#&#")[8] +"', 0, 0)");
+                                        "values('" + accountBillPrint.split("#&#")[0] + "', '" + accountBillPrint.split("#&#")[1] + "', '" + accountBillPrint.split("#&#")[2] + "', '" + accountBillPrint.split("#&#")[3] + "', '" + accountBillPrint.split("#&#")[4] + "', '" + accountBillPrint.split("#&#")[5] + "', '" + accountBillPrint.split("#&#")[6] + "', '" + accountBillPrint.split("#&#")[7] + "', '" + accountBillPrint.split("#&#")[8] + "', 0, 0)");
                                 db.close();
                             }
                         }
@@ -434,6 +443,7 @@ public class AllRequestUtil {
 
     /**
      * 初始化聊天信息数据
+     *
      * @param context
      * @param params
      */
@@ -449,12 +459,12 @@ public class AllRequestUtil {
                 try {
                     JSONObject jsob = (JSONObject) responseObj;
 
-                    if(jsob.has("hasNewChat")){
+                    if (jsob.has("hasNewChat")) {
                         String hasNewChat = jsob.getString("hasNewChat");
-                        if(hasNewChat.equals("true")){
+                        if (hasNewChat.equals("true")) {
                             // 有新数据
                             // 保存数据至缓存
-                            if(jsob.has("userId") && jsob.has("chatList")){
+                            if (jsob.has("userId") && jsob.has("chatList")) {
                                 String userId = jsob.getString("userId");
                                 JSONArray chatList = jsob.getJSONArray("chatList");
                                 for (int i = 0; i < chatList.length(); i++) {
@@ -484,6 +494,7 @@ public class AllRequestUtil {
 
     /**
      * 检查程序版本
+     *
      * @param context
      * @param params
      */
@@ -503,7 +514,7 @@ public class AllRequestUtil {
                 try {
                     JSONObject jsob = (JSONObject) responseObj;
 
-                    if(jsob.has("lastVersionNo") && jsob.has("lastVersionName") && jsob.has("lastVersionContent")){
+                    if (jsob.has("lastVersionNo") && jsob.has("lastVersionName") && jsob.has("lastVersionContent")) {
                         data.putInt("lastVersionNo", jsob.getInt("lastVersionNo"));
                         data.putString("lastVersionName", jsob.getString("lastVersionName"));
                         data.putString("lastVersionContent", jsob.getString("lastVersionContent"));
@@ -521,13 +532,13 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                     ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                     ComFun.showToast(context, "检查更新失败，请联系管理员", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                     ComFun.showToast(context, "检查更新超时，请稍后重试", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_LAST_VERSION_IS_NULL){
+                } else if (okHttpE.getEcode() == Constants.HTTP_LAST_VERSION_IS_NULL) {
                     ComFun.showToast(context, "当前已经是最新的版本啦", Toast.LENGTH_SHORT);
                 }
             }
@@ -535,7 +546,76 @@ public class AllRequestUtil {
     }
 
     /**
+     * 添加新的餐桌组及餐桌号
+     */
+    public static Call addNewTableGroupTableNums(final Context context, final RequestParams params, final boolean addNewFlag) {
+        // 模拟保存本地数据库
+        TableGroupDao tableGroupDao = MyApplication.getDaoSession().getTableGroupDao();
+        //创建对象，并将对象添加到数据库
+        TableGroup customer = new TableGroup();
+        customer.setTableGroupName(params.get("groupName"));
+        tableGroupDao.insert(customer);
+
+        Call tableEditCall = CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.ADD_NEW_TABLE_URI, params), new DisposeDataHandle(new DisposeDataListener() {
+            @Override
+            public void onFinish() {
+
+            }
+
+            @Override
+            public void onSuccess(Object responseObj) {
+                // 发送Handler通知页面更新UI
+                Message msg = new Message();
+                Bundle data = new Bundle();
+                if (addNewFlag) {
+                    msg.what = TableEditActivity.MSG_ADD_TABLE;
+                } else {
+                    msg.what = TableEditActivity.MSG_ADD_TABLE_TO_COM;
+                }
+
+                JSONObject jsob = (JSONObject) responseObj;
+
+                data.putString("groupName", params.get("groupName"));
+                data.putString("groupNo", params.get("groupNo"));
+                data.putString("startNum", params.get("startNum"));
+                data.putString("endNum", params.get("endNum"));
+                data.putString("tableNums", params.get("tableNums"));
+                if (jsob.equals(Constants.HTTP_REQUEST_SUCCESS_CODE)) {
+                    data.putString("addNewTableResult", "true");
+                } else if (jsob.equals(Constants.REQUEST_CODE_HAS)) {
+                    data.putString("addNewTableResult", "has_table_group");
+                }
+                msg.setData(data);
+                TableEditActivity.mHandler.sendMessage(msg);
+            }
+
+            @Override
+            public void onFailure(OkHttpException okHttpE) {
+                if (addNewFlag) {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
+                        ComFun.showToast(context, "添加新餐桌失败，请联系管理员", Toast.LENGTH_SHORT);
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
+                        ComFun.showToast(context, "添加新餐桌超时，请稍后重试", Toast.LENGTH_SHORT);
+                    }
+                } else {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
+                        ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
+                        ComFun.showToast(context, "在组【" + params.get("groupName") + "】中补充餐桌失败，请联系管理员", Toast.LENGTH_SHORT);
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
+                        ComFun.showToast(context, "在组【" + params.get("groupName") + "】中补充餐桌超时，请稍后重试", Toast.LENGTH_SHORT);
+                    }
+                }
+            }
+        }));
+        return tableEditCall;
+    }
+
+    /**
      * 初始化营业额统计分析报表数据
+     *
      * @param context
      * @param params
      */
@@ -556,7 +636,7 @@ public class AllRequestUtil {
                     JSONObject jsob = (JSONObject) responseObj;
 
                     data.putString("initMonthTurnoverResult", "true");
-                    if(jsob.has("dataJson")){
+                    if (jsob.has("dataJson")) {
                         data.putString("dataJson", jsob.getString("dataJson"));
                     }
                 } catch (JSONException e) {
@@ -568,11 +648,11 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                     ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                     ComFun.showToast(context, "初始化月报表数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                     ComFun.showToast(context, "初始化月报表数据超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
             }
@@ -581,6 +661,7 @@ public class AllRequestUtil {
 
     /**
      * 订单页面 获取打印机信息（结账打印小票时 使用）
+     *
      * @param context
      * @param params
      */
@@ -596,25 +677,25 @@ public class AllRequestUtil {
                 // 发送Handler通知页面更新UI
                 Message msg = new Message();
                 Bundle data = new Bundle();
-                if(accountNeedFlag){
+                if (accountNeedFlag) {
                     msg.what = EditOrderActivity.MSG_GET_PRINT_INFO_ACCOUNT_NEED;
-                }else{
+                } else {
                     msg.what = PrintAreaActivity.MSG_INIT_PRINT;
                 }
                 try {
                     JSONObject jsob = (JSONObject) responseObj;
 
-                    if(jsob.has("printList")){
+                    if (jsob.has("printList")) {
                         JSONArray printList = jsob.getJSONArray("printList");
                         StringBuilder printInfoSb = new StringBuilder("");
                         for (int i = 0; i < printList.length(); i++) {
                             String printInfo = (String) printList.get(i);
-                            if(ComFun.strNull(printInfo)){
+                            if (ComFun.strNull(printInfo)) {
                                 printInfoSb.append(printInfo);
                                 printInfoSb.append(",");
                             }
                         }
-                        if(ComFun.strNull(printInfoSb.toString())){
+                        if (ComFun.strNull(printInfoSb.toString())) {
                             data.putString("AllPrintsInfo", printInfoSb.toString().substring(0, printInfoSb.toString().length() - 1));
                         }
                     }
@@ -622,21 +703,21 @@ public class AllRequestUtil {
                     e.printStackTrace();
                 }
                 msg.setData(data);
-                if(accountNeedFlag){
+                if (accountNeedFlag) {
                     EditOrderActivity.mHandler.sendMessage(msg);
-                }else{
+                } else {
                     PrintAreaActivity.mHandler.sendMessage(msg);
                 }
             }
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(!accountNeedFlag){
-                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (!accountNeedFlag) {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                         ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                         ComFun.showToast(context, "初始化打票机数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                         ComFun.showToast(context, "初始化打票机数据超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                 }
@@ -646,12 +727,13 @@ public class AllRequestUtil {
 
     /**
      * 根据餐桌号获取该餐桌就餐信息数据
+     *
      * @param context
      * @param params
-     * @param seeFlag 标记是非员工获取点餐信息（不进入后台）
+     * @param seeFlag       标记是非员工获取点餐信息（不进入后台）
      * @param seeFlagForOut 标记是非员工获取点餐信息/外卖情况（不进入后台）
      * @param tableOrderId
-     * @param tableNum seeFlag为true时使用（不进入后台）
+     * @param tableNum      seeFlag为true时使用（不进入后台）
      */
     public static void GetMenuInThisTable(final Context context, RequestParams params, final boolean seeFlag, final boolean seeFlagForOut, final String tableOrderId, final String tableNum) {
         CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.GET_TABLE_ORDER_INFO_URI, params), new DisposeDataHandle(new DisposeDataListener() {
@@ -669,37 +751,37 @@ public class AllRequestUtil {
                     JSONObject jsob = (JSONObject) responseObj;
 
                     StringBuilder orderInfoDetailSb = new StringBuilder("");
-                    if(jsob.has("orderInfoDetailAllMap")){
+                    if (jsob.has("orderInfoDetailAllMap")) {
                         JSONObject orderInfoDetailAllMap = jsob.getJSONObject("orderInfoDetailAllMap");
                         String[] tableOrderIdArr = tableOrderId.split("#");
                         for (int i = 0; i < tableOrderIdArr.length; i++) {
                             String tableOrderId = tableOrderIdArr[i];
-                            for(int j = 0; j < orderInfoDetailAllMap.getJSONArray(tableOrderId).length(); j++){
+                            for (int j = 0; j < orderInfoDetailAllMap.getJSONArray(tableOrderId).length(); j++) {
                                 orderInfoDetailSb.append(orderInfoDetailAllMap.getJSONArray(tableOrderId).get(j) + ",");
                             }
-                            if(ComFun.strNull(orderInfoDetailSb.toString())){
+                            if (ComFun.strNull(orderInfoDetailSb.toString())) {
                                 orderInfoDetailSb = new StringBuilder(orderInfoDetailSb.toString().substring(0, orderInfoDetailSb.toString().length() - 1));
                             }
                             orderInfoDetailSb.append("||#|#|#||");
                         }
-                        if(ComFun.strNull(orderInfoDetailSb.toString())){
+                        if (ComFun.strNull(orderInfoDetailSb.toString())) {
                             data.putString("orderInfoDetails", orderInfoDetailSb.toString().substring(0, orderInfoDetailSb.toString().length() - "||#|#|#||".length()));
                         }
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                if(!seeFlag){
+                if (!seeFlag) {
                     msg.what = EditOrderActivity.MSG_GET_TABLE_ORDER_INFO;
                     msg.setData(data);
                     EditOrderActivity.mHandler.sendMessage(msg);
-                }else{
-                    if(seeFlagForOut){
+                } else {
+                    if (seeFlagForOut) {
                         msg.what = OutOrderActivity.MSG_SEE_TABLE_INFO;
                         data.putString("tableNum", tableNum);
                         msg.setData(data);
                         OutOrderActivity.mHandler.sendMessage(msg);
-                    }else{
+                    } else {
                         msg.what = MainActivity.MSG_SEE_TABLE_INFO;
                         data.putString("tableNum", tableNum);
                         msg.setData(data);
@@ -710,20 +792,20 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(!seeFlag){
-                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (!seeFlag) {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                         ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                         ComFun.showToast(context, "初始化餐桌数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                         ComFun.showToast(context, "初始化餐桌数据超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
-                }else{
-                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                } else {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                         ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                         ComFun.showToast(context, "获取餐桌信息失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                         ComFun.showToast(context, "获取餐桌信息超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                 }
@@ -733,6 +815,7 @@ public class AllRequestUtil {
 
     /**
      * 结账
+     *
      * @param context
      * @param params
      * @param tableNo
@@ -764,11 +847,11 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                     ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                     ComFun.showToast(context, "结账操作失败，请联系管理员", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                     ComFun.showToast(context, "结账操作超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
             }
@@ -777,6 +860,7 @@ public class AllRequestUtil {
 
     /**
      * 提交餐桌点餐数据
+     *
      * @param context
      * @param params
      */
@@ -811,11 +895,11 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                     ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                     ComFun.showToast(context, "提交数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                     ComFun.showToast(context, "提交数据超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
             }
@@ -824,6 +908,7 @@ public class AllRequestUtil {
 
     /**
      * 删除菜品/菜品组
+     *
      * @param context
      * @param params
      * @param deleteType
@@ -832,7 +917,7 @@ public class AllRequestUtil {
      * @param menuInfoNameFDel
      */
     public static void DeleteMenu(final Context context, RequestParams params, final String deleteType, final List<String> deleteSelectMenuGroupIdList,
-                final String menuInfoId, final String menuInfoNameFDel) {
+                                  final String menuInfoId, final String menuInfoNameFDel) {
         CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.DELETE_MENU_URI, params), new DisposeDataHandle(new DisposeDataListener() {
             @Override
             public void onFinish() {
@@ -850,13 +935,13 @@ public class AllRequestUtil {
 
                 data.putString("deleteType", deleteType);
                 StringBuilder deleteMenuGroupIds = new StringBuilder("");
-                if(ComFun.strNull(deleteSelectMenuGroupIdList) && deleteSelectMenuGroupIdList.size() > 0){
-                    for(String s : deleteSelectMenuGroupIdList){
+                if (ComFun.strNull(deleteSelectMenuGroupIdList) && deleteSelectMenuGroupIdList.size() > 0) {
+                    for (String s : deleteSelectMenuGroupIdList) {
                         deleteMenuGroupIds.append(s);
                         deleteMenuGroupIds.append(",");
                     }
                 }
-                if(ComFun.strNull(deleteMenuGroupIds.toString())){
+                if (ComFun.strNull(deleteMenuGroupIds.toString())) {
                     data.putString("menuGroupIds", deleteMenuGroupIds.toString().substring(0, deleteMenuGroupIds.toString().length() - 1));
                 }
                 data.putString("menuInfoId", menuInfoId);
@@ -868,20 +953,20 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(deleteType.equals("group")){
-                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (deleteType.equals("group")) {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                         ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                         ComFun.showToast(context, "删除菜品组失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                         ComFun.showToast(context, "删除菜品组超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
-                }else{
-                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                } else {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                         ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                         ComFun.showToast(context, "删除菜品失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                         ComFun.showToast(context, "删除菜品超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                 }
@@ -891,6 +976,7 @@ public class AllRequestUtil {
 
     /**
      * 更新菜品信息
+     *
      * @param context
      * @param params
      * @param menuId
@@ -930,11 +1016,11 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                     ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                     ComFun.showToast(context, "修改菜品失败，请联系管理员", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                     ComFun.showToast(context, "修改菜品超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
             }
@@ -943,6 +1029,7 @@ public class AllRequestUtil {
 
     /**
      * 移动菜品至新组
+     *
      * @param context
      * @param params
      * @param moveMenuName
@@ -980,11 +1067,11 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                     ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                     ComFun.showToast(context, "移动菜品失败，请联系管理员", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                     ComFun.showToast(context, "移动菜品超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
             }
@@ -993,6 +1080,7 @@ public class AllRequestUtil {
 
     /**
      * 添加新菜品/菜品组
+     *
      * @param context
      * @param params
      * @param addType
@@ -1020,7 +1108,7 @@ public class AllRequestUtil {
                 try {
                     JSONObject jsob = (JSONObject) responseObj;
 
-                    if(jsob.has("otherData")){
+                    if (jsob.has("otherData")) {
                         String otherData = jsob.getString("otherData");
                         data.putString("otherData", otherData);
                     }
@@ -1039,22 +1127,22 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(addType.equals("group")){
-                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (addType.equals("group")) {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                         ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                         ComFun.showToast(context, "添加新菜品组失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                         ComFun.showToast(context, "添加新菜品组超时，请稍后重试", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_HAS_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_HAS_ERROR) {
                         ComFun.showToast(context, "组【" + groupName + "已经存在，请重新添加", Toast.LENGTH_SHORT);
                     }
-                }else{
-                    if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                } else {
+                    if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                         ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                         ComFun.showToast(context, "添加新菜品失败，请联系管理员", Toast.LENGTH_SHORT);
-                    }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                    } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                         ComFun.showToast(context, "添加新菜品超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
                 }
@@ -1082,10 +1170,10 @@ public class AllRequestUtil {
                 try {
                     JSONObject jsob = (JSONObject) responseObj;
 
-                    if(jsob.has("weakUserDataJson")){
+                    if (jsob.has("weakUserDataJson")) {
                         data.putString("weakUserDataJson", jsob.getString("weakUserDataJson"));
                     }
-                    if(jsob.has("monthUserDataJson")){
+                    if (jsob.has("monthUserDataJson")) {
                         data.putString("monthUserDataJson", jsob.getString("monthUserDataJson"));
                     }
                 } catch (JSONException e) {
@@ -1097,11 +1185,11 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                     ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                     ComFun.showToast(context, "初始化员工个人业绩数据失败，请联系管理员", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                     ComFun.showToast(context, "初始化员工个人业绩数据超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
             }
@@ -1128,16 +1216,16 @@ public class AllRequestUtil {
                 try {
                     JSONObject jsob = (JSONObject) responseObj;
 
-                    if(jsob.has("userName")){
+                    if (jsob.has("userName")) {
                         data.putString("userName", jsob.getString("userName"));
                     }
-                    if(jsob.has("sendDateTime")){
+                    if (jsob.has("sendDateTime")) {
                         data.putString("sendDateTime", jsob.getString("sendDateTime"));
                     }
-                    if(jsob.has("sendMsgContent")){
+                    if (jsob.has("sendMsgContent")) {
                         data.putString("sendMsgContent", jsob.getString("sendMsgContent"));
                     }
-                    if(jsob.has("sendingRandomId")){
+                    if (jsob.has("sendingRandomId")) {
                         data.putString("sendingRandomId", jsob.getString("sendingRandomId"));
                     }
                 } catch (JSONException e) {
@@ -1149,11 +1237,11 @@ public class AllRequestUtil {
 
             @Override
             public void onFailure(OkHttpException okHttpE) {
-                if(okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR){
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
                     ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
                     ComFun.showToast(context, "发送聊天消息失败，点击重新发送", Toast.LENGTH_SHORT);
-                }else if(okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR){
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                     ComFun.showToast(context, "发送聊天消息超时，点击重新发送", Toast.LENGTH_SHORT);
                 }
                 // 发送消息发送失败广播

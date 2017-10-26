@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Set;
@@ -60,9 +61,12 @@ public class CommonJsonCallback implements Callback {
             public void run() {
                 mListener.onFinish();
                 if(ioexception instanceof SocketTimeoutException){
-                    L.d("请求超时");
+                    L.d("数据请求超时");
                     // 返回数据超时
                     mListener.onFailure(new OkHttpException(Constants.HTTP_OUT_TIME_ERROR, "返回数据超时"));
+                }else if(ioexception instanceof SocketException && ioexception.getMessage().equals("Socket closed")){
+                    L.d("数据请求取消");
+                    mListener.onFailure(new OkHttpException(Constants.HTTP_REQUEST_CANCEL, "数据请求取消"));
                 }else{
                     L.d("请求异常：" + ioexception.getMessage());
                     mListener.onFailure(new OkHttpException(Constants.HTTP_NETWORK_ERROR, ioexception));

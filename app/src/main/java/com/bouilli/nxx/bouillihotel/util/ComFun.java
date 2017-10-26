@@ -3,6 +3,7 @@ package com.bouilli.nxx.bouillihotel.util;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -33,6 +34,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import okhttp3.Call;
 
 /**
  * Created by 18230 on 2016/10/30.
@@ -222,6 +225,7 @@ public class ComFun {
      * 显示加载框
      * @param activity
      * @param loadingTipValue
+     * @Deprecated
      */
     public static AlertDialog loadingDialog = null;
     public static void showLoading(Activity activity, String loadingTipValue){
@@ -247,8 +251,21 @@ public class ComFun {
      * @param activity
      * @param loadingTipValue
      */
-    public static AlertDialog showLoading(Activity activity, String loadingTipValue, boolean cancelable){
+    public static AlertDialogWrap showLoading(final Activity activity, String loadingTipValue, final boolean cancelable, final String... params){
+        final AlertDialogWrap alertDialogWrap = new AlertDialogWrap();
         loadingDialog = new AlertDialog.Builder(activity, R.style.MyDialogStyleBottom).setCancelable(cancelable).create();
+        loadingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                if(strNull(params) && params.length > 0) {
+                    if (cancelable && alertDialogWrap.getHttpCall() != null) {
+                        Call getNewVersionCall = alertDialogWrap.getHttpCall();
+                        getNewVersionCall.cancel();
+                        showToast(activity, params[0], Toast.LENGTH_SHORT);
+                    }
+                }
+            }
+        });
         loadingDialog.show();
         Window win = loadingDialog.getWindow();
         View loadingView = activity.getLayoutInflater().inflate(R.layout.loading_dialog, null);
@@ -263,7 +280,8 @@ public class ComFun {
                 loadingTip.setText(loadingTipValue);
             }
         }
-        return loadingDialog;
+        alertDialogWrap.setLoadingDialog(loadingDialog);
+        return alertDialogWrap;
     }
 
     /**
@@ -271,8 +289,21 @@ public class ComFun {
      * @param activity
      * @param loadingTipValue
      */
-    public static void showLoading2(Activity activity, String loadingTipValue, boolean cancelable){
+    public static AlertDialogWrap showLoading2(final Activity activity, String loadingTipValue, final boolean cancelable, final String... params){
+        final AlertDialogWrap alertDialogWrap = new AlertDialogWrap();
         loadingDialog = new AlertDialog.Builder(activity, R.style.MyDialogStyleBottom).setCancelable(cancelable).create();
+        loadingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                if(strNull(params) && params.length > 0) {
+                    if (cancelable && alertDialogWrap.getHttpCall() != null) {
+                        Call getNewVersionCall = alertDialogWrap.getHttpCall();
+                        getNewVersionCall.cancel();
+                        showToast(activity, params[0], Toast.LENGTH_SHORT);
+                    }
+                }
+            }
+        });
         loadingDialog.show();
         Window win = loadingDialog.getWindow();
         View loadingView = activity.getLayoutInflater().inflate(R.layout.loading_dialog_movie, null);
@@ -287,6 +318,32 @@ public class ComFun {
             }else{
                 loadingTip.setVisibility(View.GONE);
             }
+        }
+        alertDialogWrap.setLoadingDialog(loadingDialog);
+        return alertDialogWrap;
+    }
+
+    public static class AlertDialogWrap {
+        private AlertDialog loadingDialog = null;
+        private Call httpCall = null;
+
+        public AlertDialogWrap() {
+        }
+
+        public AlertDialog getLoadingDialog() {
+            return loadingDialog;
+        }
+
+        public void setLoadingDialog(AlertDialog loadingDialog) {
+            this.loadingDialog = loadingDialog;
+        }
+
+        public Call getHttpCall() {
+            return httpCall;
+        }
+
+        public void setHttpCall(Call httpCall) {
+            this.httpCall = httpCall;
         }
     }
 

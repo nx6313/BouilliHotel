@@ -3,108 +3,161 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#e2c4a8"
-    android:paddingBottom="10dp"
     android:gravity="center|top"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingBottom="10dp">
 
-    <EditText
-        android:id="@+id/etTableGroupName"
+    <com.bouilli.nxx.bouillihotel.customview.ElasticScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:gravity="center"
-        android:textSize="15sp"
-        android:hint="输入组名称（创建一个新的组来管理桌号）"/>
-
-    <EditText
-        android:id="@+id/etTableGroupNo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:gravity="center"
-        android:textSize="15sp"
-        android:layout_marginTop="-6dp"
-        android:hint="输入组代号（和桌号用.连接一起显示，例如：Z.1）"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:gravity="center|top"
-        android:layout_marginTop="-6dp"
-        android:orientation="horizontal">
+        android:overScrollMode="never"
+        android:scrollbarSize="2dp"
+        android:scrollbarThumbVertical="@color/colorScroll"
+        android:scrollbars="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:text="该组桌号从"/>
-
-        <EditText
-            android:id="@+id/etTableNumStart"
-            android:layout_width="80dp"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:gravity="center"
-            android:textSize="15sp"
-            android:maxLines="1"
-            android:hint=""/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:text="到"/>
-
-        <EditText
-            android:id="@+id/etTableNumEnd"
-            android:layout_width="80dp"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:gravity="center"
-            android:textSize="15sp"
-            android:maxLines="1"
-            android:hint=""/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:text="（数字）；"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center|top"
-        android:layout_marginTop="-6dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:text="或"/>
-
-        <EditText
-            android:id="@+id/etTableNums"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number|text"
-            android:gravity="center"
-            android:textSize="15sp"
-            android:maxLines="1"
-            android:hint="当桌号顺序比较乱时，填写这里，用“-”分割桌号"/>
-    </LinearLayout>
+            android:gravity="center|top"
+            android:orientation="vertical"
+            android:paddingBottom="60dp"
+            android:paddingTop="5dp">
 
-    <Button
-        android:id="@+id/btn_save_table_group"
-        android:background="@drawable/edit_table_btn_style"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:text="保存"
-        android:textStyle="bold" />
+            <EditText
+                android:id="@+id/etTableGroupName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:hint="输入组名称（创建一个新的组来管理桌号）"
+                android:maxLines="1"
+                android:textSize="15sp" />
 
+            <EditText
+                android:id="@+id/etTableGroupNo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-2dp"
+                android:gravity="center"
+                android:hint="输入组代号（和桌号用.连接一起显示，例如：Z.1）"
+                android:maxLines="1"
+                android:textSize="15sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center|top"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="该组桌号从"
+                    android:textColor="@color/itemFocus"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/etTableNumStart"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:hint=""
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="到"
+                    android:textColor="@color/itemFocus"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/etTableNumEnd"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:hint=""
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="（数字）；"
+                    android:textColor="@color/itemFocus"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="16dp"
+                android:background="@color/selectMenuItemNormal2" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center|top"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="或 该组包含的餐桌编号有？"
+                    android:textColor="@color/itemFocus"
+                    android:textSize="16sp" />
+
+                <com.bouilli.nxx.bouillihotel.customview.FlowLayout
+                    android:id="@+id/tableNumsWrap"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp">
+
+                    <EditText
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:maxLines="1"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:background="@drawable/table_num_edit_line_default"
+                        android:textSize="15sp" />
+
+                    <EditText
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:maxLines="1"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:background="@drawable/table_num_edit_line_default"
+                        android:textSize="15sp" />
+                </com.bouilli.nxx.bouillihotel.customview.FlowLayout>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_save_table_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/edit_table_btn_style"
+                android:text="保存"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </com.bouilli.nxx.bouillihotel.customview.ElasticScrollView>
 </LinearLayout>

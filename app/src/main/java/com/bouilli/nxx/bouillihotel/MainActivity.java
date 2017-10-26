@@ -935,7 +935,7 @@ public class MainActivity extends AppCompatActivity
                     if(pushConnectionType.equals("loading")){
                         if(pushConnectionDialog == null || !pushConnectionDialog.isShowing()){
                             setChatOnlineState(false);
-                            pushConnectionDialog = ComFun.showLoading(MainActivity.this, "正在连接推送服务...", true);
+                            pushConnectionDialog = ComFun.showLoading(MainActivity.this, "正在连接推送服务...", true).getLoadingDialog();
                         }
                     }else if(pushConnectionType.equals("connectionSuccess")){
                         if(pushConnectionDialog != null && pushConnectionDialog.isShowing()){
