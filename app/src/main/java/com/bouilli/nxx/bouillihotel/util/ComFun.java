@@ -29,11 +29,16 @@ import com.ant.liao.GifView;
 import com.bouilli.nxx.bouillihotel.R;
 import com.bouilli.nxx.bouillihotel.customview.GifViewByMovie;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 
@@ -92,8 +97,21 @@ public class ComFun {
      * @param str
      * @return
      */
-    public static boolean strNull(Object str) {
+    public static boolean strNull(Object str, boolean... flags) {
         if (str != null && str != "" && !str.equals("")) {
+            if (flags != null && flags.length > 0 && flags[0]) {
+                if (ArrayList.class.isInstance(str)) {
+                    if ((((List<?>) str).size() == 0)) {
+                        return false;
+                    }
+                } else if (HashMap.class.isInstance(str)) {
+                    if ((((Map<?, ?>) str).size() == 0)) {
+                        return false;
+                    }
+                } else if (str.getClass().isArray()) {
+
+                }
+            }
             return true;
         } else {
             return false;

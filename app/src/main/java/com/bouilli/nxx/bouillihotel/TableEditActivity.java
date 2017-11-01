@@ -18,6 +18,7 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextPaint;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -36,6 +37,8 @@ import com.bouilli.nxx.bouillihotel.asyncTask.AddNewTableTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.DeleteTableTask;
 import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.customview.FlowLayout;
+import com.bouilli.nxx.bouillihotel.entity.TableGroup;
+import com.bouilli.nxx.bouillihotel.entity.build.TableGroupDao;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
@@ -114,8 +117,10 @@ public class TableEditActivity extends AppCompatActivity {
     private void initTableView(){
         editTableMainLayout = (LinearLayout) findViewById(R.id.editTableMainLayout);
         editTableMainLayout.removeAllViews();
-        tableGroupNames = SharedPreferencesTool.getFromShared(TableEditActivity.this, "BouilliTableInfo", "tableGroupNames");
-        if(ComFun.strNull(tableGroupNames)){
+        TableGroupDao tableGroupDao = MyApplication.getDaoSession().getTableGroupDao();
+        List<TableGroup> tableGroupList = tableGroupDao.loadAll();
+
+        if(ComFun.strNull(tableGroupList)){
             for(String tableGroupName : tableGroupNames.split(",")){
                 if(ComFun.strNull(tableGroupName)){
                     String thisGroupTableInfo = SharedPreferencesTool.getFromShared(TableEditActivity.this, "BouilliTableInfo", "tableInfoSimple" + tableGroupName);
@@ -247,10 +252,15 @@ public class TableEditActivity extends AppCompatActivity {
                             // 关闭输入法键盘
                             ComFun.closeIME(TableEditActivity.this, etTableGroupName);
                             // 显示加载动画
-                            ComFun.showLoading(TableEditActivity.this, "餐桌数据提交中，请稍后");
+                            ComFun.AlertDialogWrap tableEdit = ComFun.showLoading(TableEditActivity.this, "餐桌数据提交中，请稍后", true, "餐桌数据提交操作已取消");
                             // 异步任务提交数据
-                            new AddNewTableTask(TableEditActivity.this, tableGroupName, thisGroupTableInfoArr[0].split("\\.")[0],
-                                    etTableNumStart.getText().toString(), etTableNumEnd.getText().toString(), getTableNumsItemVals(), false).executeOnExecutor(Executors.newCachedThreadPool());
+                            Map<String, String> paramsMap = new HashMap<>();
+                            paramsMap.put("groupName", etTableGroupName.getText().toString());
+                            paramsMap.put("groupNo", etTableGroupNo.getText().toString());
+                            paramsMap.put("tableNums", getTableNumsItemVals());
+                            paramsMap.put("addType", "comAdd");
+                            Call tableEditCall = AllRequestUtil.addNewTableGroupTableNums(TableEditActivity.this, new RequestParams(paramsMap), false);
+                            tableEdit.setHttpCall(tableEditCall);
                         }
                     }
                 });
@@ -404,6 +414,15 @@ public class TableEditActivity extends AppCompatActivity {
         }
         if(ComFun.strNull(tableNumsItemVals) && tableNumsItemVals != "") {
             tableNumsItemVals = tableNumsItemVals.substring(0, tableNumsItemVals.length() - 1);
+        } else {
+            int tableNumStart = Integer.parseInt(etTableNumStart.getText().toString().trim());
+            int tableNumEnd = Integer.parseInt(etTableNumEnd.getText().toString().trim());
+            for(int t = tableNumStart; t <= tableNumEnd; t++) {
+                tableNumsItemVals += t + "-";
+            }
+            if(ComFun.strNull(tableNumsItemVals) && tableNumsItemVals != "") {
+                tableNumsItemVals = tableNumsItemVals.substring(0, tableNumsItemVals.length() - 1);
+            }
         }
         return tableNumsItemVals;
     }
@@ -508,8 +527,6 @@ public class TableEditActivity extends AppCompatActivity {
                             Map<String, String> paramsMap = new HashMap<>();
                             paramsMap.put("groupName", etTableGroupName.getText().toString());
                             paramsMap.put("groupNo", etTableGroupNo.getText().toString());
-                            paramsMap.put("startNum", etTableNumStart.getText().toString());
-                            paramsMap.put("endNum", etTableNumEnd.getText().toString());
                             paramsMap.put("tableNums", getTableNumsItemVals());
                             paramsMap.put("addType", "newAdd");
                             Call tableEditCall = AllRequestUtil.addNewTableGroupTableNums(TableEditActivity.this, new RequestParams(paramsMap), true);

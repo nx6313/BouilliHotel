@@ -24,9 +24,10 @@ public class TableGroupDao extends AbstractDao<TableGroup, Long> {
      * Can be used for QueryBuilder and for referencing column names.
      */
     public static class Properties {
-        public final static Property Id = new Property(0, long.class, "id", true, "_id");
+        public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property TableGroupName = new Property(1, String.class, "tableGroupName", false, "TABLE_GROUP_NAME");
-        public final static Property TableGroupNo = new Property(2, String.class, "tableGroupNo", false, "TABLE_GROUP_NO");
+        public final static Property TableGroupCode = new Property(2, String.class, "tableGroupCode", false, "TABLE_GROUP_CODE");
+        public final static Property TableGroupNo = new Property(3, String.class, "tableGroupNo", false, "TABLE_GROUP_NO");
     }
 
 
@@ -42,9 +43,10 @@ public class TableGroupDao extends AbstractDao<TableGroup, Long> {
     public static void createTable(Database db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"TABLE_GROUP\" (" + //
-                "\"_id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ," + // 0: id
+                "\"_id\" INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "\"TABLE_GROUP_NAME\" TEXT," + // 1: tableGroupName
-                "\"TABLE_GROUP_NO\" TEXT);"); // 2: tableGroupNo
+                "\"TABLE_GROUP_CODE\" TEXT," + // 2: tableGroupCode
+                "\"TABLE_GROUP_NO\" TEXT);"); // 3: tableGroupNo
     }
 
     /** Drops the underlying database table. */
@@ -56,55 +58,75 @@ public class TableGroupDao extends AbstractDao<TableGroup, Long> {
     @Override
     protected final void bindValues(DatabaseStatement stmt, TableGroup entity) {
         stmt.clearBindings();
-        stmt.bindLong(1, entity.getId());
+ 
+        Long id = entity.getId();
+        if (id != null) {
+            stmt.bindLong(1, id);
+        }
  
         String tableGroupName = entity.getTableGroupName();
         if (tableGroupName != null) {
             stmt.bindString(2, tableGroupName);
         }
  
+        String tableGroupCode = entity.getTableGroupCode();
+        if (tableGroupCode != null) {
+            stmt.bindString(3, tableGroupCode);
+        }
+ 
         String tableGroupNo = entity.getTableGroupNo();
         if (tableGroupNo != null) {
-            stmt.bindString(3, tableGroupNo);
+            stmt.bindString(4, tableGroupNo);
         }
     }
 
     @Override
     protected final void bindValues(SQLiteStatement stmt, TableGroup entity) {
         stmt.clearBindings();
-        stmt.bindLong(1, entity.getId());
+ 
+        Long id = entity.getId();
+        if (id != null) {
+            stmt.bindLong(1, id);
+        }
  
         String tableGroupName = entity.getTableGroupName();
         if (tableGroupName != null) {
             stmt.bindString(2, tableGroupName);
         }
  
+        String tableGroupCode = entity.getTableGroupCode();
+        if (tableGroupCode != null) {
+            stmt.bindString(3, tableGroupCode);
+        }
+ 
         String tableGroupNo = entity.getTableGroupNo();
         if (tableGroupNo != null) {
-            stmt.bindString(3, tableGroupNo);
+            stmt.bindString(4, tableGroupNo);
         }
     }
 
     @Override
     public Long readKey(Cursor cursor, int offset) {
-        return cursor.getLong(offset + 0);
+        return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }    
 
     @Override
     public TableGroup readEntity(Cursor cursor, int offset) {
         TableGroup entity = new TableGroup( //
-            cursor.getLong(offset + 0), // id
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // tableGroupName
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2) // tableGroupNo
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // tableGroupCode
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3) // tableGroupNo
         );
         return entity;
     }
      
     @Override
     public void readEntity(Cursor cursor, TableGroup entity, int offset) {
-        entity.setId(cursor.getLong(offset + 0));
+        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setTableGroupName(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setTableGroupNo(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setTableGroupCode(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setTableGroupNo(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
      }
     
     @Override
@@ -124,7 +146,7 @@ public class TableGroupDao extends AbstractDao<TableGroup, Long> {
 
     @Override
     public boolean hasKey(TableGroup entity) {
-        throw new UnsupportedOperationException("Unsupported for entities with a non-null key");
+        return entity.getId() != null;
     }
 
     @Override

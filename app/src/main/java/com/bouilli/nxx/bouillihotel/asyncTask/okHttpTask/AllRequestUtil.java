@@ -553,7 +553,10 @@ public class AllRequestUtil {
         TableGroupDao tableGroupDao = MyApplication.getDaoSession().getTableGroupDao();
         //创建对象，并将对象添加到数据库
         TableGroup customer = new TableGroup();
+        customer.setId(null);
         customer.setTableGroupName(params.get("groupName"));
+        customer.setTableGroupCode(params.get("groupNo"));
+        customer.setTableGroupNo(params.get("tableNums"));
         tableGroupDao.insert(customer);
 
         Call tableEditCall = CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.ADD_NEW_TABLE_URI, params), new DisposeDataHandle(new DisposeDataListener() {
