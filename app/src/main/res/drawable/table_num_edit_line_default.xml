@@ -11,8 +11,8 @@
     <item android:bottom="2dp">
         <shape android:shape="rectangle">
             <gradient
-                android:endColor="#E2C4A8"
-                android:startColor="#E2C4A8" />
+                android:endColor="#F8F8F8"
+                android:startColor="#F8F8F8" />
         </shape>
     </item>
 

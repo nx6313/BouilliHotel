@@ -79,4 +79,9 @@
         <item name="android:windowBackground">@drawable/main_bg</item>
     </style>
 
+    <style name="PopMenuAnimation">
+        <item name="android:windowEnterAnimation">@anim/popshow</item>
+        <item name="android:windowExitAnimation">@anim/pophide</item>
+    </style>
+
 </resources>

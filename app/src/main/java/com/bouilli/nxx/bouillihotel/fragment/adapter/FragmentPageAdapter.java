@@ -20,6 +20,7 @@ public class FragmentPageAdapter extends FragmentPagerAdapter {
             nullFlag = true;
             this.fragmentCount = 1;
         } else {
+            nullFlag = false;
             this.fragmentCount = fragmentCount;
         }
     }
@@ -32,5 +33,11 @@ public class FragmentPageAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int position) {
         return MainFragment.newInstance(position, nullFlag);
+    }
+
+    @Override
+    public int getItemPosition(Object object) {
+        //return super.getItemPosition(object);
+        return POSITION_NONE;
     }
 }

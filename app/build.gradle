@@ -32,6 +32,12 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    jcenter()
+}
+
 apply plugin: 'org.greenrobot.greendao'
 greendao {
     schemaVersion 1
@@ -53,4 +59,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
     compile 'org.greenrobot:greendao:3.2.0'
+    compile 'com.wefika:collapse-calendar-view:0.1.0'
+    compile 'com.daimajia.swipelayout:library:1.2.0@aar'
 }

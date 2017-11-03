@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.bouilli.nxx.bouillihotel.entity.build.DaoMaster;
 import com.bouilli.nxx.bouillihotel.entity.build.DaoSession;
+import com.bouilli.nxx.bouillihotel.util.CrashHandler;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        CrashHandler.getInstance().init(this);
         instance = this;
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

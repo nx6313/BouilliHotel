@@ -33,8 +33,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +68,7 @@ public class ComFun {
 
     /**
      * 显示Toast提示信息
+     *
      * @param context
      * @param text
      * @param duration
@@ -82,6 +85,7 @@ public class ComFun {
 
     /**
      * 显示Toast提示信息(单例模式)
+     *
      * @param context
      * @param text
      * @param duration
@@ -108,8 +112,6 @@ public class ComFun {
                     if ((((Map<?, ?>) str).size() == 0)) {
                         return false;
                     }
-                } else if (str.getClass().isArray()) {
-
                 }
             }
             return true;
@@ -120,19 +122,21 @@ public class ComFun {
 
     /**
      * 打开输入法
+     *
      * @param context
      */
-    public static void openIME(Context context, EditText editText){
+    public static void openIME(Context context, EditText editText) {
         InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
     }
 
     /**
      * 关闭输入法
+     *
      * @param context
      */
-    public static void closeIME(Context context, View view){
-        if(view.getWindowToken() != null){
+    public static void closeIME(Context context, View view) {
+        if (view.getWindowToken() != null) {
             InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
             if (inputMethodManager.isActive()) {
                 inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(),
@@ -143,18 +147,20 @@ public class ComFun {
 
     /**
      * 显示网络异常提示层
+     *
      * @param activity
      * @param loadingTipValue
      */
     public static Toast netErrorToast = null;
     private static int netErrorCount = 0;
-    public static void showNetErrorTip(Context context, String loadingTipValue){
-        if(netErrorToast == null){
+
+    public static void showNetErrorTip(Context context, String loadingTipValue) {
+        if (netErrorToast == null) {
             netErrorCount = 0;
             View netErrorTipView = LayoutInflater.from(context).inflate(R.layout.net_error_tip, null);
             TextView loadingTip = (TextView) netErrorTipView.findViewById(R.id.loadingTip);
-            if(loadingTip != null){
-                if(strNull(loadingTipValue)){
+            if (loadingTip != null) {
+                if (strNull(loadingTipValue)) {
                     loadingTip.setText(loadingTipValue);
                 }
             }
@@ -163,9 +169,9 @@ public class ComFun {
             netErrorToast.setDuration(Toast.LENGTH_LONG);
             netErrorToast.setView(netErrorTipView);
             netErrorToast.show();
-        }else{
+        } else {
             netErrorCount++;
-            if(netErrorCount > 20){
+            if (netErrorCount > 20) {
                 netErrorToast = null;
             }
         }
@@ -173,11 +179,13 @@ public class ComFun {
 
     /**
      * 显示菜单预览卡片
+     *
      * @param activity
      * @param loadingTipValue
      */
     public static AlertDialog menuCardDialog = null;
-    public static void showMenuCard(Activity activity, String menuName, String menuPrice, String menuDes, final MenuCardEvent menuCardEvent){
+
+    public static void showMenuCard(Activity activity, String menuName, String menuPrice, String menuDes, final MenuCardEvent menuCardEvent) {
         menuCardDialog = new AlertDialog.Builder(activity).setCancelable(true).create();
         menuCardDialog.show();
 
@@ -190,15 +198,15 @@ public class ComFun {
         win.setWindowAnimations(R.style.AnimBottom);
         View menuCardView = activity.getLayoutInflater().inflate(R.layout.menu_card_dialog, null);
         win.setContentView(menuCardView);
-        if(strNull(menuName)) {
+        if (strNull(menuName)) {
             TextView cardMenuName = (TextView) menuCardView.findViewById(R.id.card_menu_name);
             cardMenuName.setText(menuName);
         }
-        if(strNull(menuPrice)){
+        if (strNull(menuPrice)) {
             TextView cardMenuPrice = (TextView) menuCardView.findViewById(R.id.card_menu_price);
             cardMenuPrice.setText("菜品单价：￥ " + menuPrice + " 元");
         }
-        if(strNull(menuDes) && !menuDes.equals("-")){
+        if (strNull(menuDes) && !menuDes.equals("-")) {
             TextView cardMenuDes = (TextView) menuCardView.findViewById(R.id.card_menu_des);
             cardMenuDes.setText("菜品简介：" + menuDes);
             cardMenuDes.setVisibility(View.VISIBLE);
@@ -206,19 +214,19 @@ public class ComFun {
         Button btnUpdateMenuInfo = (Button) menuCardView.findViewById(R.id.btnUpdateMenuInfo);
         Button btnMoveMenuTo = (Button) menuCardView.findViewById(R.id.btnMoveMenuTo);
         Button btnMenuCardCancel = (Button) menuCardView.findViewById(R.id.btnMenuCardCancel);
-        btnUpdateMenuInfo.setOnClickListener(new View.OnClickListener(){
+        btnUpdateMenuInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 menuCardEvent.updateMenuInfo(menuCardDialog);
             }
         });
-        btnMoveMenuTo.setOnClickListener(new View.OnClickListener(){
+        btnMoveMenuTo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 menuCardEvent.moveMenuInfo(menuCardDialog);
             }
         });
-        btnMenuCardCancel.setOnClickListener(new View.OnClickListener(){
+        btnMenuCardCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 menuCardDialog.dismiss();
@@ -226,13 +234,15 @@ public class ComFun {
         });
     }
 
-    public interface MenuCardEvent{
+    public interface MenuCardEvent {
         void updateMenuInfo(AlertDialog view);
+
         void moveMenuInfo(AlertDialog view);
     }
 
     /**
      * 根据当前时间获取随机数值
+     *
      * @return
      */
     public static String getRandomIntByTime() {
@@ -241,12 +251,14 @@ public class ComFun {
 
     /**
      * 显示加载框
+     *
      * @param activity
      * @param loadingTipValue
      * @Deprecated
      */
     public static AlertDialog loadingDialog = null;
-    public static void showLoading(Activity activity, String loadingTipValue){
+
+    public static void showLoading(Activity activity, String loadingTipValue) {
         loadingDialog = new AlertDialog.Builder(activity, R.style.MyDialogStyleBottom).setCancelable(false).create();
         loadingDialog.show();
         Window win = loadingDialog.getWindow();
@@ -257,8 +269,8 @@ public class ComFun {
         loadingGif.setShowDimension(240, 240);
         loadingGif.setGifImageType(GifView.GifImageType.COVER);
         TextView loadingTip = (TextView) loadingView.findViewById(R.id.loadingTip);
-        if(loadingTip != null){
-            if(strNull(loadingTipValue)){
+        if (loadingTip != null) {
+            if (strNull(loadingTipValue)) {
                 loadingTip.setText(loadingTipValue);
             }
         }
@@ -266,16 +278,17 @@ public class ComFun {
 
     /**
      * 显示加载框
+     *
      * @param activity
      * @param loadingTipValue
      */
-    public static AlertDialogWrap showLoading(final Activity activity, String loadingTipValue, final boolean cancelable, final String... params){
+    public static AlertDialogWrap showLoading(final Activity activity, String loadingTipValue, final boolean cancelable, final String... params) {
         final AlertDialogWrap alertDialogWrap = new AlertDialogWrap();
         loadingDialog = new AlertDialog.Builder(activity, R.style.MyDialogStyleBottom).setCancelable(cancelable).create();
         loadingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                if(strNull(params) && params.length > 0) {
+                if (strNull(params) && params.length > 0) {
                     if (cancelable && alertDialogWrap.getHttpCall() != null) {
                         Call getNewVersionCall = alertDialogWrap.getHttpCall();
                         getNewVersionCall.cancel();
@@ -293,8 +306,8 @@ public class ComFun {
         loadingGif.setShowDimension(240, 240);
         loadingGif.setGifImageType(GifView.GifImageType.COVER);
         TextView loadingTip = (TextView) loadingView.findViewById(R.id.loadingTip);
-        if(loadingTip != null){
-            if(strNull(loadingTipValue)){
+        if (loadingTip != null) {
+            if (strNull(loadingTipValue)) {
                 loadingTip.setText(loadingTipValue);
             }
         }
@@ -304,16 +317,17 @@ public class ComFun {
 
     /**
      * 显示加载框
+     *
      * @param activity
      * @param loadingTipValue
      */
-    public static AlertDialogWrap showLoading2(final Activity activity, String loadingTipValue, final boolean cancelable, final String... params){
+    public static AlertDialogWrap showLoading2(final Activity activity, String loadingTipValue, final boolean cancelable, final String... params) {
         final AlertDialogWrap alertDialogWrap = new AlertDialogWrap();
         loadingDialog = new AlertDialog.Builder(activity, R.style.MyDialogStyleBottom).setCancelable(cancelable).create();
         loadingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                if(strNull(params) && params.length > 0) {
+                if (strNull(params) && params.length > 0) {
                     if (cancelable && alertDialogWrap.getHttpCall() != null) {
                         Call getNewVersionCall = alertDialogWrap.getHttpCall();
                         getNewVersionCall.cancel();
@@ -329,11 +343,11 @@ public class ComFun {
         GifViewByMovie loadingGif = (GifViewByMovie) loadingView.findViewById(R.id.loadingGif);
         loadingGif.setMovieResource(R.drawable.loading1);
         TextView loadingTip = (TextView) loadingView.findViewById(R.id.loadingTip);
-        if(loadingTip != null){
-            if(strNull(loadingTipValue)){
+        if (loadingTip != null) {
+            if (strNull(loadingTipValue)) {
                 loadingTip.setVisibility(View.VISIBLE);
                 loadingTip.setText(loadingTipValue);
-            }else{
+            } else {
                 loadingTip.setVisibility(View.GONE);
             }
         }
@@ -367,18 +381,19 @@ public class ComFun {
 
     /**
      * 隐藏加载框
+     *
      * @param activity
      */
-    public static void hideLoading(Activity activity){
-        if(loadingDialog != null && loadingDialog.isShowing()){
+    public static void hideLoading(Activity activity) {
+        if (loadingDialog != null && loadingDialog.isShowing()) {
             loadingDialog.dismiss();
         }
     }
 
-    public static boolean strInArr(String[] strArr, String str){
-        if(strNull(strArr) && strArr.length > 0 && strNull(str)){
-            for(String s : strArr){
-                if(s.equals(str)){
+    public static boolean strInArr(String[] strArr, String str) {
+        if (strNull(strArr) && strArr.length > 0 && strNull(str)) {
+            for (String s : strArr) {
+                if (s.equals(str)) {
                     return true;
                 }
             }
@@ -391,24 +406,28 @@ public class ComFun {
         BigDecimal b1 = new BigDecimal(d1);
         return b1.add(d2).doubleValue();
     }
+
     public static double sub(double d1, double d2) {
         // 进行减法运算
         BigDecimal b1 = new BigDecimal(d1);
         BigDecimal b2 = new BigDecimal(d2);
         return b1.subtract(b2).doubleValue();
     }
+
     public static double mul(double d1, double d2) {
         // 进行乘法运算
         BigDecimal b1 = new BigDecimal(d1);
         BigDecimal b2 = new BigDecimal(d2);
         return b1.multiply(b2).doubleValue();
     }
-    public static double div(double d1, double d2,int len) {
+
+    public static double div(double d1, double d2, int len) {
         // 进行除法运算
         BigDecimal b1 = new BigDecimal(d1);
         BigDecimal b2 = new BigDecimal(d2);
-        return b1.divide(b2,len,BigDecimal. ROUND_HALF_UP).doubleValue();
+        return b1.divide(b2, len, BigDecimal.ROUND_HALF_UP).doubleValue();
     }
+
     public static double round(double d, int len) {
         // 进行四舍五入操作
         BigDecimal b1 = new BigDecimal(d);
@@ -420,21 +439,22 @@ public class ComFun {
 
     /**
      * 并0操作
+     *
      * @return
      */
-    public static String addZero(String val){
-        if(ComFun.strNull(val)){
-            if(val.contains(".")){
+    public static String addZero(String val) {
+        if (ComFun.strNull(val)) {
+            if (val.contains(".")) {
                 int pointNum = new BigDecimal(val).scale();
-                if(pointNum <= 2){
-                    for(int i=0; i<2-pointNum; i++){
+                if (pointNum <= 2) {
+                    for (int i = 0; i < 2 - pointNum; i++) {
                         val += "0";
                     }
                     return val;
-                }else{
+                } else {
                     return addZero(round(Double.parseDouble(val), 2) + "");
                 }
-            }else{
+            } else {
                 return val + ".00";
             }
         }
@@ -443,11 +463,12 @@ public class ComFun {
 
     /**
      * 格式化流水订单详情数据(  去掉(-)、替换#N#为空格  )
+     *
      * @param menuDetailInfo
      * @return
      */
-    public static String formatMenuDetailInfo(String menuDetailInfo){
-        if(ComFun.strNull(menuDetailInfo)){
+    public static String formatMenuDetailInfo(String menuDetailInfo) {
+        if (ComFun.strNull(menuDetailInfo)) {
             menuDetailInfo = menuDetailInfo.replaceAll("\\(-\\)", "");
             menuDetailInfo = menuDetailInfo.replaceAll("#N#", "       ");
             return menuDetailInfo;
@@ -457,11 +478,12 @@ public class ComFun {
 
     /**
      * 格式化流水订单详情数据(  去掉(-)、替换#N#为换行  )
+     *
      * @param menuDetailInfo
      * @return
      */
-    public static String formatMenuDetailInfo2(String menuDetailInfo){
-        if(ComFun.strNull(menuDetailInfo)){
+    public static String formatMenuDetailInfo2(String menuDetailInfo) {
+        if (ComFun.strNull(menuDetailInfo)) {
             menuDetailInfo = menuDetailInfo.replaceAll("\\(-\\)", "");
             menuDetailInfo = menuDetailInfo.replaceAll("#N#", "\n");
             return menuDetailInfo;
@@ -471,15 +493,16 @@ public class ComFun {
 
     /**
      * 格式化订餐备注信息数据(  去掉-、去掉#N#  )
+     *
      * @param menuDetailInfo
      * @return
      */
-    public static String formatMenuDetailInfo3(String menuDetailInfo){
-        if(ComFun.strNull(menuDetailInfo)){
-            if(menuDetailInfo.startsWith("-")){
+    public static String formatMenuDetailInfo3(String menuDetailInfo) {
+        if (ComFun.strNull(menuDetailInfo)) {
+            if (menuDetailInfo.startsWith("-")) {
                 menuDetailInfo = menuDetailInfo.replaceFirst("-", "");
             }
-            if(menuDetailInfo.endsWith("-")){
+            if (menuDetailInfo.endsWith("-")) {
                 menuDetailInfo = menuDetailInfo.substring(0, menuDetailInfo.length() - 1);
             }
             menuDetailInfo = menuDetailInfo.replaceAll("#N#-", "");
@@ -493,6 +516,7 @@ public class ComFun {
 
     /**
      * 检测当前网络状态
+     *
      * @param context
      * @return
      */
@@ -514,6 +538,7 @@ public class ComFun {
 
     /**
      * 判断服务是否运行
+     *
      * @param mContext
      * @param className
      * @return
@@ -524,14 +549,14 @@ public class ComFun {
                 mContext.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningServiceInfo> serviceList
                 = activityManager.getRunningServices(50);
-        if (serviceList.size()>0) {
-            for (int i=0; i<serviceList.size(); i++) {
+        if (serviceList.size() > 0) {
+            for (int i = 0; i < serviceList.size(); i++) {
                 if (serviceList.get(i).service.getClassName().equals(className) == true) {
                     isRunning = true;
                     break;
                 }
             }
-        }else{
+        } else {
             return false;
         }
         return isRunning;
@@ -539,11 +564,12 @@ public class ComFun {
 
     /**
      * 获取程序版本号
+     *
      * @param mContext
      * @return
      * @throws Exception
      */
-    public static int getVersionNo(Context mContext) throws Exception{
+    public static int getVersionNo(Context mContext) throws Exception {
         //获取packagemanager的实例
         PackageManager packageManager = mContext.getPackageManager();
         //getPackageName()是你当前类的包名，0代表是获取版本信息
@@ -553,11 +579,12 @@ public class ComFun {
 
     /**
      * 获取程序版本号显示值
+     *
      * @param mContext
      * @return
      * @throws Exception
      */
-    public static String getVersionName(Context mContext) throws Exception{
+    public static String getVersionName(Context mContext) throws Exception {
         //获取packagemanager的实例
         PackageManager packageManager = mContext.getPackageManager();
         //getPackageName()是你当前类的包名，0代表是获取版本信息
@@ -567,6 +594,7 @@ public class ComFun {
 
     /**
      * 安装apk
+     *
      * @param mContext
      * @param file
      */
@@ -581,31 +609,32 @@ public class ComFun {
 
     /**
      * 处理消息，根据时间，适当增加时间戳，去掉两天之前的消息；相邻时间之间相差大于1小时，则添加时间戳
+     *
      * @param msgContentList
      * @return
      */
     public static List<String> disposeMsgTime(List<String> msgContentList) {
-        if(strNull(msgContentList) && msgContentList.size() > 0){
+        if (strNull(msgContentList) && msgContentList.size() > 0) {
             List<String> result = new ArrayList<>();
             String lastSendTime = null;
-            for(String msgContent : msgContentList){
+            for (String msgContent : msgContentList) {
                 // 发送人Id、发送人名称、发送时间、发送内容
                 String[] msgContentArr = msgContent.split("&\\|\\|&");
-                if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 2){
+                if (DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 2) {
                     // 消息在近两天内
-                    if(result.size() == 0){
-                        if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 1){
+                    if (result.size() == 0) {
+                        if (DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 1) {
                             result.add(DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
-                        }else if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 2){
+                        } else if (DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 2) {
                             result.add("昨天 " + DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
                         }
                     }
-                    if(strNull(lastSendTime)){
+                    if (strNull(lastSendTime)) {
                         // 和上一个日期进行比较，相差是否大于1小时
-                        if(DateFormatUtil.differentHours(DateFormatUtil.strToDate(lastSendTime, DateFormatUtil.TYPE), DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE)) > 1){
-                            if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 1){
+                        if (DateFormatUtil.differentHours(DateFormatUtil.strToDate(lastSendTime, DateFormatUtil.TYPE), DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE)) > 1) {
+                            if (DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 1) {
                                 result.add(DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
-                            }else if(DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 2){
+                            } else if (DateFormatUtil.differentDays(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.YYYYMMDD), DateFormatUtil.dateToDate(DateFormatUtil.YYYYMMDD)) < 2) {
                                 result.add("昨天 " + DateFormatUtil.dateToStr(DateFormatUtil.strToDate(msgContentArr[2], DateFormatUtil.TYPE), DateFormatUtil.HHMM));
                             }
                         }
@@ -640,5 +669,32 @@ public class ComFun {
         } else {
             return JSON_TYPE.JSON_TYPE_ERROR;
         }
+    }
+
+    /**
+     * 从字符串中按照指定字符拆分后，删除指定项
+     *
+     * @param strBase
+     * @param splitStr
+     * @param deleteStr
+     * @return
+     */
+    public static String removeFromStr(String strBase, String splitStr, String deleteStr) {
+        String resultStr = strBase;
+        if (strNull(strBase) && strNull(splitStr) && strNull(deleteStr)) {
+            String[] strArr = strBase.split(splitStr);
+            if (strInArr(strArr, deleteStr)) {
+                String deleteAfter = "";
+                for (String s : strArr) {
+                    if (!s.equals(deleteStr)) {
+                        deleteAfter += s + splitStr;
+                    }
+                }
+                if (strNull(deleteAfter)) {
+                    resultStr = deleteAfter.substring(0, deleteAfter.length() - splitStr.length());
+                }
+            }
+        }
+        return resultStr;
     }
 }

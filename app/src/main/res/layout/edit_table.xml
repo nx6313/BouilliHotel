@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#e2c4a8"
+    android:background="@drawable/popup_window_bg"
     android:gravity="center|top"
     android:orientation="vertical"
     android:paddingBottom="10dp">
@@ -24,25 +24,33 @@
             android:paddingBottom="60dp"
             android:paddingTop="5dp">
 
-            <EditText
-                android:id="@+id/etTableGroupName"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:gravity="center"
-                android:hint="输入组名称（创建一个新的组来管理桌号）"
-                android:maxLines="1"
-                android:textSize="15sp" />
+                android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/etTableGroupNo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-2dp"
-                android:gravity="center"
-                android:hint="输入组代号（和桌号用.连接一起显示，例如：Z.1）"
-                android:maxLines="1"
-                android:textSize="15sp" />
+                <EditText
+                    android:id="@+id/etTableGroupName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="输入区域名称"
+                    android:maxLines="1"
+                    android:textSize="15sp" />
+
+                <EditText
+                    android:id="@+id/etTableGroupNo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="输入区域代号"
+                    android:maxLines="1"
+                    android:inputType="textCapCharacters"
+                    android:textSize="15sp" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -54,7 +62,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="该组桌号从"
+                    android:text="该区桌号从"
                     android:textColor="@color/itemFocus"
                     android:textSize="16sp" />
 
@@ -111,13 +119,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="或 该组包含的餐桌编号有？"
+                    android:text="或 该区包含的餐桌编号有？"
                     android:textColor="@color/itemFocus"
                     android:textSize="16sp" />
 
                 <com.bouilli.nxx.bouillihotel.customview.FlowLayout
                     android:id="@+id/tableNumsWrap"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp">

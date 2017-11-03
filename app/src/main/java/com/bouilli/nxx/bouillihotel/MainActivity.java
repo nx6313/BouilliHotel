@@ -31,6 +31,7 @@ import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.TextPaint;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -66,6 +67,8 @@ import com.bouilli.nxx.bouillihotel.customview.ElasticScrollView;
 import com.bouilli.nxx.bouillihotel.customview.HorizontalProgressbarWithProgress;
 import com.bouilli.nxx.bouillihotel.customview.NavigationTabBar;
 import com.bouilli.nxx.bouillihotel.customview.NoSlideViewPager;
+import com.bouilli.nxx.bouillihotel.entity.TableGroup;
+import com.bouilli.nxx.bouillihotel.entity.build.TableGroupDao;
 import com.bouilli.nxx.bouillihotel.fragment.adapter.FragmentPageAdapter;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
 import com.bouilli.nxx.bouillihotel.push.org.androidpn.client.NotificationService;
@@ -482,6 +485,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    protected void onResume() {
+        resumeTableSetShow();
+        super.onResume();
+    }
+
     private void applyPermission() {
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
@@ -568,6 +577,19 @@ public class MainActivity extends AppCompatActivity
             viewPager.setCurrentItem(lastViewPagerIndex);
             //navigationTabBar.setModelIndex(lastViewPagerIndex + 1);
         }
+    }
+
+    /**
+     * 重置首页餐桌显示
+     */
+    private void resumeTableSetShow() {
+        TableGroupDao tableGroupDao = MyApplication.getDaoSession().getTableGroupDao();
+        List<TableGroup> tableGroupList = tableGroupDao.loadAll();
+
+        FragmentManager fm = getSupportFragmentManager();
+        mAdapter = new FragmentPageAdapter(fm, tableGroupList.size());
+        mAdapter.notifyDataSetChanged();
+        //viewPager.setAdapter(mAdapter);
     }
 
     @Override

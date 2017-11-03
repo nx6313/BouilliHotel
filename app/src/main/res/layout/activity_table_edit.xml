@@ -24,31 +24,4 @@
 
     <include layout="@layout/content_table_edit" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/add_new_table_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:layout_marginBottom="@dimen/fab_margin"
-        android:layout_marginLeft="@dimen/fab_margin"
-        android:layout_marginRight="80dp"
-        app:backgroundTint="#97e65715"
-        app:backgroundTintMode="src_over"
-        app:fabSize="mini"
-        app:srcCompat="@drawable/add"
-        android:alpha="0.5" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/delete_new_table_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:backgroundTint="#97e65715"
-        app:backgroundTintMode="src_over"
-        app:fabSize="mini"
-        app:srcCompat="@drawable/delete"
-        android:alpha="0.5" />
-
 </android.support.design.widget.CoordinatorLayout>

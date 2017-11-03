@@ -12,6 +12,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextPaint;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -26,14 +27,23 @@ import android.widget.Toast;
 
 import com.bouilli.nxx.bouillihotel.EditOrderActivity;
 import com.bouilli.nxx.bouillihotel.MainActivity;
+import com.bouilli.nxx.bouillihotel.MyApplication;
 import com.bouilli.nxx.bouillihotel.R;
 import com.bouilli.nxx.bouillihotel.asyncTask.okHttpTask.AllRequestUtil;
 import com.bouilli.nxx.bouillihotel.customview.FlowLayout;
+import com.bouilli.nxx.bouillihotel.entity.TableGroup;
+import com.bouilli.nxx.bouillihotel.entity.TableInfo;
+import com.bouilli.nxx.bouillihotel.entity.build.TableGroupDao;
+import com.bouilli.nxx.bouillihotel.entity.build.TableInfoDao;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.request.RequestParams;
 import com.bouilli.nxx.bouillihotel.util.ComFun;
 import com.bouilli.nxx.bouillihotel.util.DisplayUtil;
 import com.bouilli.nxx.bouillihotel.util.SerializableMap;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
+
+import org.greenrobot.greendao.query.WhereCondition;
+
+import java.util.List;
 
 /**
  * Created by 18230 on 2016/11/5.
@@ -73,10 +83,14 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.main_fragment_pager, null);
         dining_table_layout = (FlowLayout) view.findViewById(R.id.dining_table_layout);
-        String tableGroupNames = SharedPreferencesTool.getFromShared(getActivity(), "BouilliTableInfo", "tableGroupNames");
-        if (ComFun.strNull(tableGroupNames)) {
-            String thisGroupTableInfo = SharedPreferencesTool.getFromShared(getActivity(), "BouilliTableInfo", "tableInfo" + tableGroupNames.split(",")[mNum]);
-            addTableView(thisGroupTableInfo.split(","));
+        TableGroupDao tableGroupDao = MyApplication.getDaoSession().getTableGroupDao();
+        List<TableGroup> tableGroupList = tableGroupDao.loadAll();
+        if (ComFun.strNull(tableGroupList, true)) {
+            TableInfoDao tableInfoDao = MyApplication.getDaoSession().getTableInfoDao();
+            WhereCondition whereCondition = new WhereCondition.PropertyCondition(TableInfoDao.Properties.GroupCode, " = '" + tableGroupList.get(mNum).getTableGroupCode() + "'");
+            List<TableInfo> tableInfos = tableInfoDao.queryBuilder().where(whereCondition).orderAsc(TableInfoDao.Properties.TableNo).list();
+            String thisGroupTableInfo = SharedPreferencesTool.getFromShared(getActivity(), "BouilliTableInfo", "tableInfo" + tableGroupList.get(mNum).getTableGroupName());
+            addTableView(tableInfos);
         } else {
             addTableViewForNull();
         }
@@ -119,10 +133,10 @@ public class MainFragment extends Fragment {
     }
 
     // 添加餐桌布局
-    private void addTableView(String[] thisGroupTableInfoArr) {
-        for (int i = 0; i < thisGroupTableInfoArr.length; i++) {
+    private void addTableView(List<TableInfo> tableInfos) {
+        for (TableInfo tableInfo : tableInfos) {
             LinearLayout tableObject = new LinearLayout(getContext());
-            tableObject.setTag("tableInfo" + thisGroupTableInfoArr[i].split("\\|")[0]);
+            tableObject.setTag("tableInfoKey_" + tableInfo.getId());
             tableObject.setGravity(Gravity.CENTER);
             tableObject.setOrientation(LinearLayout.VERTICAL);
             tableObject.setFocusable(true);
@@ -131,13 +145,13 @@ public class MainFragment extends Fragment {
             tableObject.setLayoutParams(tableObjLp);
             // ImageView
             ImageView tableImg = new ImageView(getContext());
-            tableImg.setTag("tableImg" + thisGroupTableInfoArr[i].split("\\|")[0]);
-            tableImg.setTag(R.id.tag_table_state, thisGroupTableInfoArr[i].split("\\|")[1]);
+            tableImg.setTag("tableImg_" + tableInfo.getId());
+            tableImg.setTag(R.id.tag_table_state, tableInfo.getTableStatus());
             ViewGroup.LayoutParams tableImgLp = new ViewGroup.LayoutParams(DisplayUtil.dip2px(getContext(), 70), DisplayUtil.dip2px(getContext(), 70));
             tableImg.setLayoutParams(tableImgLp);
-            if (Integer.parseInt(thisGroupTableInfoArr[i].split("\\|")[1]) == 1) {// 空闲
+            if (tableInfo.getTableStatus() == 1) {// 空闲
                 tableImg.setImageResource(R.drawable.desk_0);
-            } else if (Integer.parseInt(thisGroupTableInfoArr[i].split("\\|")[1]) == 2) {// 编辑
+            } else if (tableInfo.getTableStatus() == 2) {// 编辑
                 tableImg.setImageResource(R.drawable.desk_2);
                 // 闪烁显示动画
                 AlphaAnimation aa1 = new AlphaAnimation(1.0f, 0.4f);
@@ -147,7 +161,7 @@ public class MainFragment extends Fragment {
                 aa1.setFillAfter(true);
                 tableImg.startAnimation(aa1);
             } else {// 占用
-                tableImg.setTag(R.id.tag_table_order_id, thisGroupTableInfoArr[i].split("\\|")[2]);
+                tableImg.setTag(R.id.tag_table_order_id, tableInfo.getId());
                 tableImg.setImageResource(R.drawable.desk_1);
             }
             tableObject.addView(tableImg);
@@ -156,9 +170,9 @@ public class MainFragment extends Fragment {
             ViewGroup.LayoutParams tableDesLp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             tableDes.setLayoutParams(tableDesLp);
             tableDes.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            tableDes.setText(thisGroupTableInfoArr[i].split("\\|")[0]);
+            tableDes.setText(tableInfo.getTableName());
             tableDes.setTag("tableTxtInfo");
-            tableDes.setTag(R.id.tag_table_txt_no, "tableTxtInfo_" + thisGroupTableInfoArr[i].split("\\|")[0]);
+            tableDes.setTag(R.id.tag_table_txt_no, "tableTxtInfo_" + tableInfo.getTableNo());
             TextPaint tableDesTp = tableDes.getPaint();
             tableDesTp.setFakeBoldText(true);
             tableObject.addView(tableDes);

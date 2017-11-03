@@ -2,34 +2,104 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center|top"
-    android:orientation="vertical"
-    android:background="@drawable/bg_round_circle"
-    android:layout_marginTop="5dp"
     android:layout_marginLeft="8dp"
     android:layout_marginRight="8dp"
+    android:layout_marginTop="5dp"
+    android:background="@drawable/table_wrap"
+    android:gravity="center|top"
+    android:orientation="vertical"
     android:paddingBottom="10dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="18sp"
-        android:textColor="#08403a"
-        android:textStyle="bold"
         android:layout_marginTop="10dp"
-        android:typeface="monospace"
+        android:gravity="center"
         android:tag="tvGroupName"
-        android:text="区域###"/>
+        android:text="区域###"
+        android:textColor="#08403a"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:typeface="monospace" />
 
-    <com.bouilli.nxx.bouillihotel.customview.FlowLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:tag="flGroupLayout"
-        android:layout_marginBottom="4dp">
+    <com.daimajia.swipe.SwipeLayout
+        android:id="@+id/tableGroupSwipeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    </com.bouilli.nxx.bouillihotel.customview.FlowLayout>
+        <LinearLayout
+            android:id="@+id/bottom_wrapper"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <LinearLayout
+                android:id="@+id/tableAreaUpdateLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="#66068ded"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/item_update"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textSize="14sp"
+                    android:text="修改"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/tableAreaDeleteLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="#66ed1d06"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/item_delete"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textSize="14sp"
+                    android:text="删除"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <com.bouilli.nxx.bouillihotel.customview.FlowLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:tag="flGroupLayout">
+
+            </com.bouilli.nxx.bouillihotel.customview.FlowLayout>
+        </LinearLayout>
+    </com.daimajia.swipe.SwipeLayout>
 </LinearLayout>

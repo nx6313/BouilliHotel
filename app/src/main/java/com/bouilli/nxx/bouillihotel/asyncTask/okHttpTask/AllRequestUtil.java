@@ -23,7 +23,9 @@ import com.bouilli.nxx.bouillihotel.WelcomeActivity;
 import com.bouilli.nxx.bouillihotel.broadcastReceiver.BouilliBroadcastReceiver;
 import com.bouilli.nxx.bouillihotel.db.DBHelper;
 import com.bouilli.nxx.bouillihotel.entity.TableGroup;
+import com.bouilli.nxx.bouillihotel.entity.TableInfo;
 import com.bouilli.nxx.bouillihotel.entity.build.TableGroupDao;
+import com.bouilli.nxx.bouillihotel.entity.build.TableInfoDao;
 import com.bouilli.nxx.bouillihotel.fragment.MainFragment;
 import com.bouilli.nxx.bouillihotel.fragment.OutOrderFragment;
 import com.bouilli.nxx.bouillihotel.okHttpUtil.CommonOkHttpClient;
@@ -38,6 +40,7 @@ import com.bouilli.nxx.bouillihotel.util.Constants;
 import com.bouilli.nxx.bouillihotel.util.SharedPreferencesTool;
 import com.bouilli.nxx.bouillihotel.util.URIUtil;
 
+import org.greenrobot.greendao.query.WhereCondition;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -558,6 +561,20 @@ public class AllRequestUtil {
         customer.setTableGroupCode(params.get("groupNo"));
         customer.setTableGroupNo(params.get("tableNums"));
         tableGroupDao.insert(customer);
+        // 添加对应餐桌信息表
+        if (ComFun.strNull(params.get("tableNums"))) {
+            String[] tableNumArr = params.get("tableNums").split("-");
+            TableInfoDao tableInfoDao = MyApplication.getDaoSession().getTableInfoDao();
+            for (String tableNum : tableNumArr) {
+                TableInfo tableInfo = new TableInfo();
+                tableInfo.setId(null);
+                tableInfo.setGroupCode(params.get("groupNo"));
+                tableInfo.setTableNo(tableNum);
+                tableInfo.setTableName(params.get("groupNo") + "." + tableNum);
+                tableInfo.setTableStatus(1);
+                tableInfoDao.insert(tableInfo);
+            }
+        }
 
         Call tableEditCall = CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.ADD_NEW_TABLE_URI, params), new DisposeDataHandle(new DisposeDataListener() {
             @Override
@@ -610,6 +627,72 @@ public class AllRequestUtil {
                     } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
                         ComFun.showToast(context, "在组【" + params.get("groupName") + "】中补充餐桌超时，请稍后重试", Toast.LENGTH_SHORT);
                     }
+                }
+            }
+        }));
+        return tableEditCall;
+    }
+
+    /**
+     * 删除餐桌组及餐桌号
+     */
+    public static Call deleteTableGroup(final Context context, final RequestParams params, final String deleteType) {
+        // 模拟保存本地数据库
+        TableGroupDao tableGroupDao = MyApplication.getDaoSession().getTableGroupDao();
+        TableInfoDao tableInfoDao = MyApplication.getDaoSession().getTableInfoDao();
+        TableGroup tableGroup = tableGroupDao.load(Long.valueOf(params.get("deleteTableGroupId")));
+        if (deleteType.equals("group")) {
+            tableGroupDao.deleteByKey(Long.valueOf(params.get("deleteTableGroupId")));
+            // 删除区域下所有餐桌
+            WhereCondition whereCondition = new WhereCondition.PropertyCondition(TableInfoDao.Properties.GroupCode, " = '" + tableGroup.getTableGroupCode() + "'");
+            List<TableInfo> deleteTableInfos = tableInfoDao.queryBuilder().where(whereCondition).list();
+            for(TableInfo tableInfo : deleteTableInfos) {
+                tableInfoDao.delete(tableInfo);
+            }
+        } else {
+            String deleteAfterTableNums = ComFun.removeFromStr(tableGroup.getTableGroupNo(), "-", params.get("deleteTableNum"));
+            tableGroup.setTableGroupNo(deleteAfterTableNums);
+            tableGroupDao.update(tableGroup);
+            // 删除区域下指定餐桌
+            WhereCondition whereCondition = new WhereCondition.PropertyCondition(TableInfoDao.Properties.GroupCode, " = '" + tableGroup.getTableGroupCode() + "'");
+            WhereCondition whereCondition2 = new WhereCondition.PropertyCondition(TableInfoDao.Properties.TableNo, " = '" + params.get("deleteTableNum") + "'");
+            List<TableInfo> deleteTableInfos = tableInfoDao.queryBuilder().where(whereCondition, whereCondition2).list();
+            for(TableInfo tableInfo : deleteTableInfos) {
+                tableInfoDao.delete(tableInfo);
+            }
+        }
+
+        Call tableEditCall = CommonOkHttpClient.post(CommonRequest.createPostRequest(context, URIUtil.DELETE_TABLE_URI, params), new DisposeDataHandle(new DisposeDataListener() {
+            @Override
+            public void onFinish() {
+
+            }
+
+            @Override
+            public void onSuccess(Object responseObj) {
+                // 发送Handler通知页面更新UI
+                Message msg = new Message();
+                Bundle data = new Bundle();
+                if (deleteType.equals("group")) {
+                    msg.what = TableEditActivity.MSG_DELETE_GROUP;
+                } else {
+                    msg.what = TableEditActivity.MSG_DELETE_TABLE;
+                }
+
+                JSONObject jsob = (JSONObject) responseObj;
+
+                msg.setData(data);
+                TableEditActivity.mHandler.sendMessage(msg);
+            }
+
+            @Override
+            public void onFailure(OkHttpException okHttpE) {
+                if (okHttpE.getEcode() == Constants.HTTP_NETWORK_ERROR) {
+                    ComFun.showToast(context, "网络连接异常，请检查网络连接", Toast.LENGTH_SHORT);
+                } else if (okHttpE.getEcode() == Constants.HTTP_REQUEST_FAIL_ERROR) {
+                    ComFun.showToast(context, "删除区域失败，请联系管理员", Toast.LENGTH_SHORT);
+                } else if (okHttpE.getEcode() == Constants.HTTP_OUT_TIME_ERROR) {
+                    ComFun.showToast(context, "删除区域超时，请稍后重试", Toast.LENGTH_SHORT);
                 }
             }
         }));
